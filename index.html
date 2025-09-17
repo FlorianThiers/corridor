@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corridor - Sport onder de viaduct</title>
+    <title>Corridor - Urban Sport Hub van Gentbrugge</title>
+    <link rel="icon" type="image/png" href="public/LogoCorridor.png">
+    <link rel="apple-touch-icon" href="public/LogoCorridor.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
@@ -97,6 +99,53 @@
         .bg-layer-bar { background: linear-gradient(180deg, rgba(255, 255, 186, 0.15) 0%, rgba(186, 255, 201, 0.15) 100%); }
         .bg-layer-freerun { background: linear-gradient(180deg, rgba(186, 255, 201, 0.15) 0%, rgba(186, 225, 255, 0.15) 100%); }
         .bg-layer-community { background: linear-gradient(180deg, rgba(186, 225, 255, 0.15) 0%, rgba(221, 186, 255, 0.15) 100%); }
+        
+        /* Floating elements */
+        .floating-gif {
+            width: 180px;
+            height: 180px;
+            opacity: 0.7;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            margin-left: -80px;
+            margin-top: 20px;
+        }
+        
+        .floating-gif:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .floating-gif {
+                width: 120px;
+                height: 120px;
+                margin-left: -40px;
+                margin-top: 15px;
+            }
+        }
+        
+        /* Organic logo shapes */
+        .organic-shape {
+            border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+            animation: morphShape 8s ease-in-out infinite;
+        }
+        
+        @keyframes morphShape {
+            0%, 100% {
+                border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+            }
+            25% {
+                border-radius: 40% 60% 70% 30% / 40% 40% 60% 60%;
+            }
+            50% {
+                border-radius: 54% 46% 38% 62% / 49% 70% 30% 51%;
+            }
+            75% {
+                border-radius: 31% 69% 60% 40% / 70% 50% 50% 30%;
+            }
+        }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -118,7 +167,15 @@
         <div class="relative z-10">
             <!-- Hero Section -->
             <section id="hero" class="min-h-screen flex items-center justify-center gradient-bg relative overflow-hidden">
-                <div class="text-center z-30 px-4 relative">
+                <div class="text-center z-30 px-4 relative flex flex-col items-center justify-start min-h-screen" style="justify-content: flex-start; min-height: 100vh;">
+                    <div style="height: 25vh;"></div>
+                    <!-- Logo above title -->
+                    <div class="mb-2 mt-2">
+                        <div class="w-32 h-32 md:w-40 md:h-40 mx-auto organic-shape shadow-lg opacity-90 bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                            <img src="public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-28 h-28 md:w-36 md:h-36 object-contain">
+                        </div>
+                    </div>
+                    
                     <h1 class="text-6xl md:text-8xl lg:text-9xl font-bold text-white graffiti-text mb-4 animate-pulse">
                         CORRIDOR
                     </h1>
@@ -141,19 +198,33 @@
 
             <!-- Intro Section -->
             <section id="intro" class="py-20 px-4 section-gradient-1">
-                <div class="max-w-4xl mx-auto text-center">
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text mb-8">
-                        Een bruisende sportplek onder het viaduct
-                    </h2>
-                    <p class="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-                        Corridor is de Urban Sport Hub van Gentbrugge en omstreken. Je kan er voetballen, basketten, boksen, aan parcours doen, dansen, lopen en plezier maken. We werken ook nog aan een skate-zone. Dat allemaal overdekt onder het E17 viaduct in Gentbrugge.
-                    </p>
-                    <p class="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-                        Dagelijks razen duizenden auto's over het viaduct in Gentbrugge, terwijl er onder het viaduct een groot, braakliggend terrein ligt naast de (bus)parking. Wij zagen in deze unieke locatie het perfecte potentieel voor een urban sporthub.
-                    </p>
-                    <p class="text-lg md:text-xl text-gray-700 leading-relaxed">
-                        In het voorjaar van 2025 kan je er ook terecht voor een drankje en voor leuke evenementen in samenwerking met de buurt. We willen van deze onbestemde plek een bruisende ontmoetingsruimte maken waar iedereen zich thuis voelt.
-                    </p>
+                <div class="max-w-6xl mx-auto">
+                    <div class="grid lg:grid-cols-2 gap-12 items-center">
+                        <div class="text-center lg:text-left">
+                            <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text mb-8">
+                                Een bruisende sportplek onder het viaduct
+                            </h2>
+                            <p class="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
+                                Corridor is de Urban Sport Hub van Gentbrugge en omstreken. Je kan er voetballen, basketten, boksen, aan parcours doen, dansen, lopen en plezier maken. We werken ook nog aan een skate-zone. Dat allemaal overdekt onder het E17 viaduct in Gentbrugge.
+                            </p>
+                            <p class="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
+                                Dagelijks razen duizenden auto's over het viaduct in Gentbrugge, terwijl er onder het viaduct een groot, braakliggend terrein ligt naast de (bus)parking. Wij zagen in deze unieke locatie het perfecte potentieel voor een urban sporthub.
+                            </p>
+                            <p class="text-lg md:text-xl text-gray-700 leading-relaxed">
+                                In het voorjaar van 2025 kan je er ook terecht voor een drankje en voor leuke evenementen in samenwerking met de buurt. We willen van deze onbestemde plek een bruisende ontmoetingsruimte maken waar iedereen zich thuis voelt.
+                            </p>
+                        </div>
+                        
+                        <!-- Animation Video -->
+                        <div class="flex justify-center">
+                            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
+                                <video class="w-full h-auto rounded-2xl shadow-lg" autoplay muted loop>
+                                    <source src="public/AnimatieFlyer.mp4" type="video/mp4">
+                                    Je browser ondersteunt geen video.
+                                </video>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -199,6 +270,13 @@
                             </svg>
                             Volledige Geschiedenis (PDF)
                         </a>
+                        
+                        <!-- Floating GIF positioned after PDF button -->
+                        <div class="flex justify-start mt-4">
+                            <video id="floating-gif" class="floating-gif" autoplay muted loop>
+                                <source src="public/corridorGif.mp4" type="video/mp4">
+                            </video>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -356,9 +434,31 @@
                         <p class="text-gray-700 mb-4">
                             We werken ook nauw samen met Flow de Gand, Asgaard, de volkstuinen en de buurtbewoners om deze droom waar te maken.
                         </p>
-                        <p class="text-sm text-gray-600">
+                        <p class="text-sm text-gray-600 mb-6">
                             Corridor wordt mede mogelijk gemaakt door het <strong>Fonds Tijdelijke invullingen van Stad Gent</strong>, de <strong>Warmste Week</strong> en <strong>Streekfonds Oost-Vlaanderen</strong>.
                         </p>
+                        
+                        <!-- Download Resources -->
+                        <div class="flex flex-wrap justify-center gap-4">
+                            <a href="public/Ontwerp flyer VOORKANT 9.O na FB.pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Flyer Voorkant
+                            </a>
+                            <a href="public/Ontwerp flyer ACHTERKANT 10.0 na FB .pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Flyer Achterkant
+                            </a>
+                            <a href="public/Logo corridor OFFICIEEL AI OPGEKUIST.pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Officieel Logo
+                            </a>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -367,6 +467,9 @@
             <footer id="footer" class="py-12 px-4 section-gradient-5">
                 <div class="max-w-4xl mx-auto text-center">
                     <div class="mb-8">
+                        <div class="w-16 h-16 mx-auto organic-shape shadow-lg mb-4 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+                            <img src="public/LogoCorridor.png" alt="Corridor Logo" class="w-14 h-14 object-contain">
+                        </div>
                         <h3 class="text-3xl font-bold text-gray-800 graffiti-text mb-4">CORRIDOR</h3>
                         <p class="text-gray-600">Urban Sport Hub van Gentbrugge - Onder het E17 viaduct</p>
                     </div>
@@ -480,6 +583,19 @@
                 }
             });
         });
+
+        // Floating GIF animation - subtle floating effect only
+        const floatingGif = document.getElementById('floating-gif');
+        if (floatingGif) {
+            gsap.to(floatingGif, {
+                y: 20,
+                rotation: 3,
+                duration: 3,
+                repeat: -1,
+                yoyo: true,
+                ease: "power2.inOut"
+            });
+        }
     </script>
 </body>
 </html>
