@@ -2,15 +2,7 @@
   "name": "corridor-website",
   "version": "1.0.0",
   "description": "Corridor - Urban Sport Hub van Gentbrugge",
-  "main": "index.html",
   "scripts": {
-    "start": "serve .",
-    "build": "echo 'Static site - no build needed'"
-  },
-  "keywords": ["corridor", "sport", "gentbrugge", "urban", "hub"],
-  "author": "Corridor Team",
-  "license": "MIT",
-  "devDependencies": {
-    "serve": "^14.0.0"
+    "build": "echo 'Static HTML site'"
   }
 }
