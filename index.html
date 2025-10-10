@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corridor - Urban Sport Hub van Gentbrugge</title>
+    <title>Corridor - Urban Hub onder het Viaduct van Gentbrugge</title>
     <!-- Clean deployment -->
-    <link rel="icon" type="image/png" href="/public/LogoCorridor.png">
-    <link rel="apple-touch-icon" href="/public/LogoCorridor.png">
+    <link rel="icon" type="image/png" href="./public/LogoCorridor.png">
+    <link rel="apple-touch-icon" href="./public/LogoCorridor.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
@@ -154,7 +154,7 @@
     <div id="parallax-container" class="relative">
         <!-- Background Layers -->
         <!-- Bridge image as main background -->
-        <div class="parallax-layer" data-speed="0.1" style="background-image: url('/public/asVanDeBrug.jpg'); background-size: cover; background-position: center; opacity: 0.3;"></div>
+        <div class="parallax-layer" data-speed="0.1" style="background-image: url('./public/asVanDeBrug.jpg'); background-size: cover; background-position: center; opacity: 0.3;"></div>
         
         <!-- Sport activity layers (placeholders for future images) -->
         <div class="parallax-layer bg-layer-skate" data-speed="0.2"></div>
@@ -167,15 +167,40 @@
         <!-- Main Content -->
         <div class="relative z-10">
             <!-- Hero Section -->
-            <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden" style="background-image: url('/public/FlyerVoorkant.png'); background-size: cover; background-position: center; background-attachment: fixed;">
+            <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden">
+                <!-- Video Background -->
+                <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover z-0">
+                    <source src="./public/VideoGuillaume.mp4" type="video/mp4">
+                    Je browser ondersteunt geen video.
+                </video>
+                
                 <!-- Dark overlay for better text readability -->
                 <div class="absolute inset-0 bg-black/40 z-10"></div>
+                
+                <!-- Social Media Icons - Top Right -->
+                <div class="absolute top-6 right-6 z-30 flex space-x-4">
+                    <a href="https://www.facebook.com/corridor.gentbrugge" class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 hover:scale-110 transition-all" target="_blank" aria-label="Facebook">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.instagram.com/corridor_gentbrugge" class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 hover:scale-110 transition-all" target="_blank" aria-label="Instagram">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.tiktok.com/@corridor_gentbrugge" class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 hover:scale-110 transition-all" target="_blank" aria-label="TikTok">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                        </svg>
+                    </a>
+                </div>
                 <div class="text-center z-30 px-4 relative flex flex-col items-center justify-start min-h-screen" style="justify-content: flex-start; min-height: 100vh;">
                     <div style="height: 25vh;"></div>
                     <!-- Logo above title -->
                     <div class="mb-2 mt-2">
                         <div class="w-32 h-32 md:w-40 md:h-40 mx-auto organic-shape shadow-lg opacity-95 bg-white/90 backdrop-blur-sm flex items-center justify-center">
-                            <img src="/public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-28 h-28 md:w-36 md:h-36 object-contain">
+                            <img src="./public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-28 h-28 md:w-36 md:h-36 object-contain">
                         </div>
                     </div>
                     
@@ -183,7 +208,7 @@
                         CORRIDOR
                     </h1>
                     <p class="text-xl md:text-2xl lg:text-3xl text-white/90 font-medium graffiti-text">
-                        Urban Sport Hub van Gentbrugge
+                        Urban Hub onder het Viaduct van Gentbrugge
                     </p>
                     <div class="mt-8">
                         <div class="w-16 h-1 bg-white/60 mx-auto rounded-full"></div>
@@ -201,16 +226,16 @@
                     <div class="grid lg:grid-cols-2 gap-12 items-center">
                         <div class="text-center lg:text-left">
                             <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text mb-8">
-                                Een bruisende sportplek onder het viaduct
+                                Een bruisende plek onder het viaduct
                             </h2>
                             <p class="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-                                Corridor is de Urban Sport Hub van Gentbrugge en omstreken. Je kan er voetballen, basketten, boksen, aan parcours doen, dansen, lopen en plezier maken. We werken ook nog aan een skate-zone. Dat allemaal overdekt onder het E17 viaduct in Gentbrugge.
+                                Corri d'Or is de urban spot in Gentbrugge waar de stad écht tot leven komt. Onder het E17-viaduct vind je een plek om te bewegen, te chillen, en samen te komen. Voetballen, basketten, dansen, lopen of gewoon genieten — hier kan het allemaal.
                             </p>
                             <p class="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-                                Dagelijks razen duizenden auto's over het viaduct in Gentbrugge, terwijl er onder het viaduct een groot, braakliggend terrein ligt naast de (bus)parking. Wij zagen in deze unieke locatie het perfecte potentieel voor een urban sporthub.
+                                Terwijl dagelijks duizenden auto's over het viaduct razen, ligt er onder diezelfde brug een verborgen parel: een terrein dat lang braakliggend lag met ongekende mogelijkheden. Wij zien hier de kans om van die plek een levendige urban hub te maken waar creativiteit en energie samenkomen.
                             </p>
                             <p class="text-lg md:text-xl text-gray-700 leading-relaxed">
-                                In het voorjaar van 2025 kan je er ook terecht voor een drankje en voor leuke evenementen in samenwerking met de buurt. We willen van deze onbestemde plek een bruisende ontmoetingsruimte maken waar iedereen zich thuis voelt.
+                                Vanaf 2025 kan je hier terecht voor een drankje en verschillende events met en voor de buurt. Corri d'Or wordt een bruisende plek waar iedereen welkom is en zich thuis voelt.
                             </p>
                         </div>
                         
@@ -218,7 +243,7 @@
                         <div class="flex justify-center">
                             <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
                                 <video class="w-full h-auto rounded-2xl shadow-lg" autoplay muted loop>
-                                    <source src="/public/AnimatieFlyer.mp4" type="video/mp4">
+                                    <source src="./public/AnimatieFlyer.mp4" type="video/mp4">
                                     Je browser ondersteunt geen video.
                                 </video>
                             </div>
@@ -227,64 +252,11 @@
                 </div>
             </section>
 
-            <!-- History Section -->
-            <section id="history" class="py-20 px-4 section-gradient-2">
-                <div class="max-w-6xl mx-auto">
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
-                        Het Verhaal van Corridor
-                    </h2>
-                    <div class="grid md:grid-cols-2 gap-8 mb-12">
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-8 card-hover">
-                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Van Braakliggend Terrein tot Urban Hub</h3>
-                            <p class="text-gray-700 mb-4">
-                                Jongeren en buurtbewoners hebben nood aan een overdekte plek om te sporten en elkaar te ontmoeten. Daarom willen we hier een veelzijdige ruimte creëren voor overdekt skaten, rolschaatsen en basketbal.
-                            </p>
-                            <p class="text-gray-700">
-                                Daarnaast leggen we kunstgrasmatten aan voor voetbal en voorzien we een zone voor toegelaten graffiti. Ons doel is een plek te maken voor multifunctioneel gebruik, waar iedereen welkom is.
-                            </p>
-                        </div>
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-8 card-hover">
-                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Grote Ambities</h3>
-                            <p class="text-gray-700 mb-4">
-                                Met een oppervlakte van maar liefst <strong>19.500 m²</strong> hebben we grote ambities en plannen. We willen minstens 10 jaar aan de slag blijven en dromen van uitbreidingen zoals minigolf en een BMX-parcours.
-                            </p>
-                            <p class="text-gray-700">
-                                Tegelijk geven we het project de tijd en ruimte om organisch te groeien. Dit project bouwt voort op het werk van een bewonersgroep die vorig jaar een eerste stap zette via het burgerbudget.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="bg-white/40 backdrop-blur-sm rounded-3xl p-8 text-center card-hover">
-                        <div class="w-16 h-16 mx-auto mb-4 text-gray-600">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Leerecosysteem</h3>
-                        <p class="text-gray-700 mb-6">
-                            Deze plek fungeert ook als leerecosysteem, ondersteund door het Europees programma WSE. Samen met organisaties en vrijwilligers bouwen we een netwerk uit dat de ruimte gebruikt als springplank naar levenslang leren en uitwisseling.
-                        </p>
-                        <a href="/public/corridorGeschiedenis.pdf" target="_blank" class="inline-flex items-center px-6 py-3 bg-white/60 hover:bg-white/80 rounded-full text-gray-800 font-medium transition-all hover:scale-105">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            Volledige Geschiedenis (PDF)
-                        </a>
-                        
-                        <!-- Floating GIF positioned to bridge sections -->
-                        <div class="relative">
-                            <video id="floating-gif" class="floating-gif absolute z-20" autoplay muted loop>
-                                <source src="/public/corridorGif.mp4" type="video/mp4">
-                            </video>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <!-- Parts Section -->
-            <section id="parts" class="py-20 px-4 section-gradient-3">
+            <section id="parts" class="py-20 px-4 section-gradient-2">
                 <div class="max-w-6xl mx-auto">
                     <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
-                        Onze Onderdelen
+                        Zones
                     </h2>
                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <!-- Voetbal -->
@@ -373,6 +345,59 @@
                 </div>
             </section>
 
+            <!-- History Section -->
+            <section id="history" class="py-20 px-4 section-gradient-3">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
+                        Het Verhaal van Corridor
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-8 mb-12">
+                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-8 card-hover">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Van Braakliggend Terrein tot Urban Hub</h3>
+                            <p class="text-gray-700 mb-4">
+                                Jongeren en buurtbewoners hebben nood aan een overdekte plek om te sporten en elkaar te ontmoeten. Daarom willen we hier een veelzijdige ruimte creëren voor overdekt skaten, rolschaatsen en basketbal.
+                            </p>
+                            <p class="text-gray-700">
+                                Daarnaast leggen we kunstgrasmatten aan voor voetbal en voorzien we een zone voor toegelaten graffiti. Ons doel is een plek te maken voor multifunctioneel gebruik, waar iedereen welkom is.
+                            </p>
+                        </div>
+                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-8 card-hover">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Grote Ambities</h3>
+                            <p class="text-gray-700 mb-4">
+                                Met een oppervlakte van maar liefst <strong>19.500 m²</strong> hebben we grote ambities en plannen. We willen minstens 10 jaar aan de slag blijven en dromen van uitbreidingen zoals minigolf en een BMX-parcours.
+                            </p>
+                            <p class="text-gray-700">
+                                Tegelijk geven we het project de tijd en ruimte om organisch te groeien. Dit project bouwt voort op het werk van een bewonersgroep die vorig jaar een eerste stap zette via het burgerbudget.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-white/40 backdrop-blur-sm rounded-3xl p-8 text-center card-hover">
+                        <div class="w-16 h-16 mx-auto mb-4 text-gray-600">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Leerecosysteem</h3>
+                        <p class="text-gray-700 mb-6">
+                            Deze plek fungeert ook als leerecosysteem, ondersteund door het Europees programma WSE. Samen met organisaties en vrijwilligers bouwen we een netwerk uit dat de ruimte gebruikt als springplank naar levenslang leren en uitwisseling.
+                        </p>
+                        <a href="./public/corridorGeschiedenis.pdf" target="_blank" class="inline-flex items-center px-6 py-3 bg-white/60 hover:bg-white/80 rounded-full text-gray-800 font-medium transition-all hover:scale-105">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Volledige Geschiedenis (PDF)
+                        </a>
+                        
+                        <!-- Floating GIF positioned to bridge sections -->
+                        <div class="relative">
+                            <video id="floating-gif" class="floating-gif absolute z-20" autoplay muted loop>
+                                <source src="./public/corridorGif.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Contact Section -->
             <section id="contact" class="py-20 px-4 section-gradient-4">
                 <div class="max-w-6xl mx-auto">
@@ -387,11 +412,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Locatie</h3>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Adres</h3>
                             <p class="text-gray-700">
                                 Onder het E17 viaduct<br>
-                                Gentbrugge<br>
-                                9050 Gent
+                                einde Driebeekstraat<br>
+                                9050 Gentbrugge
                             </p>
                         </div>
                         
@@ -424,34 +449,51 @@
                         </div>
                     </div>
                     
+                    <!-- Cost Section -->
+                    <div class="bg-white/40 backdrop-blur-sm rounded-3xl p-8 text-center card-hover mb-8">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">Wat kost dat?</h3>
+                        <p class="text-gray-700 text-lg">
+                            Het is een gratis toegankelijke overdekte plaats waar je altijd terecht kan. Voor bepaalde georganiseerde activiteiten kan er inschrijvingsgeld gevraagd worden.
+                        </p>
+                    </div>
+                    
                     <!-- Partnerships Section -->
                     <div class="bg-white/40 backdrop-blur-sm rounded-3xl p-8 text-center card-hover">
                         <h3 class="text-2xl font-bold text-gray-800 mb-6">Onze Partners</h3>
                         <p class="text-gray-700 mb-4">
-                            Corridor is een samenwerking tussen <strong>Sportaround</strong>, <strong>Ghent Basketball</strong>, <strong>Skateboard Academy</strong> en <strong>FROS</strong>, met de ondersteuning van Artevelde Hogeschool.
+                            Het ecosysteem Corri d'Or bestaat uit partners, buurtbewoners, sporters, jongeren, samen met iedereen creëren we warme welkomplek.
                         </p>
                         <p class="text-gray-700 mb-4">
-                            We werken ook nauw samen met Flow de Gand, Asgaard, de volkstuinen en de buurtbewoners om deze droom waar te maken.
+                            Deze organisaties zijn betrokken in het leerecosysteem: <strong>Sportaround</strong>, <strong>Ghent Basketball</strong>, <strong>Skateboard Academy</strong>, <strong>Lejo vzw</strong> en <strong>FROS</strong> met de ondersteuning van <strong>Arteveldehogeschool</strong> en <strong>Matthy Zighem</strong>.
+                        </p>
+                        <p class="text-gray-700 mb-4">
+                            We werken nauw samen met <strong>RC17</strong>, <strong>Flow de Gand</strong>, <strong>Asgaard</strong>, <strong>de vierde zaal</strong>, <strong>de volkstuinen</strong> en de oorspronkelijke wijkbudget indieners om deze droom waar te maken.
                         </p>
                         <p class="text-sm text-gray-600 mb-6">
-                            Corridor wordt mede mogelijk gemaakt door het <strong>Fonds Tijdelijke invullingen van Stad Gent</strong>, de <strong>Warmste Week</strong> en <strong>Streekfonds Oost-Vlaanderen</strong>.
+                            Corridor wordt mede mogelijk gemaakt door het <strong>Fonds Tijdelijke invullingen van Stad Gent</strong>, de <strong>Warmste Week</strong>, <strong>Streekfonds Oost-Vlaanderen</strong> en <strong>Europa WSE</strong>.
                         </p>
                         
                         <!-- Download Resources -->
                         <div class="flex flex-wrap justify-center gap-4">
-                            <a href="/public/Ontwerp flyer VOORKANT 9.O na FB.pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
+                            <a href="./public/Ontwerp flyer VOORKANT 9.O na FB.pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Flyer Voorkant
+                                Programma Voorkant
                             </a>
-                            <a href="/public/Ontwerp flyer ACHTERKANT 10.0 na FB .pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
+                            <a href="./public/Ontwerp flyer ACHTERKANT 10.0 na FB .pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Flyer Achterkant
+                                Programma Achterkant
                             </a>
-                            <a href="/public/Logo corridor OFFICIEEL AI OPGEKUIST.pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
+                            <a href="./public/herfstplanning.png" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Herfstplanning
+                            </a>
+                            <a href="./public/Logo corridor OFFICIEEL AI OPGEKUIST.pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
@@ -463,13 +505,13 @@
             </section>
                 
             <!-- Footer -->
-            <footer id="footer" class="py-12 px-4 relative" style="background-image: url('/public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
+            <footer id="footer" class="py-12 px-4 relative" style="background-image: url('./public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
                 <!-- Overlay for better text readability -->
                 <div class="absolute inset-0 bg-black/50"></div>
                 <div class="max-w-4xl mx-auto text-center relative z-10">
                     <div class="mb-8">
                         <div class="w-16 h-16 mx-auto organic-shape shadow-lg mb-4 bg-white/90 backdrop-blur-sm flex items-center justify-center">
-                            <img src="/public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain">
+                            <img src="./public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain">
                         </div>
                         <h3 class="text-3xl font-bold text-white graffiti-text mb-4">CORRIDOR</h3>
                         <p class="text-white/90">Urban Sport Hub van Gentbrugge - Onder het E17 viaduct</p>
