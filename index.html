@@ -166,8 +166,11 @@
         <div class="relative z-10">
             <!-- Hero Section -->
             <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden">
+                <!-- Fallback Background Image -->
+                <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0" style="background-image: url('./public/FlyerVoorkant.png');"></div>
+                
                 <!-- Video Background -->
-                <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover z-0" id="hero-video">
+                <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover z-0" id="hero-video" style="display: none;">
                     <source src="./public/VideoGuillaume.mp4" type="video/mp4">
                     Je browser ondersteunt geen video.
                 </video>
@@ -641,6 +644,17 @@
         // Force video autoplay on user interaction
         const heroVideo = document.getElementById('hero-video');
         if (heroVideo) {
+            // Check if video can load
+            heroVideo.addEventListener('loadeddata', () => {
+                console.log('Video loaded successfully');
+                heroVideo.style.display = 'block';
+            });
+            
+            heroVideo.addEventListener('error', (e) => {
+                console.log('Video failed to load, using fallback image');
+                heroVideo.style.display = 'none';
+            });
+
             // Try to play video when user interacts with the page
             document.addEventListener('click', () => {
                 heroVideo.play().catch(e => console.log('Video autoplay failed:', e));
