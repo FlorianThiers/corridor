@@ -1,0 +1,385 @@
+<div class="page-background">
+    <section class="py-20 px-4 min-h-screen">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
+                    Corristories Beheren
+                </h1>
+                <a href="#/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    ← Terug
+                </a>
+            </div>
+
+            <div id="admin-access-denied" class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg text-center hidden mb-6">
+                <p class="font-bold">Toegang Geweigerd</p>
+                <p>Je hebt geen admin rechten om deze pagina te bekijken.</p>
+            </div>
+
+            <div id="admin-content" class="hidden">
+                <!-- Add New Story Button -->
+                <div class="mb-6">
+                    <button onclick="openStoryModal()" class="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium">
+                        + Nieuw Verhaal
+                    </button>
+                </div>
+
+                <!-- Stories List -->
+                <div id="stories-list" class="space-y-4">
+                    <p class="text-gray-600 text-center">Corristories worden geladen...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Modal -->
+    <div id="story-modal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="story-modal-title" class="text-2xl font-bold text-gray-800">Nieuw Verhaal</h2>
+                <button onclick="closeStoryModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="story-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Titel *</label>
+                    <input type="text" id="story-title" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Inhoud *</label>
+                    <textarea id="story-content" rows="6" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"></textarea>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Auteur Naam</label>
+                        <input type="text" id="story-author" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Zone</label>
+                        <select id="story-zone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                            <option value="">Geen zone</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="story-published" class="w-5 h-5 text-pink-500 rounded focus:ring-pink-500">
+                    <label for="story-published" class="text-sm font-medium text-gray-700 cursor-pointer">Gepubliceerd</label>
+                </div>
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium">
+                        Opslaan
+                    </button>
+                    <button type="button" onclick="closeStoryModal()" class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                        Annuleren
+                    </button>
+                </div>
+            </form>
+            <div id="story-error" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg hidden"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Use window object to prevent redeclaration errors when scripts are re-executed
+if (!window.adminCorristories) {
+    window.adminCorristories = {
+        currentStoryId: null,
+        zones: []
+    };
+}
+
+// Check admin access
+function checkAdminAccess() {
+    const isAdmin = window.authManager && window.authManager.isAdmin();
+    const adminContent = document.getElementById('admin-content');
+    const adminAccessDenied = document.getElementById('admin-access-denied');
+    
+    if (isAdmin) {
+        if (adminContent) adminContent.classList.remove('hidden');
+        if (adminAccessDenied) adminAccessDenied.classList.add('hidden');
+        loadZones();
+        loadStories();
+    } else {
+        if (adminContent) adminContent.classList.add('hidden');
+        if (adminAccessDenied) adminAccessDenied.classList.remove('hidden');
+    }
+}
+
+// Load zones for dropdown
+async function loadZones() {
+    try {
+        if (window.dbManager) {
+            window.adminCorristories.zones = await window.dbManager.getZones();
+            const zoneSelect = document.getElementById('story-zone');
+            if (zoneSelect) {
+                zoneSelect.innerHTML = '<option value="">Geen zone</option>' + 
+                    window.adminCorristories.zones.map(zone => `<option value="${zone.id}">Zone ${zone.zone_number}: ${zone.name}</option>`).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading zones:', error);
+    }
+}
+
+// Load all stories (including unpublished for admin)
+async function loadStories() {
+    try {
+        if (window.dbManager && window.dbManager.supabase) {
+            // Get all stories, not just published ones
+            const { data: stories, error } = await window.dbManager.supabase
+                .from('corristories')
+                .select('*, zones(*)')
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            const container = document.getElementById('stories-list');
+            if (container) {
+                if (!stories || stories.length === 0) {
+                    container.innerHTML = '<p class="text-gray-600 text-center">Geen verhalen gevonden.</p>';
+                } else {
+                    container.innerHTML = stories.map(story => {
+                        const zoneName = story.zones ? `Zone ${story.zones.zone_number}: ${story.zones.name}` : 'Geen zone';
+                        const publishedBadge = story.is_published 
+                            ? '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Gepubliceerd</span>'
+                            : '<span class="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">Concept</span>';
+                        return `
+                            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 card-hover">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2">${story.title}</h3>
+                                        <p class="text-gray-700 mb-2">${story.content.substring(0, 150)}${story.content.length > 150 ? '...' : ''}</p>
+                                        <div class="flex items-center gap-4 text-sm text-gray-600">
+                                            <span>Door: ${story.author_name || 'Anoniem'}</span>
+                                            <span>📍 ${zoneName}</span>
+                                            ${publishedBadge}
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="editStory('${story.id}')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                                            Bewerken
+                                        </button>
+                                        <button onclick="deleteStory('${story.id}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
+                                            Verwijderen
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading stories:', error);
+        const container = document.getElementById('stories-list');
+        if (container) {
+            container.innerHTML = `<p class="text-red-600 text-center">Fout bij laden: ${error.message}</p>`;
+        }
+    }
+}
+
+// Open modal for new story
+function openStoryModal(storyId = null) {
+    window.adminCorristories.currentStoryId = storyId;
+    const modal = document.getElementById('story-modal');
+    const form = document.getElementById('story-form');
+    const title = document.getElementById('story-modal-title');
+    const errorDiv = document.getElementById('story-error');
+    
+    if (errorDiv) errorDiv.classList.add('hidden');
+    
+    if (storyId) {
+        title.textContent = 'Verhaal Bewerken';
+        loadStoryData(storyId);
+    } else {
+        title.textContent = 'Nieuw Verhaal';
+        form.reset();
+    }
+    
+    if (modal) modal.classList.add('active');
+}
+
+// Load story data for editing
+async function loadStoryData(storyId) {
+    try {
+        if (window.dbManager && window.dbManager.supabase) {
+            const { data: story, error } = await window.dbManager.supabase
+                .from('corristories')
+                .select('*')
+                .eq('id', storyId)
+                .single();
+            
+            if (error) throw error;
+            
+            if (story) {
+                document.getElementById('story-title').value = story.title || '';
+                document.getElementById('story-content').value = story.content || '';
+                document.getElementById('story-author').value = story.author_name || '';
+                document.getElementById('story-zone').value = story.zone_id || '';
+                document.getElementById('story-published').checked = story.is_published || false;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading story:', error);
+        showError('Fout bij laden van verhaal');
+    }
+}
+
+// Close modal
+function closeStoryModal() {
+    const modal = document.getElementById('story-modal');
+    if (modal) modal.classList.remove('active');
+    window.adminCorristories.currentStoryId = null;
+    const form = document.getElementById('story-form');
+    if (form) form.reset();
+}
+
+// Edit story
+function editStory(storyId) {
+    openStoryModal(storyId);
+}
+
+// Delete story
+async function deleteStory(storyId) {
+    if (!confirm('Weet je zeker dat je dit verhaal wilt verwijderen?')) {
+        return;
+    }
+    
+    try {
+        await window.dbManager.deleteCorristory(storyId);
+        loadStories();
+    } catch (error) {
+        console.error('Error deleting story:', error);
+        alert('Fout bij verwijderen: ' + error.message);
+    }
+}
+
+// Show error
+function showError(message) {
+    const errorDiv = document.getElementById('story-error');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+// Initialize page - called directly and on DOMContentLoaded
+function initializeAdminCorristories() {
+    const form = document.getElementById('story-form');
+    if (form) {
+        // Remove existing listener to prevent duplicates
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('story-title').value;
+            const content = document.getElementById('story-content').value;
+            const authorName = document.getElementById('story-author').value;
+            const zoneId = document.getElementById('story-zone').value;
+            const isPublished = document.getElementById('story-published').checked;
+            
+            const storyData = {
+                title,
+                content,
+                author_name: authorName || null,
+                zone_id: zoneId || null,
+                is_published: isPublished
+            };
+            
+            try {
+                if (window.adminCorristories.currentStoryId) {
+                    await window.dbManager.updateCorristory(window.adminCorristories.currentStoryId, storyData);
+                } else {
+                    await window.dbManager.createCorristory(storyData);
+                }
+                closeStoryModal();
+                loadStories();
+            } catch (error) {
+                console.error('Error saving story:', error);
+                showError('Fout bij opslaan: ' + error.message);
+            }
+        });
+    }
+    
+    checkAdminAccess();
+}
+
+// Call immediately (for router navigation)
+initializeAdminCorristories();
+
+// Also call on DOMContentLoaded (for direct page loads)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAdminCorristories);
+} else {
+    // Already loaded, call immediately
+    initializeAdminCorristories();
+}
+
+// Update when auth state changes
+if (window.authManager) {
+    const originalUpdateUI = window.authManager.updateUI;
+    window.authManager.updateUI = function() {
+        if (originalUpdateUI) originalUpdateUI.call(this);
+        if (window.location.hash === '#/admin/corristories') {
+            checkAdminAccess();
+        }
+    };
+}
+</script>
+
+    <!-- Footer -->
+    <footer id="footer" class="py-12 px-4 relative" style="background-image: url('../public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
+        <!-- Overlay for better text readability -->
+        <div class="absolute inset-0 bg-black/50"></div>
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="mb-8">
+                <div class="w-16 h-16 mx-auto organic-shape shadow-lg mb-4 bg-white/90 backdrop-blur-sm flex items-center justify-center">
+                    <img src="../public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain">
+                </div>
+                <h3 class="text-3xl font-bold text-white graffiti-text mb-4">CORRIDOR</h3>
+                <p class="text-white/90">Urban Sport Hub van Gentbrugge - Onder het E17 viaduct</p>
+            </div>
+            
+            <div class="flex justify-center space-x-6 mb-8">
+                <a href="https://www.facebook.com/corridor.gentbrugge" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
+                    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                <a href="https://www.instagram.com/corridor9050/" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
+                    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </a>
+                <a href="https://www.sportaround.be" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                    </svg>
+                </a>
+            </div>
+            
+            <div class="border-t border-white/30 pt-6">
+                <p class="text-white/90 text-sm mb-2">
+                    © 2024 Sportaround - Corridor Gentbrugge
+                </p>
+                <p class="text-white/80 text-xs mb-4">
+                    Emanuel Hielstraat 106, 9050 Gentbrugge | KBO: 0568.625.876
+                </p>
+                <div class="border-t border-white/20 pt-4">
+                    <p class="text-white/70 text-xs">
+                        Website ontwerp & ontwikkeling door 
+                        <a href="https://florian-tau.vercel.app" target="_blank" class="text-white/80 hover:text-white font-medium transition-colors underline decoration-dotted underline-offset-2">
+                            Florian Thiers
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+

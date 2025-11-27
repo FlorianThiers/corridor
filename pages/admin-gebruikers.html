@@ -1,0 +1,416 @@
+<div class="page-background">
+    <section class="py-20 px-4 min-h-screen">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
+                    Gebruikers Beheren
+                </h1>
+                <a href="#/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    ← Terug
+                </a>
+            </div>
+
+            <div id="admin-access-denied" class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg text-center hidden mb-6">
+                <p class="font-bold">Toegang Geweigerd</p>
+                <p>Je hebt geen admin rechten om deze pagina te bekijken.</p>
+            </div>
+
+            <div id="admin-content" class="hidden">
+                <!-- Users List -->
+                <div id="users-list" class="space-y-4">
+                    <p class="text-gray-600 text-center">Gebruikers worden geladen...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Modal -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="user-modal-title" class="text-2xl font-bold text-gray-800">Gebruiker Bewerken</h2>
+                <button onclick="closeUserModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="user-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="user-email" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                    <p class="text-xs text-gray-500 mt-1">Email kan niet worden gewijzigd</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Naam</label>
+                    <input type="text" id="user-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rol *</label>
+                    <select id="user-role" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                        <option value="user">Gebruiker</option>
+                        <option value="programmer">Programmeur</option>
+                        <option value="bestuurder">Bestuurder</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium">
+                        Opslaan
+                    </button>
+                    <button type="button" onclick="closeUserModal()" class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                        Annuleren
+                    </button>
+                </div>
+            </form>
+            <div id="user-error" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg hidden"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Use window object to prevent redeclaration errors when scripts are re-executed
+if (!window.adminUsers) {
+    window.adminUsers = {
+        currentUserId: null
+    };
+}
+
+// Check admin access
+function checkAdminAccess() {
+    const isAdmin = window.authManager && window.authManager.isAdmin();
+    const adminContent = document.getElementById('admin-content');
+    const adminAccessDenied = document.getElementById('admin-access-denied');
+    
+    if (isAdmin) {
+        if (adminContent) adminContent.classList.remove('hidden');
+        if (adminAccessDenied) adminAccessDenied.classList.add('hidden');
+        loadUsers();
+    } else {
+        if (adminContent) adminContent.classList.add('hidden');
+        if (adminAccessDenied) adminAccessDenied.classList.remove('hidden');
+    }
+}
+
+// Load users
+async function loadUsers() {
+    try {
+        if (window.dbManager) {
+            const users = await window.dbManager.getUsers();
+            const container = document.getElementById('users-list');
+            if (container) {
+                if (!users || users.length === 0) {
+                    container.innerHTML = '<p class="text-gray-600 text-center">Geen gebruikers gevonden.</p>';
+                } else {
+                    const roleNames = {
+                        'admin': 'Admin',
+                        'bestuurder': 'Bestuurder',
+                        'programmer': 'Programmeur',
+                        'user': 'Gebruiker'
+                    };
+                    
+                    container.innerHTML = users.map(user => {
+                        const roleDisplay = roleNames[user.role] || 'Gebruiker';
+                        const roleColors = {
+                            'admin': 'bg-red-100 text-red-700',
+                            'bestuurder': 'bg-blue-100 text-blue-700',
+                            'programmer': 'bg-purple-100 text-purple-700',
+                            'user': 'bg-gray-100 text-gray-700'
+                        };
+                        const roleColor = roleColors[user.role] || 'bg-gray-100 text-gray-700';
+                        
+                        return `
+                            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 card-hover">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2">${user.full_name || 'Geen naam'}</h3>
+                                        <p class="text-gray-700 mb-2">${user.email}</p>
+                                        <span class="px-2 py-1 ${roleColor} rounded-full text-xs font-medium">${roleDisplay}</span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="editUser('${user.id}')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                                            Bewerken
+                                        </button>
+                                        ${user.role !== 'admin' && user.role !== 'programmer' ? `
+                                            <button onclick="deleteUser('${user.id}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
+                                                Verwijderen
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        const container = document.getElementById('users-list');
+        if (container) {
+            container.innerHTML = `<p class="text-red-600 text-center">Fout bij laden: ${error.message}</p>`;
+        }
+    }
+}
+
+// Open modal for editing user
+function openUserModal(userId) {
+    window.adminUsers.currentUserId = userId;
+    const modal = document.getElementById('user-modal');
+    const errorDiv = document.getElementById('user-error');
+    
+    if (errorDiv) errorDiv.classList.add('hidden');
+    
+    loadUserData(userId);
+    
+    if (modal) modal.classList.add('active');
+}
+
+// Load user data for editing
+async function loadUserData(userId) {
+    try {
+        const user = await window.dbManager.getUser(userId);
+        
+        if (user) {
+            document.getElementById('user-email').value = user.email || '';
+            document.getElementById('user-name').value = user.full_name || '';
+            
+            const roleSelect = document.getElementById('user-role');
+            if (roleSelect) {
+                roleSelect.value = user.role || 'user';
+                
+                // Disable role select if user is a programmer
+                if (user.role === 'programmer') {
+                    roleSelect.disabled = true;
+                    roleSelect.title = 'De rol van een programmeur kan niet worden gewijzigd.';
+                } else {
+                    roleSelect.disabled = false;
+                    roleSelect.title = '';
+                    
+                    // Check if current user can create programmers
+                    const currentUser = window.authManager?.getCurrentUser();
+                    if (currentUser?.role !== 'programmer') {
+                        // Remove programmer option if current user is not a programmer
+                        const programmerOption = roleSelect.querySelector('option[value="programmer"]');
+                        if (programmerOption) {
+                            programmerOption.remove();
+                        }
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading user:', error);
+        showError('Fout bij laden van gebruiker');
+    }
+}
+
+// Close modal
+function closeUserModal() {
+    const modal = document.getElementById('user-modal');
+    if (modal) modal.classList.remove('active');
+    window.adminUsers.currentUserId = null;
+    const form = document.getElementById('user-form');
+    if (form) form.reset();
+    
+    // Reset role select
+    const roleSelect = document.getElementById('user-role');
+    if (roleSelect) {
+        roleSelect.disabled = false;
+        roleSelect.title = '';
+        // Restore programmer option if it was removed
+        const programmerOption = roleSelect.querySelector('option[value="programmer"]');
+        if (!programmerOption) {
+            const bestuurderOption = roleSelect.querySelector('option[value="bestuurder"]');
+            const newOption = document.createElement('option');
+            newOption.value = 'programmer';
+            newOption.textContent = 'Programmeur';
+            if (bestuurderOption) {
+                roleSelect.insertBefore(newOption, bestuurderOption);
+            } else {
+                roleSelect.appendChild(newOption);
+            }
+        }
+    }
+}
+
+// Edit user
+function editUser(userId) {
+    openUserModal(userId);
+}
+
+// Delete user
+async function deleteUser(userId) {
+    try {
+        // First check if user is a programmer or admin
+        const users = await window.dbManager.getUsers();
+        const user = users.find(u => u.id === userId);
+        
+        if (!user) {
+            alert('Gebruiker niet gevonden.');
+            return;
+        }
+        
+        if (user.role === 'programmer') {
+            alert('Programmeurs kunnen niet worden verwijderd.');
+            return;
+        }
+        
+        if (user.role === 'admin') {
+            alert('Admins kunnen niet worden verwijderd.');
+            return;
+        }
+        
+        if (!confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?')) {
+            return;
+        }
+        
+        await window.dbManager.deleteUser(userId);
+        loadUsers();
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Fout bij verwijderen: ' + error.message);
+    }
+}
+
+// Show error
+function showError(message) {
+    const errorDiv = document.getElementById('user-error');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+// Initialize page - called directly and on DOMContentLoaded
+function initializeAdminUsers() {
+    const form = document.getElementById('user-form');
+    if (form) {
+        // Remove existing listener to prevent duplicates
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('user-name').value;
+            const role = document.getElementById('user-role').value;
+            
+            try {
+                // Check if user being edited is a programmer
+                const user = await window.dbManager.getUser(window.adminUsers.currentUserId);
+                if (!user) {
+                    showError('Gebruiker niet gevonden.');
+                    return;
+                }
+                
+                // Prevent changing programmer role
+                if (user.role === 'programmer' && role !== 'programmer') {
+                    showError('De rol van een programmeur kan niet worden gewijzigd.');
+                    return;
+                }
+                
+                // Prevent non-programmers from creating programmers
+                const currentUser = window.authManager?.getCurrentUser();
+                if (role === 'programmer' && currentUser?.role !== 'programmer') {
+                    showError('Alleen programmeurs kunnen andere programmeurs aanmaken.');
+                    return;
+                }
+                
+                const userData = {
+                    full_name: fullName || null,
+                    role: role
+                };
+                
+                await window.dbManager.updateUser(window.adminUsers.currentUserId, userData);
+                closeUserModal();
+                loadUsers();
+                
+                // Reload auth to update role
+                if (window.authManager) {
+                    await window.authManager.loadUserProfile(window.adminUsers.currentUserId);
+                }
+            } catch (error) {
+                console.error('Error saving user:', error);
+                showError('Fout bij opslaan: ' + error.message);
+            }
+        });
+    }
+    
+    checkAdminAccess();
+}
+
+// Call immediately (for router navigation)
+initializeAdminUsers();
+
+// Also call on DOMContentLoaded (for direct page loads)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAdminUsers);
+} else {
+    // Already loaded, call immediately
+    initializeAdminUsers();
+}
+
+// Update when auth state changes
+if (window.authManager) {
+    const originalUpdateUI = window.authManager.updateUI;
+    window.authManager.updateUI = function() {
+        if (originalUpdateUI) originalUpdateUI.call(this);
+        if (window.location.hash === '#/admin/gebruikers') {
+            checkAdminAccess();
+        }
+    };
+}
+</script>
+
+    <!-- Footer -->
+    <footer id="footer" class="py-12 px-4 relative" style="background-image: url('../public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
+        <!-- Overlay for better text readability -->
+        <div class="absolute inset-0 bg-black/50"></div>
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="mb-8">
+                <div class="w-16 h-16 mx-auto organic-shape shadow-lg mb-4 bg-white/90 backdrop-blur-sm flex items-center justify-center">
+                    <img src="../public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain">
+                </div>
+                <h3 class="text-3xl font-bold text-white graffiti-text mb-4">CORRIDOR</h3>
+                <p class="text-white/90">Urban Sport Hub van Gentbrugge - Onder het E17 viaduct</p>
+            </div>
+            
+            <div class="flex justify-center space-x-6 mb-8">
+                <a href="https://www.facebook.com/corridor.gentbrugge" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
+                    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                <a href="https://www.instagram.com/corridor9050/" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
+                    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </a>
+                <a href="https://www.sportaround.be" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                    </svg>
+                </a>
+            </div>
+            
+            <div class="border-t border-white/30 pt-6">
+                <p class="text-white/90 text-sm mb-2">
+                    © 2024 Sportaround - Corridor Gentbrugge
+                </p>
+                <p class="text-white/80 text-xs mb-4">
+                    Emanuel Hielstraat 106, 9050 Gentbrugge | KBO: 0568.625.876
+                </p>
+                <div class="border-t border-white/20 pt-4">
+                    <p class="text-white/70 text-xs">
+                        Website ontwerp & ontwikkeling door 
+                        <a href="https://florian-tau.vercel.app" target="_blank" class="text-white/80 hover:text-white font-medium transition-colors underline decoration-dotted underline-offset-2">
+                            Florian Thiers
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
