@@ -1,0 +1,407 @@
+<div class="page-background">
+    <section class="py-20 px-4 min-h-screen">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
+                    Evenementen Beheren
+                </h1>
+                <a href="#/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    ← Terug
+                </a>
+            </div>
+
+            <div id="admin-access-denied" class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg text-center hidden mb-6">
+                <p class="font-bold">Toegang Geweigerd</p>
+                <p>Je hebt geen admin rechten om deze pagina te bekijken.</p>
+            </div>
+
+            <div id="admin-content" class="hidden">
+                <!-- Add New Event Button -->
+                <div class="mb-6">
+                    <button onclick="openEventModal()" class="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium">
+                        + Nieuw Evenement
+                    </button>
+                </div>
+
+                <!-- Events List -->
+                <div id="events-list" class="space-y-4">
+                    <p class="text-gray-600 text-center">Evenementen worden geladen...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Event Modal -->
+    <div id="event-modal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="event-modal-title" class="text-2xl font-bold text-gray-800">Nieuw Evenement</h2>
+                <button onclick="closeEventModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="event-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Titel *</label>
+                    <input type="text" id="event-title" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Beschrijving</label>
+                    <textarea id="event-description" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"></textarea>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Datum & Tijd *</label>
+                        <input type="datetime-local" id="event-start" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Eind Datum & Tijd</label>
+                        <input type="datetime-local" id="event-end" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Zone</label>
+                        <select id="event-zone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                            <option value="">Geen zone</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="event-for-girls" class="w-5 h-5 text-pink-500 rounded focus:ring-pink-500">
+                            <span class="text-sm font-medium text-gray-700">Corrigirls Evenement</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium">
+                        Opslaan
+                    </button>
+                    <button type="button" onclick="closeEventModal()" class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                        Annuleren
+                    </button>
+                </div>
+            </form>
+            <div id="event-error" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg hidden"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Use window object to prevent redeclaration errors when scripts are re-executed
+if (!window.adminEvents) {
+    window.adminEvents = {
+        currentEventId: null,
+        zones: []
+    };
+}
+
+// Check admin access
+function checkAdminAccess() {
+    const isAdmin = window.authManager && window.authManager.isAdmin();
+    const adminContent = document.getElementById('admin-content');
+    const adminAccessDenied = document.getElementById('admin-access-denied');
+    
+    if (isAdmin) {
+        if (adminContent) adminContent.classList.remove('hidden');
+        if (adminAccessDenied) adminAccessDenied.classList.add('hidden');
+        loadZones();
+        loadEvents();
+    } else {
+        if (adminContent) adminContent.classList.add('hidden');
+        if (adminAccessDenied) adminAccessDenied.classList.remove('hidden');
+    }
+}
+
+// Load zones for dropdown
+async function loadZones() {
+    try {
+        if (window.dbManager) {
+            window.adminEvents.zones = await window.dbManager.getZones();
+            const zoneSelect = document.getElementById('event-zone');
+            if (zoneSelect) {
+                zoneSelect.innerHTML = '<option value="">Geen zone</option>' + 
+                    window.adminEvents.zones.map(zone => `<option value="${zone.id}">Zone ${zone.zone_number}: ${zone.name}</option>`).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading zones:', error);
+    }
+}
+
+// Load events
+async function loadEvents() {
+    try {
+        if (window.dbManager) {
+            const events = await window.dbManager.getAgendaItems();
+            const container = document.getElementById('events-list');
+            if (container) {
+                if (events.length === 0) {
+                    container.innerHTML = '<p class="text-gray-600 text-center">Geen evenementen gevonden.</p>';
+                } else {
+                    container.innerHTML = events.map(event => {
+                        const startDate = new Date(event.start_datetime);
+                        const endDate = event.end_datetime ? new Date(event.end_datetime) : null;
+                        const zoneName = event.zones ? `Zone ${event.zones.zone_number}: ${event.zones.name}` : 'Geen zone';
+                        const corrigirlsBadge = event.for_girls 
+                            ? '<span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">Corrigirls</span>'
+                            : '';
+                        return `
+                            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 card-hover ${event.for_girls ? 'border-l-4 border-pink-500' : ''}">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2">${event.title}</h3>
+                                        ${event.description ? `<p class="text-gray-700 mb-2">${event.description}</p>` : ''}
+                                        <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                                            <span>📅 ${startDate.toLocaleDateString('nl-NL')}</span>
+                                            <span>🕐 ${startDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}${endDate ? ` - ${endDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}` : ''}</span>
+                                        </div>
+                                        <div class="flex items-center gap-4 text-sm text-gray-600">
+                                            <span>📍 ${zoneName}</span>
+                                            ${corrigirlsBadge}
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="editEvent('${event.id}')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                                            Bewerken
+                                        </button>
+                                        <button onclick="deleteEvent('${event.id}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
+                                            Verwijderen
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading events:', error);
+        const container = document.getElementById('events-list');
+        if (container) {
+            container.innerHTML = `<p class="text-red-600 text-center">Fout bij laden: ${error.message}</p>`;
+        }
+    }
+}
+
+// Open modal for new event
+function openEventModal(eventId = null) {
+    window.adminEvents.currentEventId = eventId;
+    const modal = document.getElementById('event-modal');
+    const form = document.getElementById('event-form');
+    const title = document.getElementById('event-modal-title');
+    const errorDiv = document.getElementById('event-error');
+    
+    if (errorDiv) errorDiv.classList.add('hidden');
+    
+    if (eventId) {
+        if (title) title.textContent = 'Evenement Bewerken';
+        loadEventData(eventId);
+    } else {
+        if (title) title.textContent = 'Nieuw Evenement';
+        if (form) form.reset();
+        // Set default start time to now
+        const startInput = document.getElementById('event-start');
+        if (startInput) {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            startInput.value = now.toISOString().slice(0, 16);
+        }
+    }
+    
+    if (modal) modal.classList.add('active');
+}
+
+// Load event data for editing
+async function loadEventData(eventId) {
+    try {
+        const events = await window.dbManager.getAgendaItems();
+        const event = events.find(e => e.id === eventId);
+        
+        if (event) {
+            document.getElementById('event-title').value = event.title || '';
+            document.getElementById('event-description').value = event.description || '';
+            document.getElementById('event-zone').value = event.zone_id || '';
+            document.getElementById('event-for-girls').checked = event.for_girls || false;
+            
+            // Format datetime for input
+            const startDate = new Date(event.start_datetime);
+            startDate.setMinutes(startDate.getMinutes() - startDate.getTimezoneOffset());
+            document.getElementById('event-start').value = startDate.toISOString().slice(0, 16);
+            
+            if (event.end_datetime) {
+                const endDate = new Date(event.end_datetime);
+                endDate.setMinutes(endDate.getMinutes() - endDate.getTimezoneOffset());
+                document.getElementById('event-end').value = endDate.toISOString().slice(0, 16);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading event:', error);
+        showError('Fout bij laden van evenement');
+    }
+}
+
+// Close modal
+function closeEventModal() {
+    const modal = document.getElementById('event-modal');
+    if (modal) modal.classList.remove('active');
+    window.adminEvents.currentEventId = null;
+    const form = document.getElementById('event-form');
+    if (form) form.reset();
+}
+
+// Edit event
+function editEvent(eventId) {
+    openEventModal(eventId);
+}
+
+// Delete event
+async function deleteEvent(eventId) {
+    if (!confirm('Weet je zeker dat je dit evenement wilt verwijderen?')) {
+        return;
+    }
+    
+    try {
+        await window.dbManager.deleteAgendaItem(eventId);
+        loadEvents();
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        alert('Fout bij verwijderen: ' + error.message);
+    }
+}
+
+// Show error
+function showError(message) {
+    const errorDiv = document.getElementById('event-error');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+// Initialize page - called directly and on DOMContentLoaded
+function initializeAdminEvents() {
+    const form = document.getElementById('event-form');
+    if (form) {
+        // Remove existing listener to prevent duplicates
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('event-title').value;
+            const description = document.getElementById('event-description').value;
+            const start = document.getElementById('event-start').value;
+            const end = document.getElementById('event-end').value;
+            const zoneId = document.getElementById('event-zone').value;
+            const forGirls = document.getElementById('event-for-girls').checked;
+            
+            // Convert local datetime to ISO string
+            const startDatetime = start ? new Date(start).toISOString() : null;
+            const endDatetime = end ? new Date(end).toISOString() : null;
+            
+            const eventData = {
+                title,
+                description: description || null,
+                start_datetime: startDatetime,
+                end_datetime: endDatetime || null,
+                zone_id: zoneId || null,
+                for_girls: forGirls
+            };
+            
+            try {
+                if (window.adminEvents.currentEventId) {
+                    await window.dbManager.updateAgendaItem(window.adminEvents.currentEventId, eventData);
+                } else {
+                    await window.dbManager.createAgendaItem(eventData);
+                }
+                closeEventModal();
+                loadEvents();
+            } catch (error) {
+                console.error('Error saving event:', error);
+                showError('Fout bij opslaan: ' + error.message);
+            }
+        });
+    }
+    
+    checkAdminAccess();
+}
+
+// Call immediately (for router navigation)
+initializeAdminEvents();
+
+// Also call on DOMContentLoaded (for direct page loads)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAdminEvents);
+} else {
+    // Already loaded, call immediately
+    initializeAdminEvents();
+}
+
+// Update when auth state changes
+if (window.authManager) {
+    const originalUpdateUI = window.authManager.updateUI;
+    window.authManager.updateUI = function() {
+        if (originalUpdateUI) originalUpdateUI.call(this);
+        if (window.location.hash === '#/admin/evenementen') {
+            checkAdminAccess();
+        }
+    };
+}
+</script>
+
+    <!-- Footer -->
+    <footer id="footer" class="py-12 px-4 relative" style="background-image: url('../public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
+        <!-- Overlay for better text readability -->
+        <div class="absolute inset-0 bg-black/50"></div>
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="mb-8">
+                <div class="w-16 h-16 mx-auto organic-shape shadow-lg mb-4 bg-white/90 backdrop-blur-sm flex items-center justify-center">
+                    <img src="../public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain">
+                </div>
+                <h3 class="text-3xl font-bold text-white graffiti-text mb-4">CORRIDOR</h3>
+                <p class="text-white/90">Urban Sport Hub van Gentbrugge - Onder het E17 viaduct</p>
+            </div>
+            
+            <div class="flex justify-center space-x-6 mb-8">
+                <a href="https://www.facebook.com/corridor.gentbrugge" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
+                    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                <a href="https://www.instagram.com/corridor9050/" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
+                    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </a>
+                <a href="https://www.sportaround.be" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                    </svg>
+                </a>
+            </div>
+            
+            <div class="border-t border-white/30 pt-6">
+                <p class="text-white/90 text-sm mb-2">
+                    © 2024 Sportaround - Corridor Gentbrugge
+                </p>
+                <p class="text-white/80 text-xs mb-4">
+                    Emanuel Hielstraat 106, 9050 Gentbrugge | KBO: 0568.625.876
+                </p>
+                <div class="border-t border-white/20 pt-4">
+                    <p class="text-white/70 text-xs">
+                        Website ontwerp & ontwikkeling door 
+                        <a href="https://florian-tau.vercel.app" target="_blank" class="text-white/80 hover:text-white font-medium transition-colors underline decoration-dotted underline-offset-2">
+                            Florian Thiers
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+

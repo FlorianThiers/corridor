@@ -1,8 +1,16 @@
 {
   "name": "corridor-website",
-  "version": "1.0.0",
-  "description": "Corridor - Urban Sport Hub van Gentbrugge",
+  "version": "2.0.0",
+  "description": "Corridor - Urban Sport Hub van Gentbrugge met Supabase backend",
   "scripts": {
-    "build": "echo 'Static HTML site'"
+    "build": "node scripts/build-config.js",
+    "dev": "node scripts/build-config.js",
+    "postinstall": "node scripts/build-config.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1"
   }
 }

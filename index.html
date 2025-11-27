@@ -7,9 +7,11 @@
     <!-- Clean deployment -->
     <link rel="icon" type="image/png" href="./public/LogoCorridor.png">
     <link rel="apple-touch-icon" href="./public/LogoCorridor.png">
+    <!-- Tailwind CSS CDN (development only - for production use PostCSS/Tailwind CLI) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -54,7 +56,7 @@
             );
         }
         
-        /* Smooth section backgrounds */
+        /* Smooth section backgrounds - seamless transitions */
         .section-gradient-1 { 
             background: linear-gradient(180deg, 
                 rgba(255, 182, 193, 0.3) 0%,
@@ -90,8 +92,76 @@
                 rgba(221, 186, 255, 0.3) 100%
             ); 
         }
+        .section-gradient-6 { 
+            background: linear-gradient(180deg, 
+                rgba(221, 186, 255, 0.3) 0%,
+                rgba(240, 190, 230, 0.3) 50%,
+                rgba(255, 182, 193, 0.3) 100%
+            ); 
+        }
         
-        /* Background layers for future images - smoother transitions */
+        /* Page background wrapper - smooth gradient flow */
+        .page-background {
+            position: relative;
+            min-height: 100vh;
+            background: linear-gradient(180deg, 
+                rgba(255, 182, 193, 0.3) 0%,
+                rgba(255, 200, 189, 0.3) 8%,
+                rgba(255, 218, 185, 0.3) 16%,
+                rgba(255, 236, 185, 0.3) 24%,
+                rgba(255, 255, 186, 0.3) 32%,
+                rgba(220, 255, 193, 0.3) 40%,
+                rgba(186, 255, 201, 0.3) 48%,
+                rgba(186, 240, 228, 0.3) 56%,
+                rgba(186, 225, 255, 0.3) 64%,
+                rgba(203, 205, 255, 0.3) 72%,
+                rgba(221, 186, 255, 0.3) 80%,
+                rgba(240, 190, 230, 0.3) 88%,
+                rgba(255, 182, 193, 0.3) 100%
+            );
+        }
+
+        /* Corrigirls page - pink/purple gradient */
+        .page-background.corrigirls-bg {
+            background: linear-gradient(180deg, 
+                rgba(255, 182, 193, 0.4) 0%,
+                rgba(255, 192, 203, 0.4) 10%,
+                rgba(255, 200, 220, 0.4) 20%,
+                rgba(255, 210, 230, 0.4) 30%,
+                rgba(240, 200, 240, 0.4) 40%,
+                rgba(230, 190, 250, 0.4) 50%,
+                rgba(220, 180, 255, 0.4) 60%,
+                rgba(230, 190, 250, 0.4) 70%,
+                rgba(240, 200, 240, 0.4) 80%,
+                rgba(255, 210, 230, 0.4) 90%,
+                rgba(255, 200, 220, 0.4) 100%
+            );
+        }
+
+        /* Ensure sections blend seamlessly - transparent so background shows through */
+        section[class*="section-gradient"] {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            position: relative;
+            background: transparent !important;
+        }
+        
+        section[class*="section-gradient"] + section[class*="section-gradient"] {
+            margin-top: -1px;
+        }
+
+        /* Page sections - transparent background so page-background shows through */
+        .page-background section {
+            background: transparent !important;
+            position: relative;
+        }
+
+        /* Ensure smooth transitions between sections */
+        .page-background section + section {
+            margin-top: 0;
+        }
+        
+        /* Background layers for future images */
         .bg-layer-skate { background: linear-gradient(180deg, rgba(255, 182, 193, 0.15) 0%, rgba(255, 200, 189, 0.15) 100%); }
         .bg-layer-football { background: linear-gradient(180deg, rgba(255, 200, 189, 0.15) 0%, rgba(255, 218, 185, 0.15) 100%); }
         .bg-layer-basketball { background: linear-gradient(180deg, rgba(255, 218, 185, 0.15) 0%, rgba(255, 255, 186, 0.15) 100%); }
@@ -145,529 +215,640 @@
                 border-radius: 31% 69% 60% 40% / 70% 50% 50% 30%;
             }
         }
+        
+        /* Hamburger Button */
+        .hamburger-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 10001;
+        }
+
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            max-width: 85vw;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 1.5rem;
+            padding-top: 5rem;
+        }
+
+        .sidebar-header {
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-auth {
+            margin-top: auto;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            width: 100%;
+        }
+
+        .sidebar-link:hover {
+            background-color: #f3f4f6;
+            color: #6366f1;
+        }
+
+        .sidebar-link.active {
+            background-color: #eef2ff;
+            color: #6366f1;
+        }
+
+        .sidebar-link svg {
+            flex-shrink: 0;
+        }
+
+        .sidebar-link span {
+            flex: 1;
+        }
+
+        /* Nav link styles */
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body class="overflow-x-hidden">
-    <!-- Parallax Container -->
-    <div id="parallax-container" class="relative">
+    <!-- Parallax Container (only for home page) -->
+    <div id="parallax-container" class="fixed inset-0 pointer-events-none" style="display: none;">
         <!-- Background Layers -->
-        <!-- Bridge image as main background -->
         <div class="parallax-layer" data-speed="0.1" style="background-image: url('./public/asVanDeBrug.jpg'); background-size: cover; background-position: center; opacity: 0.3;"></div>
-        
-        <!-- Sport activity layers (placeholders for future images) -->
         <div class="parallax-layer bg-layer-skate" data-speed="0.2"></div>
         <div class="parallax-layer bg-layer-football" data-speed="0.3"></div>
         <div class="parallax-layer bg-layer-basketball" data-speed="0.4"></div>
         <div class="parallax-layer bg-layer-bar" data-speed="0.5"></div>
         <div class="parallax-layer bg-layer-freerun" data-speed="0.6"></div>
         <div class="parallax-layer bg-layer-community" data-speed="0.7"></div>
-        
-        <!-- Main Content -->
-        <div class="relative z-10">
-            <!-- Hero Section -->
-            <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden">
-                <!-- Fallback Background Image -->
-                <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0" style="background-image: url('./public/FlyerVoorkant.png');"></div>
-                
-                <!-- Video Background -->
-                <video muted loop playsinline class="absolute inset-0 w-full h-full object-cover z-0" id="hero-video" style="display: none;">
-                    <source src="./public/VideoGuillaume.mp4" type="video/mp4">
-                    Je browser ondersteunt geen video.
-                </video>
-                
-                <!-- Dark overlay for better text readability -->
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
-                
-                <!-- Social Media Icons - Top Right -->
-                <div class="absolute top-6 right-6 z-30 flex space-x-4">
-                    <a href="https://www.facebook.com/corridor.gentbrugge" class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 hover:scale-110 transition-all" target="_blank" aria-label="Facebook">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                    </a>
-                    <a href="https://www.instagram.com/corridor9050/" class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 hover:scale-110 transition-all" target="_blank" aria-label="Instagram">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                    </a>
-                    <a href="https://www.tiktok.com/@corridor9050" class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 hover:scale-110 transition-all" target="_blank" aria-label="TikTok">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                        </svg>
-                    </a>
-                </div>
-                <div class="text-center z-30 px-4 relative flex flex-col items-center justify-start min-h-screen" style="justify-content: flex-start; min-height: 100vh;">
-                    <div style="height: 25vh;"></div>
-                    <!-- Logo above title -->
-                    <div class="mb-2 mt-2">
-                        <div class="w-32 h-32 md:w-40 md:h-40 mx-auto organic-shape shadow-lg opacity-95 bg-white/90 backdrop-blur-sm flex items-center justify-center">
-                            <img src="./public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-28 h-28 md:w-36 md:h-36 object-contain">
-                        </div>
-                    </div>
-                    
-                    <h1 class="text-6xl md:text-8xl lg:text-9xl font-bold text-white graffiti-text mb-4 animate-pulse">
-                        CORRIDOR
-                    </h1>
-                    <p class="text-xl md:text-2xl lg:text-3xl text-white/90 font-medium graffiti-text">
-                        Urban Hub onder het Viaduct van Gentbrugge
-                    </p>
-                    <div class="mt-8">
-                        <div class="w-16 h-1 bg-white/60 mx-auto rounded-full"></div>
-                    </div>
-                </div>
-                
-                <!-- Bridge visual elements -->
-                <div id="bridge-silhouette" class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-800/30 to-transparent"></div>
-                
-            </section>
+    </div>
 
-            <!-- Intro Section -->
-            <section id="intro" class="py-20 px-4 section-gradient-1">
-                <div class="max-w-6xl mx-auto">
-                    <div class="grid lg:grid-cols-2 gap-12 items-center">
-                        <div class="text-center lg:text-left">
-                            <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text mb-8">
-                                Een bruisende plek onder het viaduct
-                            </h2>
-                            <p class="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-                                Corri d'Or is de urban spot in Gentbrugge waar de stad écht tot leven komt. Onder het E17-viaduct vind je een plek om te bewegen, te chillen, en samen te komen. Voetballen, basketten, dansen, lopen of gewoon genieten — hier kan het allemaal.
-                            </p>
-                            <p class="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-                                Terwijl dagelijks duizenden auto's over het viaduct razen, ligt er onder diezelfde brug een verborgen parel: een terrein dat lang braakliggend lag met ongekende mogelijkheden. Wij zien hier de kans om van die plek een levendige urban hub te maken waar creativiteit en energie samenkomen.
-                            </p>
-                            <p class="text-lg md:text-xl text-gray-700 leading-relaxed">
-                                Vanaf 2025 kan je hier terecht voor een drankje en verschillende events met en voor de buurt. Corri d'Or wordt een bruisende plek waar iedereen welkom is en zich thuis voelt.
-                            </p>
-                        </div>
-                        
-                        <!-- Animation Video -->
-                        <div class="flex justify-center">
-                            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                                <video class="w-full h-auto rounded-2xl shadow-lg" autoplay muted loop>
-                                    <source src="./public/AnimatieFlyer.mp4" type="video/mp4">
-                                    Je browser ondersteunt geen video.
-                                </video>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+    <!-- Main Content Area -->
+    <div id="main-content" class="relative z-10">
+        <!-- Pages will be loaded here -->
+    </div>
 
-            <!-- Parts Section -->
-            <section id="parts" class="py-20 px-4 section-gradient-2">
-                <div class="max-w-6xl mx-auto">
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
-                        Zones
-                    </h2>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <!-- Voetbal -->
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                            <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polygon points="10,8 16,8 18,14 14,18 8,18 6,14"></polygon>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Voetbal</h3>
-                            <p class="text-gray-700 text-center">
-                                Kunstgrasmatten voor voetbal onder het overdekte viaduct. Spelen en trainen in alle weersomstandigheden.
-                            </p>
-                        </div>
-                        
-                        <!-- Basketball -->
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                            <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="M12 2a10 10 0 0 0 0 20"></path>
-                                    <path d="M12 2a10 10 0 0 1 0 20"></path>
-                                    <path d="M2 12h20"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Basketball</h3>
-                            <p class="text-gray-700 text-center">
-                                Overdekte basketbalcourts waar je altijd kunt schieten, dribbelen en spelen met vrienden.
-                            </p>
-                        </div>
-                        
-                        <!-- Skate-zone -->
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                            <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Skate-zone</h3>
-                            <p class="text-gray-700 text-center">
-                                We werken nog aan een skate-zone voor skateboarden en rolschaatsen. Overdekt en veilig onder het viaduct.
-                            </p>
-                        </div>
-                        
-                        <!-- Boksen -->
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                            <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Boksen</h3>
-                            <p class="text-gray-700 text-center">
-                                Bokstraining en fitnessoefeningen in een veilige, overdekte omgeving.
-                            </p>
-                        </div>
-                        
-                        <!-- Parcours & Dansen -->
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                            <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Parcours & Dansen</h3>
-                            <p class="text-gray-700 text-center">
-                                Parcours training en dansactiviteiten. Beweeg op je eigen manier in onze multifunctionele ruimte.
-                            </p>
-                        </div>
-                        
-                        <!-- Graffiti Zone -->
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                            <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM7 3H5a2 2 0 00-2 2v12a4 4 0 004 4h2a2 2 0 002-2V5a2 2 0 00-2-2z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2-2-2M19 16l2-2-2-2"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Graffiti Zone</h3>
-                            <p class="text-gray-700 text-center">
-                                Een speciale zone voor toegelaten graffiti. Laat je creativiteit de vrije loop op onze muren.
-                            </p>
-                        </div>
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Inloggen</h2>
+                <button onclick="document.getElementById('login-modal').classList.remove('active')" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="login-tab" class="tab-content">
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="login-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
                     </div>
-                </div>
-            </section>
-
-            <!-- History Section -->
-            <section id="history" class="py-20 px-4 section-gradient-3">
-                <div class="max-w-6xl mx-auto">
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
-                        Het Verhaal van Corridor
-                    </h2>
-                    <div class="grid md:grid-cols-2 gap-8 mb-12">
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-8 card-hover">
-                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Van Braakliggend Terrein tot Urban Hub</h3>
-                            <p class="text-gray-700 mb-4">
-                                Jongeren en buurtbewoners hebben nood aan een overdekte plek om te sporten en elkaar te ontmoeten. Daarom willen we hier een veelzijdige ruimte creëren voor overdekt skaten, rolschaatsen en basketbal.
-                            </p>
-                            <p class="text-gray-700">
-                                Daarnaast leggen we kunstgrasmatten aan voor voetbal en voorzien we een zone voor toegelaten graffiti. Ons doel is een plek te maken voor multifunctioneel gebruik, waar iedereen welkom is.
-                            </p>
-                        </div>
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-8 card-hover">
-                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Grote Ambities</h3>
-                            <p class="text-gray-700 mb-4">
-                                Met een oppervlakte van maar liefst <strong>19.500 m²</strong> hebben we grote ambities en plannen. We willen minstens 10 jaar aan de slag blijven en dromen van uitbreidingen zoals minigolf en een BMX-parcours.
-                            </p>
-                            <p class="text-gray-700">
-                                Tegelijk geven we het project de tijd en ruimte om organisch te groeien. Dit project bouwt voort op het werk van een bewonersgroep die vorig jaar een eerste stap zette via het burgerbudget.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="bg-white/40 backdrop-blur-sm rounded-3xl p-8 text-center card-hover">
-                        <div class="w-16 h-16 mx-auto mb-4 text-gray-600">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Leerecosysteem</h3>
-                        <p class="text-gray-700 mb-6">
-                            Deze plek fungeert ook als leerecosysteem, ondersteund door het Europees programma WSE. Samen met organisaties en vrijwilligers bouwen we een netwerk uit dat de ruimte gebruikt als springplank naar levenslang leren en uitwisseling.
-                        </p>
-                        <a href="./public/corridorGeschiedenis.pdf" target="_blank" class="inline-flex items-center px-6 py-3 bg-white/60 hover:bg-white/80 rounded-full text-gray-800 font-medium transition-all hover:scale-105">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            Volledige Geschiedenis (PDF)
-                        </a>
-                        
-                        <!-- Floating GIF positioned to bridge sections -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Wachtwoord</label>
                         <div class="relative">
-                            <video id="floating-gif" class="floating-gif absolute z-20" autoplay muted loop>
-                                <source src="./public/corridorGif.mp4" type="video/mp4">
-                            </video>
+                            <input type="password" id="login-password" required class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                            <button type="button" onclick="togglePasswordVisibility('login-password', 'login-password-toggle')" id="login-password-toggle" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="login-password-toggle-icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
+                    <button type="submit" class="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium">
+                        Inloggen
+                    </button>
+                </form>
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-gray-600">
+                        Nog geen account? 
+                        <button onclick="showSignUp()" class="text-pink-600 hover:text-pink-700 font-medium">Registreer hier</button>
+                    </p>
                 </div>
-            </section>
-
-            <!-- Contact Section -->
-            <section id="contact" class="py-20 px-4 section-gradient-4">
-                <div class="max-w-6xl mx-auto">
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
-                        Kom Langs!
-                    </h2>
-                    <div class="grid md:grid-cols-3 gap-8 mb-12">
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                            <div class="w-8 h-8 mx-auto mb-4 text-gray-600">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </div>
+            <div id="signup-tab" class="tab-content hidden">
+                <form id="signup-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Naam</label>
+                        <input type="text" id="signup-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="signup-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Wachtwoord</label>
+                        <div class="relative">
+                            <input type="password" id="signup-password" required class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                            <button type="button" onclick="togglePasswordVisibility('signup-password', 'signup-password-toggle')" id="signup-password-toggle" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="signup-password-toggle-icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                 </svg>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Adres</h3>
-                            <p class="text-gray-700">
-                                Onder het E17 viaduct<br>
-                                einde Driebeekstraat<br>
-                                9050 Gentbrugge
-                            </p>
-                        </div>
-                        
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                            <div class="w-8 h-8 mx-auto mb-4 text-gray-600">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Contact</h3>
-                            <p class="text-gray-700 mb-2">
-                                <strong>Bert</strong> - Verantwoordelijke<br>
-                                bert@sportaround.be
-                            </p>
-                            <p class="text-gray-700">
-                                info@sportaround.be
-                            </p>
-                        </div>
-                        
-                        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                            <div class="w-8 h-8 mx-auto mb-4 text-gray-600">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Telefoon</h3>
-                            <p class="text-gray-700">
-                                +32 496 90 55 34
-                            </p>
+                            </button>
                         </div>
                     </div>
-                    
-                    <!-- Cost Section -->
-                    <div class="bg-white/40 backdrop-blur-sm rounded-3xl p-8 text-center card-hover mb-8">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-6">Wat kost dat?</h3>
-                        <p class="text-gray-700 text-lg">
-                            Het is een gratis toegankelijke overdekte plaats waar je altijd terecht kan. Voor bepaalde georganiseerde activiteiten kan er inschrijvingsgeld gevraagd worden.
-                        </p>
-                    </div>
-                    
-                    <!-- Partnerships Section -->
-                    <div class="bg-white/40 backdrop-blur-sm rounded-3xl p-8 text-center card-hover">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-6">Onze Partners</h3>
-                        <p class="text-gray-700 mb-4">
-                            Het ecosysteem Corri d'Or bestaat uit partners, buurtbewoners, sporters, jongeren, samen met iedereen creëren we warme welkomplek.
-                        </p>
-                        <p class="text-gray-700 mb-4">
-                            Deze organisaties zijn betrokken in het leerecosysteem: <strong>Sportaround</strong>, <strong>Ghent Basketball</strong>, <strong>Skateboard Academy</strong>, <strong>Lejo vzw</strong> en <strong>FROS</strong> met de ondersteuning van <strong>Arteveldehogeschool</strong> en <strong>Matthy Zighem</strong>.
-                        </p>
-                        <p class="text-gray-700 mb-4">
-                            We werken nauw samen met <strong>RC17</strong>, <strong>Flow de Gand</strong>, <strong>Asgaard</strong>, <strong>de vierde zaal</strong>, <strong>de volkstuinen</strong> en de oorspronkelijke wijkbudget indieners om deze droom waar te maken.
-                        </p>
-                        <p class="text-sm text-gray-600 mb-6">
-                            Corridor wordt mede mogelijk gemaakt door het <strong>Fonds Tijdelijke invullingen van Stad Gent</strong>, de <strong>Warmste Week</strong>, <strong>Streekfonds Oost-Vlaanderen</strong> en <strong>Europa WSE</strong>.
-                        </p>
-                        
-                        <!-- Download Resources -->
-                        <div class="flex flex-wrap justify-center gap-4">
-                            <a href="./public/Ontwerp flyer VOORKANT 9.O na FB.pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                Programma Voorkant
-                            </a>
-                            <a href="./public/Ontwerp flyer ACHTERKANT 10.0 na FB .pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                Programma Achterkant
-                            </a>
-                            <a href="./public/herfstplanning.png" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                Herfstplanning
-                            </a>
-                            <a href="./public/Logo corridor OFFICIEEL AI OPGEKUIST.pdf" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/60 hover:bg-white/80 rounded-full text-sm text-gray-800 font-medium transition-all hover:scale-105">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                Officieel Logo
-                            </a>
-                        </div>
-                    </div>
+                    <button type="submit" class="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium">
+                        Registreren
+                    </button>
+                </form>
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-gray-600">
+                        Al een account? 
+                        <button onclick="showLogin()" class="text-pink-600 hover:text-pink-700 font-medium">Log hier in</button>
+                    </p>
                 </div>
-            </section>
-                
-            <!-- Footer -->
-            <footer id="footer" class="py-12 px-4 relative" style="background-image: url('./public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
-                <!-- Overlay for better text readability -->
-                <div class="absolute inset-0 bg-black/50"></div>
-                <div class="max-w-4xl mx-auto text-center relative z-10">
-                    <div class="mb-8">
-                        <div class="w-16 h-16 mx-auto organic-shape shadow-lg mb-4 bg-white/90 backdrop-blur-sm flex items-center justify-center">
-                            <img src="./public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain">
-                        </div>
-                        <h3 class="text-3xl font-bold text-white graffiti-text mb-4">CORRIDOR</h3>
-                        <p class="text-white/90">Urban Sport Hub van Gentbrugge - Onder het E17 viaduct</p>
-                    </div>
-                    
-                    <div class="flex justify-center space-x-6 mb-8">
-                        <a href="https://www.facebook.com/corridor.gentbrugge" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
-                            <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                            </svg>
-                        </a>
-                        <a href="https://www.instagram.com/corridor9050/" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
-                            <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                            </svg>
-                        </a>
-                        <a href="https://www.sportaround.be" class="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all" target="_blank">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
-                            </svg>
-                        </a>
-                    </div>
-                    
-                    <div class="border-t border-white/30 pt-6">
-                        <p class="text-white/90 text-sm mb-2">
-                            © 2024 Sportaround - Corridor Gentbrugge
-                        </p>
-                        <p class="text-white/80 text-xs mb-4">
-                            Emanuel Hielstraat 106, 9050 Gentbrugge | KBO: 0568.625.876
-                        </p>
-                        <div class="border-t border-white/20 pt-4">
-                            <p class="text-white/70 text-xs">
-                                Website ontwerp & ontwikkeling door 
-                                <a href="https://florian-tau.vercel.app" target="_blank" class="text-white/80 hover:text-white font-medium transition-colors underline decoration-dotted underline-offset-2">
-                                    Florian Thiers
-                                </a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            </div>
+            <div id="login-error" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg hidden"></div>
+            <div id="login-success" class="mt-4 p-3 bg-green-100 text-green-700 rounded-lg hidden"></div>
         </div>
     </div>
 
+    <!-- Scripts -->
+    <!-- Load Supabase modules first -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/navigation.js"></script>
+    
     <script>
         // Initialize GSAP ScrollTrigger
         gsap.registerPlugin(ScrollTrigger);
 
-        // Parallax effect for background layers
-        gsap.utils.toArray('.parallax-layer').forEach((layer, i) => {
-            const speed = layer.dataset.speed || 0.5;
-            gsap.to(layer, {
-                yPercent: -50 * speed,
-                ease: "none",
-                scrollTrigger: {
-                    trigger: layer,
-                    start: "top bottom",
-                    end: "bottom top",
-                    scrub: true
-                }
-            });
-        });
-
-        // Bridge silhouette growth effect
-        gsap.to("#bridge-silhouette", {
-            scaleX: 1.5,
-            scaleY: 2,
-            ease: "none",
-            scrollTrigger: {
-                trigger: "#hero",
-                start: "top top",
-                end: "bottom top",
-                scrub: true
+        // Parallax effect for background layers (only on home page)
+        function initParallax() {
+            const parallaxContainer = document.getElementById('parallax-container');
+            if (parallaxContainer && (window.location.hash === '#/' || window.location.hash === '')) {
+                parallaxContainer.style.display = 'block';
+                
+                gsap.utils.toArray('.parallax-layer').forEach((layer) => {
+                    const speed = layer.dataset.speed || 0.5;
+                    gsap.to(layer, {
+                        yPercent: -50 * speed,
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: layer,
+                            start: "top bottom",
+                            end: "bottom top",
+                            scrub: true
+                        }
+                    });
+                });
+            } else {
+                if (parallaxContainer) parallaxContainer.style.display = 'none';
             }
-        });
+        }
 
         // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('a[href^="#"]')) {
+                const href = e.target.getAttribute('href');
+                if (href.startsWith('#/')) {
+                    // Let router handle it
+                    return;
+                }
+                // Handle anchor links within pages
                 e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
+                const target = document.querySelector(href);
                 if (target) {
                     target.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
                 }
-            });
+            }
         });
 
         // Card hover animations
-        gsap.utils.toArray('.card-hover').forEach(card => {
-            const tl = gsap.timeline({ paused: true });
-            tl.to(card, { y: -8, boxShadow: "0 20px 40px rgba(0,0,0,0.15)", duration: 0.3 });
-            
-            card.addEventListener('mouseenter', () => tl.play());
-            card.addEventListener('mouseleave', () => tl.reverse());
-        });
-
-        // Fade in animations for sections
-        gsap.utils.toArray('section').forEach(section => {
-            gsap.from(section.children, {
-                y: 50,
-                opacity: 100,
-                duration: 1,
-                stagger: 0.1,
-                scrollTrigger: {
-                    trigger: section,
-                    start: "top 80%",
-                    end: "bottom 20%",
-                    toggleActions: "play none none reverse"
-                }
-            });
-        });
-
-        // Floating GIF animation - subtle floating effect only
-        const floatingGif = document.getElementById('floating-gif');
-        if (floatingGif) {
-            gsap.to(floatingGif, {
-                y: 20,
-                rotation: 3,
-                duration: 3,
-                repeat: -1,
-                yoyo: true,
-                ease: "power2.inOut"
+        function initCardHovers() {
+            gsap.utils.toArray('.card-hover').forEach(card => {
+                const tl = gsap.timeline({ paused: true });
+                tl.to(card, { y: -8, boxShadow: "0 20px 40px rgba(0,0,0,0.15)", duration: 0.3 });
+                
+                card.addEventListener('mouseenter', () => tl.play());
+                card.addEventListener('mouseleave', () => tl.reverse());
             });
         }
 
+        // Fade in animations for sections
+        function initSectionAnimations() {
+            gsap.utils.toArray('section').forEach(section => {
+                gsap.from(section.children, {
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    stagger: 0.1,
+                    scrollTrigger: {
+                        trigger: section,
+                        start: "top 80%",
+                        end: "bottom 20%",
+                        toggleActions: "play none none reverse"
+                    }
+                });
+            });
+        }
+
+        // Floating GIF animation
+        function initFloatingGif() {
+            const floatingGif = document.getElementById('floating-gif');
+            if (floatingGif) {
+                gsap.to(floatingGif, {
+                    y: 20,
+                    rotation: 3,
+                    duration: 3,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "power2.inOut"
+                });
+            }
+        }
+
         // Force video autoplay on user interaction
-        const heroVideo = document.getElementById('hero-video');
-        if (heroVideo) {
-            // Check if video can load
-            heroVideo.addEventListener('loadeddata', () => {
-                console.log('Video loaded successfully');
-                heroVideo.style.display = 'block';
-            });
-            
-            heroVideo.addEventListener('error', (e) => {
-                console.log('Video failed to load, using fallback image');
-                heroVideo.style.display = 'none';
-            });
+        function initHeroVideo() {
+            const heroVideo = document.getElementById('hero-video');
+            if (heroVideo) {
+                // Lazy load video on first user interaction
+                const loadVideo = () => {
+                    if (heroVideo.readyState === 0) {
+                        heroVideo.load(); // Load video source
+                    }
+                    heroVideo.play().catch(() => {}); // Silent fail for autoplay
+                };
+                
+                heroVideo.addEventListener('loadeddata', () => {
+                    heroVideo.style.display = 'block';
+                });
+                
+                heroVideo.addEventListener('error', () => {
+                    heroVideo.style.display = 'none';
+                });
 
-            // Try to play video when user interacts with the page
-            document.addEventListener('click', () => {
-                heroVideo.play().catch(e => console.log('Video autoplay failed:', e));
-            });
-            
-            document.addEventListener('touchstart', () => {
-                heroVideo.play().catch(e => console.log('Video autoplay failed:', e));
-            });
+                // Load video on user interaction (lazy loading)
+                document.addEventListener('click', loadVideo, { once: true });
+                document.addEventListener('touchstart', loadVideo, { once: true });
+                document.addEventListener('scroll', loadVideo, { once: true });
+            }
+        }
 
-            // Fallback: try to play after a short delay
+        // Login/Profile Modal Functions
+        function showSignUp() {
+            document.getElementById('login-tab').classList.add('hidden');
+            document.getElementById('signup-tab').classList.remove('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-success').classList.add('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('signup-tab').classList.add('hidden');
+            document.getElementById('login-tab').classList.remove('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-success').classList.add('hidden');
+        }
+
+        // Toggle password visibility
+        function togglePasswordVisibility(passwordId, toggleId) {
+            const passwordInput = document.getElementById(passwordId);
+            const toggleIcon = document.getElementById(toggleId + '-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                // Change icon to eye-slash (hidden)
+                toggleIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.29 3.29m0 0L9.88 9.88m-3.59-3.59l3.29 3.29M12 12l.01.01M12 12l-.01-.01m0 0L9.88 9.88m0 0L6.59 6.59"></path>
+                `;
+            } else {
+                passwordInput.type = 'password';
+                // Change icon back to eye (visible)
+                toggleIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                `;
+            }
+        }
+
+        // Login Form Handler
+        document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+            const successDiv = document.getElementById('login-success');
+
+            try {
+                await window.authManager.signIn(email, password);
+                successDiv.textContent = 'Succesvol ingelogd!';
+                successDiv.classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+                setTimeout(() => {
+                    document.getElementById('login-modal').classList.remove('active');
+                    if (window.navigation) window.navigation.updateAuthButtons();
+                }, 1500);
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Inloggen mislukt. Probeer opnieuw.';
+                errorDiv.classList.remove('hidden');
+                successDiv.classList.add('hidden');
+            }
+        });
+
+        // Signup Form Handler
+        document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const fullName = document.getElementById('signup-name').value;
+            const errorDiv = document.getElementById('login-error');
+            const successDiv = document.getElementById('login-success');
+
+            try {
+                await window.authManager.signUp(email, password, fullName);
+                successDiv.textContent = 'Account aangemaakt! Check je email voor verificatie.';
+                successDiv.classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Registratie mislukt. Probeer opnieuw.';
+                errorDiv.classList.remove('hidden');
+                successDiv.classList.add('hidden');
+            }
+        });
+
+        // Sign Out Handler
+        async function handleSignOut() {
+            try {
+                await window.authManager.signOut();
+                if (window.navigation) window.navigation.updateAuthButtons();
+                if (window.location.hash === '#/profiel' || window.location.hash === '#/admin') {
+                    window.location.hash = '#/';
+                }
+            } catch (error) {
+                console.error('Logout failed:', error.message);
+            }
+        }
+
+        // Load data from database
+        window.isLoadingData = false;
+        window.loadData = async function loadData() {
+            // Prevent multiple simultaneous calls
+            if (window.isLoadingData) {
+                return;
+            }
+
+            if (!window.supabaseClient || !window.dbManager || !window.dbManager.supabase) {
+                setTimeout(window.loadData, 500);
+                return;
+            }
+
+            window.isLoadingData = true;
+            
+            try {
+                // Load activities
+                try {
+                    const activities = await window.dbManager.getActivities();
+                    const activiteitenContainer = document.getElementById('activiteiten-container');
+                    if (activiteitenContainer && activities && activities.length > 0) {
+                        activiteitenContainer.innerHTML = activities.map(activity => `
+                            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-gray-800 mb-2">${activity.title}</h3>
+                                <p class="text-gray-700 text-sm mb-2">${activity.description || ''}</p>
+                                ${activity.zones ? `<p class="text-gray-600 text-xs">Zone: ${activity.zones.name}</p>` : ''}
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Error loading activities:', error.message);
+                }
+
+                // Load Corrigirls activities
+                try {
+                    const corrigirls = await window.dbManager.getActivities('corrigirls');
+                    const corrigirlsContainer = document.getElementById('corrigirls-container');
+                    if (corrigirlsContainer && corrigirls && corrigirls.length > 0) {
+                        corrigirlsContainer.innerHTML = corrigirls.map(activity => `
+                            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-gray-800 mb-2">${activity.title}</h3>
+                                <p class="text-gray-700 text-sm">${activity.description || ''}</p>
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    // Silent fail for Corrigirls activities
+                }
+
+                // Load agenda items
+                try {
+                    const agendaItems = await window.dbManager.getAgendaItems();
+                    const evenementenContainer = document.getElementById('evenementen-container');
+                    const agendaContainer = document.getElementById('agenda-container');
+                    
+                    if (agendaItems && agendaItems.length > 0) {
+                        const agendaHTML = agendaItems.map(item => {
+                            const startDate = new Date(item.start_datetime);
+                            const endDate = item.end_datetime ? new Date(item.end_datetime) : null;
+                            return `
+                                <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover ${item.for_girls ? 'border-l-4 border-pink-500' : ''}">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <h3 class="text-xl font-bold text-gray-800">${item.title}</h3>
+                                        ${item.for_girls ? '<span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium whitespace-nowrap">Corrigirls</span>' : ''}
+                                    </div>
+                                    ${item.description ? `<p class="text-gray-700 text-sm mb-2">${item.description}</p>` : ''}
+                                    <div class="flex items-center gap-4 text-xs text-gray-600">
+                                        <span>📅 ${startDate.toLocaleDateString('nl-NL')}</span>
+                                        <span>🕐 ${startDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}${endDate ? ` - ${endDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}` : ''}</span>
+                                        ${item.zones ? `<span>📍 ${item.zones.name}</span>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        if (evenementenContainer) evenementenContainer.innerHTML = agendaHTML;
+                        // Don't override agenda container as it has its own calendar view
+                    }
+                } catch (error) {
+                    // Silent fail for agenda items
+                }
+
+                // Load Corristories
+                try {
+                    const corristories = await window.dbManager.getCorristories();
+                    const corristoriesContainer = document.getElementById('corristories-container');
+                    if (corristoriesContainer && corristories && corristories.length > 0) {
+                        corristoriesContainer.innerHTML = corristories.map(story => `
+                            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
+                                <h3 class="text-xl font-bold text-gray-800 mb-2">${story.title}</h3>
+                                <p class="text-gray-700 mb-2">${story.content}</p>
+                                <p class="text-gray-600 text-sm">Door: ${story.author_name || 'Anoniem'}</p>
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    // Silent fail for corristories
+                }
+
+                // Load zones
+                try {
+                    const zones = await window.dbManager.getZones();
+                    const zonesContainer = document.getElementById('zones-container');
+                    if (zonesContainer && zones && zones.length > 0) {
+                        zonesContainer.innerHTML = zones.map(zone => `
+                            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
+                                <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Zone ${zone.zone_number}: ${zone.name}</h3>
+                                <p class="text-gray-700 text-center">${zone.description || ''}</p>
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    // Silent fail for zones
+                }
+            } catch (error) {
+                console.error('Error loading data:', error.message);
+            } finally {
+                window.isLoadingData = false;
+            }
+        }
+
+        // Initialize page after route loads
+        function initializePage() {
+            initParallax();
+            initCardHovers();
+            initSectionAnimations();
+            initFloatingGif();
+            initHeroVideo();
+            // Wait a bit longer for Supabase to be ready
             setTimeout(() => {
-                heroVideo.play().catch(e => console.log('Video autoplay failed:', e));
-            }, 1000);
+                loadData();
+            }, 2000);
+            ScrollTrigger.refresh();
+        }
+
+        // Listen for route changes - reload data when returning to homepage
+        window.addEventListener('hashchange', () => {
+            const route = window.location.hash.slice(1) || '/';
+            // Reload data when navigating to homepage
+            if (route === '/' || route === '/home') {
+                // Reset loading flag to allow reload
+                if (window.isLoadingData !== undefined) {
+                    window.isLoadingData = false;
+                }
+                // Wait a bit for page to load, then reload data
+                setTimeout(() => {
+                    if (window.loadData) {
+                        window.loadData();
+                    }
+                }, 300);
+            }
+            setTimeout(initializePage, 100);
+        });
+
+        // Initial initialization
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(initializePage, 500);
+            });
+        } else {
+            setTimeout(initializePage, 500);
+        }
+
+        // Update navigation when auth state changes
+        if (window.authManager) {
+            const originalUpdateUI = window.authManager.updateUI;
+            window.authManager.updateUI = function() {
+                if (originalUpdateUI) originalUpdateUI.call(this);
+                if (window.navigation) window.navigation.updateAuthButtons();
+            };
         }
     </script>
 </body>
