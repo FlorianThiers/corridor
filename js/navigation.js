@@ -16,7 +16,7 @@ class Navigation {
             <div id="sidebar-overlay" class="sidebar-overlay"></div>
             
             <!-- Hamburger Button -->
-            <button id="hamburger-btn" class="hamburger-btn fixed top-6 left-6 z-[10001] w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-800 hover:bg-white hover:scale-110 shadow-lg transition-all cursor-pointer" aria-label="Menu" type="button">
+            <button id="hamburger-btn" class="hamburger-btn fixed top-6 left-6 z-[10001] w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/30 hover:scale-110 shadow-lg transition-all cursor-pointer" aria-label="Menu" type="button">
                 <svg id="hamburger-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
