@@ -1,13 +1,10 @@
 <div class="page-background">
     <section class="py-20 px-4 min-h-screen">
         <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between mb-8">
+            <div class="mb-8">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
-                    Gebruikers Beheren
+                    Gebruikers
                 </h1>
-                <a href="/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                    ← Terug
-                </a>
             </div>
 
             <div id="admin-access-denied" class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg text-center hidden mb-6">
@@ -50,7 +47,8 @@
                     <select id="user-role" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
                         <option value="user">Gebruiker</option>
                         <option value="admin">Admin</option>
-                        <option value="partner">Partner</option>
+                        <option value="programmer">Programmer</option>
+                        <option value="bestuurder">Bestuurder</option>
                     </select>
                 </div>
                 <div class="flex gap-4">
@@ -138,7 +136,8 @@ async function loadUsers() {
                 } else {
                     const roleNames = {
                         'admin': 'Admin',
-                        'partner': 'Partner',
+                        'programmer': 'Programmer',
+                        'bestuurder': 'Bestuurder',
                         'user': 'Gebruiker'
                     };
                     
@@ -146,7 +145,8 @@ async function loadUsers() {
                         const roleDisplay = roleNames[user.role] || 'Gebruiker';
                         const roleColors = {
                             'admin': 'bg-red-100 text-red-700',
-                            'partner': 'bg-orange-100 text-orange-700',
+                            'programmer': 'bg-purple-100 text-purple-700',
+                            'bestuurder': 'bg-blue-100 text-blue-700',
                             'user': 'bg-gray-100 text-gray-700'
                         };
                         const roleColor = roleColors[user.role] || 'bg-gray-100 text-gray-700';
@@ -175,7 +175,6 @@ async function loadUsers() {
                     }).join('');
                 }
             }
-        }
     } catch (error) {
         console.error('Error loading users:', error);
         const container = document.getElementById('users-list');
@@ -223,7 +222,7 @@ async function loadUserData(userId) {
 }
 
 // Close modal
-function closeUserModal() {
+window.closeUserModal = function() {
     const modal = document.getElementById('user-modal');
     if (modal) modal.classList.remove('active');
     window.adminUsers.currentUserId = null;
@@ -236,15 +235,15 @@ function closeUserModal() {
         roleSelect.disabled = false;
         roleSelect.title = '';
     }
-}
+};
 
 // Edit user
-function editUser(userId) {
+window.editUser = function(userId) {
     openUserModal(userId);
-}
+};
 
 // Delete user
-async function deleteUser(userId) {
+window.deleteUser = async function(userId) {
     try {
         // First check if user is a programmer or admin
         const users = await window.dbManager.getUsers();
@@ -271,7 +270,7 @@ async function deleteUser(userId) {
         console.error('Error deleting user:', error);
         alert('Fout bij verwijderen: ' + error.message);
     }
-}
+};
 
 // Show error
 function showError(message) {
@@ -346,7 +345,7 @@ if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.pathname === '/admin/gebruikers') {
+        if (window.location.pathname === '/beheer-gebruikers') {
             checkAdminAccess();
         }
     };

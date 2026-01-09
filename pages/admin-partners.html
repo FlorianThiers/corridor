@@ -1,13 +1,10 @@
 <div class="page-background">
     <section class="py-20 px-4 min-h-screen">
         <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between mb-8">
+            <div class="mb-8">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
-                    Partners Beheren
+                    Partners
                 </h1>
-                <a href="/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                    ← Terug
-                </a>
             </div>
 
             <div id="admin-access-denied" class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg text-center hidden mb-6">
@@ -72,8 +69,16 @@
                         <input type="url" id="partner-website" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="https://...">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
-                        <input type="url" id="partner-logo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="https://... of ../public/...">
+                        <div class="block text-sm font-medium text-gray-700 mb-2">Logo (WebP bestand)</div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <button type="button" onclick="document.getElementById('partner-logo-file')?.click()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm cursor-pointer">
+                                Kies bestand
+                            </button>
+                            <input type="file" id="partner-logo-file" accept=".webp,image/webp" class="hidden">
+                            <span id="partner-logo-file-name" class="text-sm text-gray-600"></span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-1">Of gebruik een URL:</p>
+                        <input type="url" id="partner-logo-url" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="https://... of ../public/...">
                     </div>
                 </div>
                 <div class="flex gap-4">
@@ -112,9 +117,9 @@ async function waitForDbManager(maxAttempts = 50) {
     return false;
 }
 
-// Check admin access - allow admins, programmers, and partners
+// Check admin access - only admins
 async function checkAdminAccess() {
-    const canManage = window.authManager && (window.authManager.isAdmin() || window.authManager.canManagePartners());
+    const canManage = window.authManager && window.authManager.isAdmin();
     const adminContent = document.getElementById('admin-content');
     const adminAccessDenied = document.getElementById('admin-access-denied');
     
@@ -234,7 +239,7 @@ async function loadPartners() {
 }
 
 // Open modal for new partner
-function openPartnerModal(partnerId = null) {
+window.openPartnerModal = function(partnerId = null) {
     window.adminPartners.currentPartnerId = partnerId;
     const modal = document.getElementById('partner-modal');
     const form = document.getElementById('partner-form');
@@ -250,14 +255,80 @@ function openPartnerModal(partnerId = null) {
     } else {
         if (title) title.textContent = 'Nieuwe Partner';
         if (form) form.reset();
+        // Reset file input separately
+        const fileInput = document.getElementById('partner-logo-file');
+        if (fileInput) fileInput.value = '';
+        const fileNameSpan = document.getElementById('partner-logo-file-name');
+        if (fileNameSpan) fileNameSpan.textContent = '';
+    }
+    
+    // Setup file input - show file name when selected
+    const fileInput = document.getElementById('partner-logo-file');
+    if (fileInput) {
+        fileInput.onchange = (e) => {
+            const fileNameSpan = document.getElementById('partner-logo-file-name');
+            if (fileNameSpan && e.target.files && e.target.files.length > 0) {
+                fileNameSpan.textContent = e.target.files[0].name;
+            } else if (fileNameSpan) {
+                fileNameSpan.textContent = '';
+            }
+        };
     }
     
     if (modal) modal.classList.add('active');
+};
+
+// Upload file to Supabase Storage
+async function uploadLogoToStorage(file) {
+    try {
+        if (!window.supabaseClient) {
+            throw new Error('Supabase client niet beschikbaar');
+        }
+
+        // Validate file type
+        if (!file.type.includes('webp') && !file.name.toLowerCase().endsWith('.webp')) {
+            throw new Error('Alleen WebP bestanden zijn toegestaan');
+        }
+
+        // Generate unique filename
+        const fileExt = file.name.split('.').pop() || 'webp';
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `partners/${fileName}`;
+
+        // Upload file to Supabase Storage
+        const { data, error } = await window.supabaseClient.storage
+            .from('logos')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (error) {
+            // Provide helpful error message if bucket doesn't exist
+            if (error.message.includes('Bucket') || error.message.includes('not found')) {
+                throw new Error('Storage bucket "logos" bestaat niet. Maak deze aan in Supabase Dashboard > Storage.');
+            }
+            throw error;
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = window.supabaseClient.storage
+            .from('logos')
+            .getPublicUrl(filePath);
+
+        return publicUrl;
+    } catch (error) {
+        console.error('Error uploading logo:', error);
+        throw new Error('Fout bij uploaden van logo: ' + error.message);
+    }
 }
 
 // Load partner data for editing
 async function loadPartnerData(partnerId) {
     try {
+        // First ensure zones are loaded in the dropdown
+        await loadZones();
+        
         const partner = await window.dbManager.getPartner(partnerId);
         
         if (partner) {
@@ -269,14 +340,22 @@ async function loadPartnerData(partnerId) {
             if (partner.type) {
                 document.getElementById('partner-type').value = partner.type || 'intern';
             }
-            if (partner.zone_id) {
-                document.getElementById('partner-zone').value = partner.zone_id || '';
+            // Set zone_id after zones are loaded
+            const zoneSelect = document.getElementById('partner-zone');
+            if (zoneSelect && partner.zone_id) {
+                zoneSelect.value = partner.zone_id;
             }
             if (partner.website) {
                 document.getElementById('partner-website').value = partner.website || '';
             }
-            if (partner.logo_url) {
-                document.getElementById('partner-logo').value = partner.logo_url || '';
+            // Reset file input and set URL if exists
+            const fileInput = document.getElementById('partner-logo-file');
+            const urlInput = document.getElementById('partner-logo-url');
+            const fileNameSpan = document.getElementById('partner-logo-file-name');
+            if (fileInput) fileInput.value = '';
+            if (fileNameSpan) fileNameSpan.textContent = '';
+            if (urlInput && partner.logo_url) {
+                urlInput.value = partner.logo_url || '';
             }
         }
     } catch (error) {
@@ -286,21 +365,26 @@ async function loadPartnerData(partnerId) {
 }
 
 // Close modal
-function closePartnerModal() {
+window.closePartnerModal = function() {
     const modal = document.getElementById('partner-modal');
     if (modal) modal.classList.remove('active');
     window.adminPartners.currentPartnerId = null;
     const form = document.getElementById('partner-form');
     if (form) form.reset();
-}
+    // Reset file input separately
+    const fileInput = document.getElementById('partner-logo-file');
+    if (fileInput) fileInput.value = '';
+    const fileNameSpan = document.getElementById('partner-logo-file-name');
+    if (fileNameSpan) fileNameSpan.textContent = '';
+};
 
 // Edit partner
-function editPartner(partnerId) {
-    openPartnerModal(partnerId);
-}
+window.editPartner = function(partnerId) {
+    window.openPartnerModal(partnerId);
+};
 
 // Delete partner
-async function deletePartner(partnerId) {
+window.deletePartner = async function(partnerId) {
     if (!confirm('Weet je zeker dat je deze partner wilt verwijderen?')) {
         return;
     }
@@ -312,7 +396,7 @@ async function deletePartner(partnerId) {
         console.error('Error deleting partner:', error);
         alert('Fout bij verwijderen: ' + error.message);
     }
-}
+};
 
 // Show error
 function showError(message) {
@@ -325,47 +409,111 @@ function showError(message) {
 
 // Initialize page - called directly and on DOMContentLoaded
 function initializeAdminPartners() {
+    // Setup file input - show file name when selected
+    const fileInput = document.getElementById('partner-logo-file');
+    if (fileInput) {
+        fileInput.onchange = (e) => {
+            const fileNameSpan = document.getElementById('partner-logo-file-name');
+            if (fileNameSpan && e.target.files && e.target.files.length > 0) {
+                fileNameSpan.textContent = e.target.files[0].name;
+            } else if (fileNameSpan) {
+                fileNameSpan.textContent = '';
+            }
+        };
+    }
+    
     const form = document.getElementById('partner-form');
     if (form) {
         // Remove existing listener to prevent duplicates
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
         
+        // Re-setup file input after cloning
+        const newFileInput = document.getElementById('partner-logo-file');
+        const newFileLabel = document.querySelector('label[for="partner-logo-file"]');
+        if (newFileInput) {
+            // Add click handler to label as backup
+            if (newFileLabel) {
+                newFileLabel.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    newFileInput.click();
+                };
+            }
+            
+            newFileInput.onchange = (e) => {
+                const fileNameSpan = document.getElementById('partner-logo-file-name');
+                if (fileNameSpan && e.target.files && e.target.files.length > 0) {
+                    fileNameSpan.textContent = e.target.files[0].name;
+                } else if (fileNameSpan) {
+                    fileNameSpan.textContent = '';
+                }
+            };
+        }
+        
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const name = document.getElementById('partner-name').value;
             const description = document.getElementById('partner-description').value;
-            const type = document.getElementById('partner-type').value;
-            const zoneId = document.getElementById('partner-zone').value;
+            const type = document.getElementById('partner-type')?.value || 'intern';
+            const zoneId = document.getElementById('partner-zone')?.value;
             const website = document.getElementById('partner-website').value;
-            const logoUrl = document.getElementById('partner-logo').value;
+            const logoFileInput = document.getElementById('partner-logo-file');
+            const logoUrlInput = document.getElementById('partner-logo-url');
             
-            // Build partner data - only include fields that exist in the database
-            // Based on the errors, it seems the partners table might only have: name, description
+            let logoUrl = null;
+            
+            // Handle logo: prioritize file upload over URL
+            if (logoFileInput && logoFileInput.files && logoFileInput.files.length > 0) {
+                // Upload file to Supabase Storage
+                try {
+                    logoUrl = await uploadLogoToStorage(logoFileInput.files[0]);
+                } catch (error) {
+                    showError('Fout bij uploaden van logo: ' + error.message);
+                    return;
+                }
+            } else if (logoUrlInput && logoUrlInput.value.trim()) {
+                // Use URL if provided
+                logoUrl = logoUrlInput.value.trim();
+            } else if (!window.adminPartners.currentPartnerId) {
+                // Only use fallback when creating a new partner (not editing)
+                logoUrl = '/public/LogoCorridor-removebg-preview.png';
+            }
+            // When editing and no new logo provided, logoUrl stays null and we won't update it
+            
+            // Build partner data - only include columns that exist in the database
             const partnerData = {
-                name
+                name,
+                type: type || 'intern' // Default to 'intern' if not set
             };
             
-            // Only add description if it exists (try it, if it fails we'll know)
-            if (description) {
-                partnerData.description = description;
+            // Only add logo_url if we have a new value (or creating new partner)
+            if (logoUrl !== null) {
+                partnerData.logo_url = logoUrl;
             }
             
-            // Note: The following columns don't exist in your partners table yet:
-            // - zone_id (you may want to add this column for zone relationships)
-            // - website (you may want to add this column)
-            // - logo_url (you may want to add this column)  
-            // - type (you may want to add this column for intern/extern)
-            // 
-            // To add these columns in Supabase:
-            // 1. Go to your Supabase dashboard
-            // 2. Navigate to Table Editor > partners
-            // 3. Add the columns you need:
-            //    - zone_id: uuid (foreign key to zones.id)
-            //    - website: text
-            //    - logo_url: text
-            //    - type: text (for 'intern' or 'extern')
+            // Add zone_id if provided
+            if (zoneId && zoneId.trim()) {
+                partnerData.zone_id = zoneId;
+            }
+            
+            // Add optional fields if they exist in the database schema
+            if (description && description.trim()) {
+                partnerData.description = description.trim();
+            }
+            if (website && website.trim()) {
+                partnerData.website = website.trim();
+            }
+            
+            // Only add optional fields if they exist in the database schema
+            // Uncomment these if you add these columns to your partners table:
+            // if (description && description.trim()) {
+            //     partnerData.description = description.trim();
+            // }
+            // if (website && website.trim()) {
+            //     partnerData.website = website.trim();
+            // }
             
             try {
                 if (window.adminPartners.currentPartnerId) {
@@ -373,7 +521,7 @@ function initializeAdminPartners() {
                 } else {
                     await window.dbManager.createPartner(partnerData);
                 }
-                closePartnerModal();
+                window.closePartnerModal();
                 loadPartners();
             } catch (error) {
                 console.error('Error saving partner:', error);
@@ -401,7 +549,7 @@ if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.pathname === '/admin/partners') {
+        if (window.location.pathname === '/beheer-partners') {
             checkAdminAccess();
         }
     };

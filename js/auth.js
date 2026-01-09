@@ -1,5 +1,9 @@
 // Authentication module for Corridor website
 
+// Prevent re-execution if already loaded
+if (typeof window.AuthManager !== 'undefined') {
+    // Already loaded, skip
+} else {
 class AuthManager {
     constructor() {
         this.currentUser = null;
@@ -98,10 +102,6 @@ class AuthManager {
         return this.role === 'admin';
     }
     
-    canManagePartners() {
-        // Check if user can manage partners (admin or partner role)
-        return this.role === 'admin' || this.role === 'partner';
-    }
     
     hasRole(requiredRole) {
         return this.role === requiredRole;
@@ -134,4 +134,6 @@ class AuthManager {
 
 // Initialize auth manager
 window.authManager = new AuthManager();
+window.AuthManager = AuthManager; // Store for guard check
+}
 

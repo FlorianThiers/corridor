@@ -20,36 +20,25 @@ const params = {
             let pathname = parsedUrl.pathname;
             
             // Skip API requests, node_modules, and special paths
+            // Also allow /pages/ directory to be served directly (for SPA page fragments)
             if (pathname.startsWith('/api/') || 
                 pathname.startsWith('/node_modules/') ||
                 pathname.startsWith('/.well-known/') ||
-                pathname.startsWith('/supabase/')) {
+                pathname.startsWith('/supabase/') ||
+                pathname.startsWith('/pages/')) {
                 return next();
             }
             
             // Check if it's a static file request (has extension)
             const ext = path.extname(pathname).toLowerCase();
-            const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.mp4', '.pdf', '.json'];
+            const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.mp4', '.pdf', '.json', '.html'];
             
-            // IMPORTANT: Always allow static files (especially .js, .css) to be served directly
+            // IMPORTANT: Always allow static files (especially .js, .css, .html) to be served directly
             // Don't redirect them to index.html
             if (ext && staticExtensions.includes(ext)) {
                 // For static files, let live-server handle them normally
                 // Don't check if they exist - let live-server return 404 if needed
                 return next();
-            }
-            
-            // For HTML files, check if they exist
-            if (ext === '.html') {
-                const filePath = path.join(__dirname, pathname);
-                try {
-                    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-                        // HTML file exists, serve it
-                        return next();
-                    }
-                } catch (error) {
-                    // Error checking file, continue to fallback
-                }
             }
             
             // For routes without extensions or non-existent HTML files, serve index.html (SPA fallback)

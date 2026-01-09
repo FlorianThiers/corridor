@@ -56,7 +56,6 @@
     <!-- Bridge visual elements -->
     <div id="bridge-silhouette" class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-800/30 to-transparent"></div>
 </section>
-
 <!-- Page Background Wrapper for smooth gradient flow -->
 <div class="page-background">
 <!-- Intro Section -->
@@ -78,11 +77,10 @@
                 </p>
             </div>
             
-            <!-- Animation Video -->
-            <div class="flex justify-center">
+            <!-- Intro Animation Video - Dynamically loaded from storage -->
+            <div id="animation-container" class="flex justify-center hidden">
                 <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                    <video class="w-full h-auto rounded-2xl shadow-lg" autoplay muted loop>
-                        <source src="../public/AnimatieFlyer.mp4" type="video/mp4">
+                    <video id="intro-animation" class="w-full h-auto rounded-2xl shadow-lg" autoplay muted loop>
                         Je browser ondersteunt geen video.
                     </video>
                 </div>
@@ -91,92 +89,6 @@
     </div>
 </section>
 
-<!-- Zones Section -->
-<section id="zones" class="py-20 px-4 section-gradient-2">
-    <div class="max-w-6xl mx-auto">
-        <h2 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
-            Zones
-        </h2>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="zones-container">
-            <!-- Zones will be loaded dynamically from database -->
-            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Zone 1: Platform</h3>
-                <p class="text-gray-700 text-center">
-                    Skaten en dansen onder het overdekte viaduct. Overdekt en veilig.
-                </p>
-            </div>
-            
-            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 2a10 10 0 0 0 0 20"></path>
-                        <path d="M12 2a10 10 0 0 1 0 20"></path>
-                        <path d="M2 12h20"></path>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Zone 2: Viadunk</h3>
-                <p class="text-gray-700 text-center">
-                    Overdekte basketbalcourts waar je altijd kunt schieten, dribbelen en spelen met vrienden.
-                </p>
-            </div>
-            
-            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polygon points="10,8 16,8 18,14 14,18 8,18 6,14"></polygon>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Zone 3: 't Veld</h3>
-                <p class="text-gray-700 text-center">
-                    Kunstgrasmatten voor voetbal onder het overdekte viaduct. Spelen en trainen in alle weersomstandigheden.
-                </p>
-            </div>
-            
-            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Zone 4: Bar en Bus</h3>
-                <p class="text-gray-700 text-center">
-                    Bar en Bus voor ontspanning en sociale activiteiten.
-                </p>
-            </div>
-            
-            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Zone 5: Strongzone</h3>
-                <p class="text-gray-700 text-center">
-                    Boks, kracht, calisthenics en parkour training in een veilige, overdekte omgeving.
-                </p>
-            </div>
-            
-            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                <div class="w-12 h-12 mx-auto mb-4 text-gray-600">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Zone 6: Parcours</h3>
-                <p class="text-gray-700 text-center">
-                    Pumptrack en RC 17. Parcours training en beweging op je eigen manier.
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- History Section -->
 <section id="history" class="py-20 px-4 section-gradient-1">

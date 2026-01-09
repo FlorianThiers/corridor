@@ -1,13 +1,10 @@
 <div class="page-background">
     <section class="py-20 px-4 min-h-screen">
         <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between mb-8">
+            <div class="mb-8">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
-                    Evenementen Beheren
+                    Evenementen
                 </h1>
-                <a href="/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                    ← Terug
-                </a>
             </div>
 
             <div id="admin-access-denied" class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg text-center hidden mb-6">
@@ -383,12 +380,83 @@ if (document.readyState === 'loading') {
     initializeAdminEvents();
 }
 
+// Initialize page - called directly and on DOMContentLoaded
+function initializeAdminEvents() {
+    const form = document.getElementById('event-form');
+    if (form) {
+        // Remove existing listener to prevent duplicates
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('event-title').value;
+            const description = document.getElementById('event-description').value;
+            const startDate = document.getElementById('event-start-date').value;
+            const startTime = document.getElementById('event-start-time').value;
+            const endDate = document.getElementById('event-end-date').value;
+            const endTime = document.getElementById('event-end-time').value;
+            const zoneId = document.getElementById('event-zone').value;
+            const isForGirls = document.getElementById('event-for-girls').checked;
+
+            if (!title || !startDate || !startTime) {
+                showError('Titel, start datum en start tijd zijn verplicht.');
+                return;
+            }
+
+            const startDateTime = new Date(`${startDate}T${startTime}`);
+            const endDateTime = endDate && endTime ? new Date(`${endDate}T${endTime}`) : null;
+
+            if (endDateTime && startDateTime >= endDateTime) {
+                showError('Eind datum/tijd moet later zijn dan start datum/tijd.');
+                return;
+            }
+
+            const eventData = {
+                title,
+                description: description || null,
+                start_datetime: startDateTime.toISOString(),
+                end_datetime: endDateTime ? endDateTime.toISOString() : null,
+                zone_id: zoneId || null,
+                for_girls: isForGirls
+            };
+
+            try {
+                if (window.adminEvents.currentEventId) {
+                    await window.dbManager.updateEvenement(window.adminEvents.currentEventId, eventData);
+                } else {
+                    await window.dbManager.createEvenement(eventData);
+                }
+                closeEventModal();
+                loadEvents();
+            } catch (error) {
+                console.error('Error saving event:', error);
+                showError('Fout bij opslaan: ' + error.message);
+            }
+        });
+    }
+
+    checkAdminAccess();
+}
+
+// Call immediately (for router navigation)
+initializeAdminEvents();
+
+// Also call on DOMContentLoaded (for direct page loads)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAdminEvents);
+} else {
+    // Already loaded, call immediately
+    initializeAdminEvents();
+}
+
 // Update when auth state changes
 if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.pathname === '/admin/evenementen') {
+        if (window.location.pathname === '/beheer-evenementen') {
             checkAdminAccess();
         }
     };

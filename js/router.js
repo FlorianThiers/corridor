@@ -1,4 +1,9 @@
 // Simple Router for Corridor Website - Using History API
+
+// Prevent re-execution if already loaded
+if (typeof window.Router !== 'undefined') {
+    // Already loaded, skip
+} else {
 class Router {
     constructor() {
         this.routes = {};
@@ -13,15 +18,16 @@ class Router {
             '/home': 'pages/home.html',
             '/evenementen': 'pages/evenementen.html',
             '/agenda': 'pages/agenda.html',
+            '/zones': 'pages/zones.html',
             '/corristories': 'pages/corristories.html',
             '/partners': 'pages/partners.html',
             '/profiel': 'pages/profiel.html',
-            '/admin': 'pages/admin.html',
-            '/admin/evenementen': 'pages/admin-evenementen.html',
-            '/admin/corristories': 'pages/admin-corristories.html',
-            '/admin/zones': 'pages/admin-zones.html',
-            '/admin/gebruikers': 'pages/admin-gebruikers.html',
-            '/admin/partners': 'pages/admin-partners.html'
+            '/beheer-evenementen': 'pages/admin-evenementen.html',
+            '/beheer-corristories': 'pages/admin-corristories.html',
+            '/beheer-zones': 'pages/admin-zones.html',
+            '/beheer-gebruikers': 'pages/admin-gebruikers.html',
+            '/beheer-partners': 'pages/admin-partners.html',
+            '/beheer-animatie': 'pages/admin-animatie.html'
         };
 
         // Check if History API is supported
@@ -70,43 +76,57 @@ class Router {
         }
         const route = path.split('?')[0]; // Remove query params
         
-        // Protect admin routes - only allow admins
-        if (route.startsWith('/admin')) {
+        // Protect beheer routes - allow different roles for different routes
+        if (route.startsWith('/beheer')) {
+            // Define which roles have access to which beheer routes
+            const routePermissions = {
+                '/beheer-evenementen': ['admin'],
+                '/beheer-corristories': ['admin'],
+                '/beheer-zones': ['admin'],
+                '/beheer-gebruikers': ['admin'],
+                '/beheer-partners': ['admin'],
+                '/beheer-animatie': ['admin']
+            };
+
+            const allowedRoles = routePermissions[route] || ['admin'];
+
             // Wait for authManager to be ready and user to be loaded
             let attempts = 0;
             const maxAttempts = 30; // 3 seconds max wait
             let hasSession = false;
-            let definitelyNotAdmin = false;
-            
+            let definitelyNotAuthorized = false;
+
             while (attempts < maxAttempts) {
                 // Check if authManager exists
-                if (window.authManager && typeof window.authManager.isAdmin === 'function') {
-                    // Check if user is admin
-                    if (window.authManager.isAdmin()) {
-                        // User is admin, allow access
+                if (window.authManager && typeof window.authManager.hasRole === 'function') {
+                    // Check if user has required role for this route
+                    const hasRequiredRole = allowedRoles.some(role => window.authManager.hasRole(role));
+                    if (hasRequiredRole) {
+                        // User has required role, allow access
                         break;
                     }
-                    
-                    // Check if user profile is loaded and they're not admin
+
+                    // Check if user profile is loaded and they don't have required role
                     if (window.authManager.currentUser) {
-                        // User profile is loaded, check if they're admin
-                        if (!window.authManager.isAdmin()) {
-                            // User is authenticated but not admin - definitely deny
-                            definitelyNotAdmin = true;
+                        // User profile is loaded, check if they have required role
+                        const stillHasRequiredRole = allowedRoles.some(role => window.authManager.hasRole(role));
+                        if (!stillHasRequiredRole) {
+                            // User is authenticated but doesn't have required role - definitely deny
+                            definitelyNotAuthorized = true;
                             break;
                         }
-                        // If we get here, user is admin
+                        // If we get here, user has required role
                         break;
                     }
                 }
-                
+
                 // Check session if available (to see if user is logged in at all)
                 if (window.supabaseClient && !hasSession) {
                     try {
                         const { data: { session } } = await window.supabaseClient.auth.getSession();
                         if (!session) {
-                            // No session, definitely not admin
-                            definitelyNotAdmin = true;
+                            // No session, definitely not authorized
+                            definitelyNotAuthorized = true;
                             break;
                         }
                         hasSession = true;
@@ -115,27 +135,27 @@ class Router {
                         // Error checking session, continue waiting
                     }
                 }
-                
+
                 await new Promise(resolve => setTimeout(resolve, 100));
                 attempts++;
             }
-            
-            // Only deny access if we're certain the user is not admin
-            if (definitelyNotAdmin) {
-                console.warn('Admin access denied: User is not admin');
-                this.navigate('/');
+
+            // Only deny access if we're certain the user is not authorized
+            if (definitelyNotAuthorized) {
+                console.warn(`Beheer access denied for route ${route}: User does not have required role (${allowedRoles.join(' or ')})`);
+                window.location.href = '/';
                 return;
             }
-            
+
             // If authManager is not available after waiting, check session
-            if (!window.authManager || typeof window.authManager.isAdmin !== 'function') {
+            if (!window.authManager || typeof window.authManager.hasRole !== 'function') {
                 // Check one more time with session
                 if (window.supabaseClient) {
                     try {
                         const { data: { session } } = await window.supabaseClient.auth.getSession();
                         if (!session) {
-                            console.warn('Admin access denied: No session');
-                            this.navigate('/');
+                            console.warn('Beheer access denied: No session');
+                            window.location.href = '/';
                             return;
                         }
                         // Session exists, allow page to load and let page-level check handle it
@@ -146,21 +166,24 @@ class Router {
                         return;
                     }
                 } else {
-                    console.warn('Admin access denied: authManager and supabaseClient not available');
-                    this.navigate('/');
+                    console.warn('Beheer access denied: authManager and supabaseClient not available');
+                    window.location.href = '/';
                     return;
                 }
             } else {
-                // authManager exists, check admin status
-                // Only deny if profile is loaded AND user is not admin/programmer
-                if (window.authManager.currentUser && !window.authManager.isAdmin()) {
-                    // Profile is loaded and user is definitely not admin/programmer
-                    console.warn('Admin access denied: User is not admin/programmer');
-                    this.navigate('/');
-                    return;
+                // authManager exists, check role status
+                // Only deny if profile is loaded AND user doesn't have required role
+                if (window.authManager.currentUser) {
+                    const hasRequiredRole = allowedRoles.some(role => window.authManager.hasRole(role));
+                    if (!hasRequiredRole) {
+                        // Profile is loaded and user definitely doesn't have required role
+                        console.warn(`Beheer access denied for route ${route}: User does not have required role (${allowedRoles.join(' or ')})`);
+                        window.location.href = '/';
+                        return;
+                    }
                 }
-                // If profile not loaded yet OR user is admin/programmer, allow page to load
-                // The page itself will check admin access and show/hide content accordingly
+                // If profile not loaded yet OR user has required role, allow page to load
+                // The page itself will check access and show/hide content accordingly
             }
         }
         
@@ -197,13 +220,43 @@ class Router {
         }
         
         if (scriptInfo.src) {
+            // External script - check if already loaded
+            const scriptSrc = scriptInfo.src;
+            
+            // Check if script is already loaded in the document
+            const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
+            if (existingScript) {
+                // Script already loaded, skip it
+                setTimeout(() => {
+                    this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
+                }, 0);
+                return;
+            }
+            
+            // Also check for scripts that are already in index.html (main scripts)
+            const mainScripts = [
+                '/js/supabase-config.js',
+                '/js/database.js',
+                '/js/auth.js',
+                '/js/router.js',
+                '/js/navigation.js'
+            ];
+            
+            if (mainScripts.some(mainScript => scriptSrc.includes(mainScript) || scriptSrc.endsWith(mainScript))) {
+                // This is a main script that's already loaded, skip it
+                setTimeout(() => {
+                    this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
+                }, 0);
+                return;
+            }
+            
             // External script - load dynamically
             try {
                 const scriptElement = document.createElement('script');
-                scriptElement.src = scriptInfo.src;
+                scriptElement.src = scriptSrc;
                 scriptElement.async = false;
                     scriptElement.onerror = () => {
-                        console.error(`Error loading external script ${index}:`, scriptInfo.src);
+                        console.error(`Error loading external script ${index}:`, scriptSrc);
                         // Continue with next script even if this one fails
                         setTimeout(() => {
                             this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
@@ -223,7 +276,7 @@ class Router {
                 }
             } catch (error) {
                 console.error(`Error creating external script element ${index}:`, error);
-                this.executeScriptsSequentially(scriptsToExecute, index + 1);
+                this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
             }
         } else if (scriptInfo.content && typeof scriptInfo.content === 'string') {
             // Inline script - validate content first
@@ -286,86 +339,79 @@ class Router {
                 } catch (evalError) {
                     console.warn(`Eval also failed for script ${index}, trying script element:`, evalError.message);
                     // Both Function and eval failed - try script element method as last resort
-                    try {
-                        // Ensure document.body exists
-                        if (!document.body) {
-                            // Wait for body to be available (max 1 second)
-                            let bodyWaitAttempts = 0;
-                            const maxBodyWaitAttempts = 100;
-                            const checkBody = setInterval(() => {
-                                bodyWaitAttempts++;
-                                if (document.body) {
-                                    clearInterval(checkBody);
-                                    try {
-                                        const scriptElement = document.createElement('script');
-                                        scriptElement.type = 'text/javascript';
-                                        scriptElement.textContent = content;
-                                        document.body.appendChild(scriptElement);
-                                        setTimeout(() => {
-                                            this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
-                                        }, 0);
-                                    } catch (error) {
-                                        console.error(`Error executing inline script ${index} via script element (after body wait):`, error);
-                                        console.error('Script content length:', content.length);
+                    // Ensure document.body exists
+                    if (!document.body) {
+                        // Wait for body to be available (max 1 second)
+                        let bodyWaitAttempts = 0;
+                        const maxBodyWaitAttempts = 100;
+                        const checkBody = setInterval(() => {
+                            bodyWaitAttempts++;
+                            if (document.body) {
+                                clearInterval(checkBody);
+                                try {
+                                    const scriptElement = document.createElement('script');
+                                    scriptElement.type = 'text/javascript';
+                                    scriptElement.textContent = content;
+                                    document.body.appendChild(scriptElement);
+                                    setTimeout(() => {
                                         this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
-                                    }
-                                } else if (bodyWaitAttempts >= maxBodyWaitAttempts) {
-                                    clearInterval(checkBody);
-                                    console.error(`Timeout waiting for document.body for script ${index}`);
+                                    }, 0);
+                                } catch (error) {
+                                    console.error(`Error executing inline script ${index} via script element (after body wait):`, error);
+                                    console.error('Script content length:', content.length);
                                     this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
                                 }
-                            }, 10);
-                            return;
+                            } else if (bodyWaitAttempts >= maxBodyWaitAttempts) {
+                                clearInterval(checkBody);
+                                console.error(`Timeout waiting for document.body for script ${index}`);
+                                this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
+                            }
+                        }, 10);
+                        return;
+                    }
+                    
+                    // document.body exists, create script element
+                    try {
+                        // Validate content before creating element
+                        if (!content || typeof content !== 'string' || content.length === 0) {
+                            throw new Error('Invalid script content');
                         }
                         
-                        // document.body exists, create script element
+                        const scriptElement = document.createElement('script');
+                        scriptElement.type = 'text/javascript';
+                        
+                        // Set content carefully
                         try {
-                            // Validate content before creating element
-                            if (!content || typeof content !== 'string' || content.length === 0) {
-                                throw new Error('Invalid script content');
-                            }
-                            
-                            const scriptElement = document.createElement('script');
-                            scriptElement.type = 'text/javascript';
-                            
-                            // Set content carefully
-                            try {
-                                scriptElement.textContent = content;
-                            } catch (textError) {
-                                // If setting textContent fails, try innerHTML
-                                scriptElement.innerHTML = content;
-                            }
-                            
-                            // Validate script element has content
-                            if (!scriptElement.textContent && !scriptElement.innerHTML) {
-                                throw new Error('Script element has no content after setting');
-                            }
-                            
-                            // Try to append - wrap in additional try-catch for appendChild specifically
-                            try {
-                                if (!document.body) {
-                                    throw new Error('document.body is null');
-                                }
-                                document.body.appendChild(scriptElement);
-                            } catch (appendError) {
-                                // If appendChild fails, try appending to head instead
-                                if (document.head) {
-                                    document.head.appendChild(scriptElement);
-                                } else {
-                                    throw appendError;
-                                }
-                            }
-                            
-                            // Continue with next script immediately for inline scripts
-                            setTimeout(() => {
-                                this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
-                            }, 0);
-                        } catch (appendError) {
-                            // All methods failed - log and continue
-                            console.warn(`Could not execute script ${index} via script element (this is usually OK if Function/eval worked):`, appendError.message);
-                            // Continue with next script even if this one fails
-                            this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
+                            scriptElement.textContent = content;
+                        } catch (textError) {
+                            // If setting textContent fails, try innerHTML
+                            scriptElement.innerHTML = content;
                         }
+                        
+                        // Validate script element has content
+                        if (!scriptElement.textContent && !scriptElement.innerHTML) {
+                            throw new Error('Script element has no content after setting');
+                        }
+                        
+                        // Try to append - wrap in additional try-catch for appendChild specifically
+                        try {
+                            if (!document.body) {
+                                throw new Error('document.body is null');
+                            }
+                            document.body.appendChild(scriptElement);
+                        } catch (appendError) {
+                            // If appendChild fails, try appending to head instead
+                            if (document.head) {
+                                document.head.appendChild(scriptElement);
+                            } else {
+                                throw appendError;
+                            }
+                        }
+                        
+                        // Continue with next script immediately for inline scripts
+                        setTimeout(() => {
+                            this.executeScriptsSequentially(scriptsToExecute, index + 1, onComplete);
+                        }, 0);
                     } catch (scriptElementError) {
                         console.error(`Error executing inline script ${index} (all methods failed):`, scriptElementError);
                         console.error('Script content length:', content.length);
@@ -388,6 +434,12 @@ class Router {
                 throw new Error(`Failed to load page: ${pagePath}`);
             }
             const html = await response.text();
+            
+            // Debug: log if HTML seems wrong
+            if (html.includes('Pages will be loaded here') || html.length < 1000) {
+                console.warn('Suspicious HTML loaded for', pagePath, 'length:', html.length);
+            }
+            
             const mainContent = document.getElementById('main-content');
             if (mainContent) {
                 // Parse HTML and execute scripts
@@ -491,7 +543,48 @@ class Router {
                 });
                 
                 // Set HTML content (without scripts)
-                mainContent.innerHTML = doc.body.innerHTML;
+                // Pages are HTML fragments - remove scripts and set directly
+                // First, check if this looks like index.html (has parallax-container or "Pages will be loaded here")
+                if (html.includes('parallax-container') || html.includes('Pages will be loaded here')) {
+                    console.error('ERROR: Loaded wrong HTML file for', pagePath, '- got index.html instead!');
+                    console.error('HTML preview:', html.substring(0, 500));
+                    // Don't set content if we got the wrong file
+                    return;
+                }
+                
+                // Remove script tags (both inline and external)
+                let bodyContent = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+                
+                // Remove HTML document structure tags if present (for fragments)
+                bodyContent = bodyContent.replace(/<!DOCTYPE[\s\S]*?>/gi, '');
+                bodyContent = bodyContent.replace(/<html[^>]*>/gi, '');
+                bodyContent = bodyContent.replace(/<\/html>/gi, '');
+                bodyContent = bodyContent.replace(/<head[\s\S]*?<\/head>/gi, '');
+                bodyContent = bodyContent.replace(/<body[^>]*>/gi, '');
+                bodyContent = bodyContent.replace(/<\/body>/gi, '');
+                
+                // Clean up whitespace
+                bodyContent = bodyContent.trim();
+                
+                // Set the content directly - no need to filter nested elements as pages shouldn't have them
+                if (bodyContent && bodyContent.length > 100) {
+                    console.log('Setting content for', pagePath, 'length:', bodyContent.length);
+                    // Log last 200 chars to see if content is complete
+                    console.log('Content ends with:', bodyContent.substring(bodyContent.length - 200));
+                    mainContent.innerHTML = bodyContent;
+                    
+                    // Verify content was set correctly
+                    setTimeout(() => {
+                        const setContent = mainContent.innerHTML;
+                        console.log('Content after setting, length:', setContent.length);
+                        console.log('Contains footer:', setContent.includes('footer') || setContent.includes('Footer'));
+                        console.log('Contains contact:', setContent.includes('contact') || setContent.includes('Contact'));
+                    }, 100);
+                } else {
+                    console.error('ERROR: No valid content to set for', pagePath);
+                    console.error('Body content length:', bodyContent.length);
+                    console.error('Body content preview:', bodyContent.substring(0, 500));
+                }
                 
                 // Show/hide parallax container based on route
                 const parallaxContainer = document.getElementById('parallax-container');
@@ -503,11 +596,21 @@ class Router {
                     }
                 }
                 
+                // Store the content to restore it after scripts execute (in case scripts modify it)
+                const savedContent = bodyContent;
+                
                 // Execute scripts sequentially to avoid race conditions
                 // Wait a bit to ensure DOM is ready, then execute scripts
                 // After scripts are done, reinitialize page
                 setTimeout(() => {
                     this.executeScriptsSequentially(scriptsToExecute, 0, () => {
+                        // Always restore content after scripts - scripts might have modified main-content
+                        // Check if content was lost (no page-background when it should be there)
+                        const currentContent = mainContent.innerHTML;
+                        if (savedContent.includes('page-background') && !currentContent.includes('page-background')) {
+                            // Content was lost, restore it
+                            mainContent.innerHTML = savedContent;
+                        }
                         // All scripts executed, now reinitialize page
                         this.reinitializePage();
                     });
@@ -547,17 +650,19 @@ class Router {
             }, 100);
         }
         
-        // Initialize admin pages directly (they don't use DOMContentLoaded)
-        const adminRoutes = {
-            '/admin': 'initializeAdmin',
-            '/admin/evenementen': 'initializeAdminEvents',
-            '/admin/corristories': 'initializeAdminCorristories',
-            '/admin/zones': 'initializeAdminZones',
-            '/admin/gebruikers': 'initializeAdminUsers',
-            '/admin/partners': 'initializeAdminPartners'
+        // Initialize beheer pages directly (they don't use DOMContentLoaded)
+        const beheerRoutes = {
+            '/beheer-evenementen': 'initializeAdminEvents',
+            '/beheer-corristories': 'initializeAdminCorristories',
+            '/beheer-zones': 'initializeAdminZones',
+            '/beheer-gebruikers': 'initializeAdminUsers',
+            '/beheer-partners': 'initializeAdminPartners',
+            '/beheer-animatie': 'initializeAdminAnimatie'
         };
         
-        const initFunction = adminRoutes[this.currentRoute];
+        const adminRoutes = beheerRoutes; // Keep for backwards compatibility
+        
+        const initFunction = beheerRoutes[this.currentRoute] || adminRoutes[this.currentRoute];
         if (initFunction && typeof window[initFunction] === 'function') {
             // Call after a short delay to ensure DOM is ready
             setTimeout(() => {
@@ -632,3 +737,5 @@ class Router {
 
 // Initialize router
 window.router = new Router();
+window.Router = Router; // Store for guard check
+}

@@ -1,5 +1,9 @@
 // Database operations module for Corridor website
 
+// Prevent re-execution if already loaded
+if (typeof window.DatabaseManager !== 'undefined') {
+    // Already loaded, skip
+} else {
 class DatabaseManager {
     constructor() {
         // Wait for supabase client to be available
@@ -211,15 +215,77 @@ class DatabaseManager {
     }
 
     async updateUser(userId, updates) {
-        const { data, error } = await this.supabase
+        // Check if user has admin role before updating
+        const { data: { user: currentUser } } = await this.supabase.auth.getUser();
+        if (!currentUser) throw new Error('Not authenticated');
+        
+        // Get current user's role from users table
+        const { data: currentUserData } = await this.supabase
+            .from('users')
+            .select('role')
+            .eq('id', currentUser.id)
+            .maybeSingle();
+        
+        if (!currentUserData || currentUserData.role !== 'admin') {
+            throw new Error('Only admins can update users');
+        }
+        
+        // First, try update without select to avoid "Cannot coerce" errors
+        // This approach avoids issues with database functions/triggers that might return wrong format
+        const { error: updateError } = await this.supabase
             .from('users')
             .update(updates)
-            .eq('id', userId)
-            .select()
-            .single();
+            .eq('id', userId);
         
-        if (error) throw error;
-        return data;
+        if (updateError) {
+            // Check for specific error types
+            if (updateError.code === '42501' || updateError.message.includes('row-level security')) {
+                throw new Error('Geen toestemming om gebruiker bij te werken. Controleer de RLS policies in Supabase.');
+            }
+            
+            // Check for check constraint violations (e.g., invalid role)
+            if (updateError.code === '23514' || updateError.message.includes('check constraint') || updateError.message.includes('violates check constraint')) {
+                if (updateError.message.includes('role')) {
+                    throw new Error('De geselecteerde rol is niet geldig. Toegestane rollen: user, admin, programmer, bestuurder.');
+                }
+                throw new Error(`Database constraint violation: ${updateError.message}`);
+            }
+            
+            // If update failed, throw the error
+            throw new Error(`Fout bij bijwerken gebruiker: ${updateError.message}`);
+        }
+        
+        // Update succeeded (no error), now try to fetch the updated user
+        // But if RLS blocks it, that's okay - the update was successful
+        const { data: updatedUser, error: fetchError } = await this.supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .maybeSingle();
+        
+        // If we can fetch the user, return it
+        if (updatedUser && !fetchError) {
+            return updatedUser;
+        }
+        
+        // If we can't fetch (likely due to RLS blocking read access after role change),
+        // but update succeeded (no updateError), return a minimal success object
+        // The UI will reload users list which should work since admin can read all users
+        if (fetchError && (fetchError.code === '42501' || fetchError.message.includes('row-level security'))) {
+            // RLS blocked reading, but update succeeded - return success
+            return {
+                id: userId,
+                ...updates
+            };
+        }
+        
+        // Some other fetch error occurred, but update likely succeeded
+        // Log warning but don't fail - update was successful
+        console.warn('Update succeeded but could not fetch updated user:', fetchError);
+        return {
+            id: userId,
+            ...updates
+        };
     }
 
     async deleteUser(userId) {
@@ -541,4 +607,6 @@ class DatabaseManager {
 
 // Initialize database manager
 window.dbManager = new DatabaseManager();
+window.DatabaseManager = DatabaseManager; // Store for guard check
+}
 

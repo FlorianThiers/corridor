@@ -1,4 +1,5 @@
 // Navigation Component - Hamburger Sidebar
+
 class Navigation {
     constructor() {
         this.isOpen = false;
@@ -6,7 +7,10 @@ class Navigation {
     }
 
     init() {
-        this.render();
+        // Only render if not already rendered
+        if (!document.getElementById('hamburger-btn')) {
+            this.render();
+        }
         this.attachEventListeners();
     }
 
@@ -14,7 +18,7 @@ class Navigation {
         const navHTML = `
             <!-- Sidebar Overlay -->
             <div id="sidebar-overlay" class="sidebar-overlay"></div>
-            
+
             <!-- Hamburger Button -->
             <button id="hamburger-btn" class="hamburger-btn fixed top-6 left-6 z-[10001] w-12 h-12 bg-gray-600/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-gray-500/80 hover:scale-110 shadow-lg transition-all cursor-pointer" aria-label="Menu" type="button">
                 <svg id="hamburger-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,7 +35,7 @@ class Navigation {
                     <!-- Logo -->
                     <div class="sidebar-header">
                         <div class="flex items-center space-x-3 mb-6">
-                            <img src="./public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="h-10 w-10">
+                            <img src="/public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="h-10 w-10">
                             <span class="text-xl font-bold text-gray-800">CORRIDOR</span>
                         </div>
                     </div>
@@ -49,6 +53,12 @@ class Navigation {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                             </svg>
                             <span>Agenda</span>
+                        </a>
+                        <a href="/zones" class="nav-link sidebar-link">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <span>Zones</span>
                         </a>
                         <a href="/evenementen" class="nav-link sidebar-link">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,41 +78,47 @@ class Navigation {
                             </svg>
                             <span>Partners</span>
                         </a>
-                        
+
                         <!-- Admin Links (only visible for admins) -->
                         <div id="admin-nav-section" class="hidden">
                             <div class="border-t border-gray-200 pt-4 mt-4 mb-4">
                                 <p class="text-xs font-semibold text-gray-500 uppercase mb-2 px-4">Admin</p>
                             </div>
-                            <a href="/admin/evenementen" class="nav-link sidebar-link admin-nav-link">
+                            <a href="/beheer-evenementen" class="nav-link sidebar-link admin-nav-link">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
-                                <span>Evenementen Beheren</span>
+                                <span>Evenementen</span>
                             </a>
-                            <a href="/admin/corristories" class="nav-link sidebar-link admin-nav-link">
+                            <a href="/beheer-corristories" class="nav-link sidebar-link admin-nav-link">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
-                                <span>Corristories Beheren</span>
+                                <span>Corristories</span>
                             </a>
-                            <a href="/admin/zones" class="nav-link sidebar-link admin-nav-link">
+                            <a href="/beheer-zones" class="nav-link sidebar-link admin-nav-link">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
-                                <span>Zones Beheren</span>
+                                <span>Zones</span>
                             </a>
-                            <a href="/admin/gebruikers" class="nav-link sidebar-link admin-nav-link">
+                            <a href="/beheer-gebruikers" class="nav-link sidebar-link admin-nav-link">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                                 </svg>
-                                <span>Gebruikers Beheren</span>
+                                <span>Gebruikers</span>
                             </a>
-                            <a href="/admin/partners" class="nav-link sidebar-link admin-nav-link">
+                            <a href="/beheer-partners" class="nav-link sidebar-link admin-nav-link">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
-                                <span>Partners Beheren</span>
+                                <span>Partners</span>
+                            </a>
+                            <a href="/beheer-animatie" class="nav-link sidebar-link admin-nav-link">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>Animatie</span>
                             </a>
                         </div>
                     </div>
@@ -184,7 +200,7 @@ class Navigation {
 
         // Update auth buttons
         this.updateAuthButtons();
-        
+
         // Also update when authManager becomes available (if not ready yet)
         if (!window.authManager) {
             const checkAuthManager = setInterval(() => {
@@ -193,7 +209,7 @@ class Navigation {
                     this.updateAuthButtons();
                 }
             }, 100);
-            
+
             // Stop checking after 5 seconds
             setTimeout(() => clearInterval(checkAuthManager), 5000);
         }
@@ -246,7 +262,7 @@ class Navigation {
         if (loginBtn) loginBtn.classList.toggle('hidden', isLoggedIn);
         if (profileBtn) profileBtn.classList.toggle('hidden', !isLoggedIn);
         if (logoutBtn) logoutBtn.classList.toggle('hidden', !isLoggedIn);
-        
+
         // Show/hide admin navigation section
         if (adminNavSection) {
             adminNavSection.classList.toggle('hidden', !isAdmin);
@@ -278,11 +294,11 @@ class Navigation {
     updateNavOnRouteChange() {
         const navLinks = document.querySelectorAll('.nav-link');
         const currentRoute = window.router ? window.router.currentRoute : window.location.pathname || '/';
-        
+
         navLinks.forEach(link => {
             const href = link.getAttribute('href') || '/';
             const linkRoute = href;
-            
+
             if (linkRoute === currentRoute || (currentRoute === '/' && linkRoute === '/')) {
                 link.classList.add('active');
             } else {

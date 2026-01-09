@@ -77,14 +77,92 @@ Corridor/
 
 ## 🚀 Productie Deployment
 
-Zie [DEPLOYMENT.md](./DEPLOYMENT.md) voor volledige deployment instructies.
+Deze website is een **Single Page Application (SPA)** met client-side routing. Het is cruciaal dat je hosting provider alle routes naar `index.html` doorstuurt, anders krijg je 404 fouten op alle pagina's behalve de homepage.
 
-**Quick Start:**
-1. Voer `supabase/rls-policies.sql` uit in Supabase SQL Editor
-2. Stel environment variables in Vercel:
+### 🔧 SPA Routing Configuratie
+
+Kopieer het juiste configuratiebestand voor je hosting provider:
+
+#### **Apache Server (.htaccess)**
+Het bestand `.htaccess` is al toegevoegd aan de repository. Dit zorgt ervoor dat alle niet-bestaande bestanden naar `index.html` worden doorgestuurd.
+
+#### **Netlify**
+Het bestand `_redirects` is al toegevoegd aan de repository. Dit bestand wordt automatisch gebruikt door Netlify.
+
+#### **Vercel**
+Het bestand `vercel.json` is al toegevoegd aan de repository met de juiste rewrites configuratie.
+
+#### **Firebase Hosting**
+Het bestand `firebase.json` is al toegevoegd aan de repository.
+
+#### **Nginx Server**
+Gebruik de `nginx.conf` configuratie als template voor je server setup.
+
+### 📋 Deployment per Provider
+
+#### **Vercel (Aanbevolen)**
+1. **Push naar GitHub/GitLab**
+2. **Verbind met Vercel** en deploy automatisch
+3. **Environment Variables instellen:**
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
-3. Deploy naar Vercel (automatisch via Git push)
+4. **Deploy** - het `vercel.json` bestand regelt automatisch het routing
+
+#### **Netlify**
+1. **Push naar Git repository**
+2. **Import project** in Netlify dashboard
+3. **Environment Variables instellen:**
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+4. **Deploy** - het `_redirects` bestand regelt automatisch het routing
+
+#### **Firebase Hosting**
+1. **Installeer Firebase CLI:**
+   ```bash
+   npm install -g firebase-tools
+   firebase login
+   ```
+2. **Initialize project:**
+   ```bash
+   firebase init hosting
+   ```
+3. **Deploy:**
+   ```bash
+   firebase deploy
+   ```
+
+#### **Apache/Nginx Server**
+1. **Upload alle bestanden** naar je webserver
+2. **Zorg ervoor dat `.htaccess` actief is** (Apache) of gebruik de nginx.conf
+3. **Stel environment variables in** via server configuratie
+
+### 🗄️ Database Setup
+
+1. **Voer Supabase SQL uit:**
+   ```sql
+   -- Voer supabase/rls-policies.sql uit in Supabase SQL Editor
+   ```
+
+2. **Controleer Row Level Security policies**
+
+### ✅ Controle na Deployment
+
+Na deployment, test deze URLs:
+- ✅ `https://jouw-domein.com/` (homepage)
+- ✅ `https://jouw-domein.com/evenementen` (moet werken, niet 404)
+- ✅ `https://jouw-domein.com/zones` (moet werken, niet 404)
+- ✅ `https://jouw-domein.com/beheer-evenementen` (alleen ingelogd als admin)
+
+### 🔍 Troubleshooting
+
+**404 fouten op andere pagina's?**
+- Controleer of de juiste configuratie actief is voor je hosting provider
+- Bij Apache: zorg dat `.htaccess` overrides zijn toegestaan
+- Bij Netlify: controleer of `_redirects` in de root staat
+
+**JavaScript fouten?**
+- Controleer of alle bestanden zijn geüpload (js/, pages/, public/)
+- Controleer environment variables
 
 ## 📞 Contact
 

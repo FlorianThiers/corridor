@@ -19,15 +19,6 @@
                 Corridor wordt mede mogelijk gemaakt door het <strong>Fonds Tijdelijke invullingen van Stad Gent</strong>, de <strong>Warmste Week</strong>, <strong>Streekfonds Oost-Vlaanderen</strong> en <strong>Europa WSE</strong>.
             </p>
             
-            <!-- Partner Logos - Hardcoded -->
-            <div class="flex flex-wrap justify-center gap-8 mt-8">
-                <!-- MGDDEU Logo -->
-                <div class="opacity-70 hover:opacity-100 transition-opacity">
-                    <img src="../public/MGDDEU_BLAUW.jpg" alt="MGDDEU" class="h-16 object-contain" onerror="this.parentElement.style.display='none'">
-                </div>
-                <!-- Add more partner logos here as needed -->
-            </div>
-            
             <!-- Logo download button -->
             <div class="mt-8 text-center">
                 <a href="../public/LogoCorridor.png" download="LogoCorridor.png" class="inline-flex items-center gap-2 px-8 py-4 bg-white/40 backdrop-blur-sm rounded-3xl text-gray-800 hover:bg-white/60 hover:scale-105 transition-all shadow-lg card-hover font-medium">
@@ -36,6 +27,26 @@
                     </svg>
                     Download Logo
                 </a>
+            </div>
+        </div>
+
+        <!-- Intern Partners Section -->
+        <div class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 graffiti-text text-center mb-8">
+                Interne Partners
+            </h2>
+            <div id="intern-partners" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <p class="text-gray-600 text-center col-span-full">Partners worden geladen...</p>
+            </div>
+        </div>
+
+        <!-- Extern Partners Section -->
+        <div class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 graffiti-text text-center mb-8">
+                Externe Partners
+            </h2>
+            <div id="extern-partners" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <p class="text-gray-600 text-center col-span-full">Partners worden geladen...</p>
             </div>
         </div>
     </div>
@@ -91,4 +102,103 @@
         </div>
     </footer>
 </div>
+
+<script>
+// Load and display partners
+async function loadPartnersPage() {
+    try {
+        // Wait for database manager
+        if (!window.dbManager || !window.dbManager.supabase) {
+            // Wait up to 5 seconds for dbManager
+            let attempts = 0;
+            while (attempts < 50 && (!window.dbManager || !window.dbManager.supabase)) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+        }
+
+        if (!window.dbManager || !window.dbManager.supabase) {
+            console.error('Database manager not available');
+            document.getElementById('intern-partners').innerHTML = '<p class="text-red-600 text-center col-span-full">Fout bij verbinden met database. Ververs de pagina.</p>';
+            document.getElementById('extern-partners').innerHTML = '<p class="text-red-600 text-center col-span-full">Fout bij verbinden met database. Ververs de pagina.</p>';
+            return;
+        }
+
+        const partners = await window.dbManager.getPartners();
+        
+        // Separate partners by type (default to 'intern' if type is null/undefined)
+        const internPartners = partners.filter(p => !p.type || p.type === 'intern');
+        const externPartners = partners.filter(p => p.type === 'extern');
+
+        // Render intern partners
+        const internContainer = document.getElementById('intern-partners');
+        if (internContainer) {
+            if (internPartners.length === 0) {
+                internContainer.innerHTML = '<p class="text-gray-600 text-center col-span-full">Geen interne partners gevonden.</p>';
+            } else {
+                internContainer.innerHTML = internPartners.map(partner => {
+                    const escapedZoneName = partner.zones ? (partner.zones.name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+                    const zoneInfo = partner.zones ? '<p class="text-sm text-gray-600 mt-2">Zone ' + partner.zones.zone_number + ': ' + escapedZoneName + '</p>' : '';
+                    const websiteLink = partner.website ? '<a href="' + partner.website.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 text-sm underline mt-2 inline-block">Bezoek website</a>' : '';
+                    const escapedName = (partner.name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const escapedDescription = partner.description ? (partner.description || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+                    const logoHtml = partner.logo_url ? '<div class="mb-4 flex justify-center"><img src="' + partner.logo_url + '" alt="' + escapedName + '" class="h-24 w-auto object-contain max-w-full"></div>' : '';
+                    const descriptionHtml = escapedDescription ? '<p class="text-gray-700 text-sm mb-3">' + escapedDescription + '</p>' : '';
+                    
+                    return '<div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover text-center">' +
+                        logoHtml +
+                        '<h3 class="text-xl font-bold text-gray-800 mb-2">' + escapedName + '</h3>' +
+                        descriptionHtml +
+                        zoneInfo +
+                        websiteLink +
+                        '</div>';
+                }).join('');
+            }
+        }
+
+        // Render extern partners
+        const externContainer = document.getElementById('extern-partners');
+        if (externContainer) {
+            if (externPartners.length === 0) {
+                externContainer.innerHTML = '<p class="text-gray-600 text-center col-span-full">Geen externe partners gevonden.</p>';
+            } else {
+                externContainer.innerHTML = externPartners.map(partner => {
+                    const escapedZoneName = partner.zones ? (partner.zones.name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+                    const zoneInfo = partner.zones ? '<p class="text-sm text-gray-600 mt-2">Zone ' + partner.zones.zone_number + ': ' + escapedZoneName + '</p>' : '';
+                    const websiteLink = partner.website ? '<a href="' + partner.website.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 text-sm underline mt-2 inline-block">Bezoek website</a>' : '';
+                    const escapedName = (partner.name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const escapedDescription = partner.description ? (partner.description || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+                    const logoHtml = partner.logo_url ? '<div class="mb-4 flex justify-center"><img src="' + partner.logo_url + '" alt="' + escapedName + '" class="h-24 w-auto object-contain max-w-full"></div>' : '';
+                    const descriptionHtml = escapedDescription ? '<p class="text-gray-700 text-sm mb-3">' + escapedDescription + '</p>' : '';
+                    
+                    return '<div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover text-center">' +
+                        logoHtml +
+                        '<h3 class="text-xl font-bold text-gray-800 mb-2">' + escapedName + '</h3>' +
+                        descriptionHtml +
+                        zoneInfo +
+                        websiteLink +
+                        '</div>';
+                }).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading partners:', error);
+        const internContainer = document.getElementById('intern-partners');
+        const externContainer = document.getElementById('extern-partners');
+        if (internContainer) {
+            internContainer.innerHTML = '<p class="text-red-600 text-center col-span-full">Fout bij laden van partners. Probeer de pagina te verversen.</p>';
+        }
+        if (externContainer) {
+            externContainer.innerHTML = '<p class="text-red-600 text-center col-span-full">Fout bij laden van partners. Probeer de pagina te verversen.</p>';
+        }
+    }
+}
+
+// Initialize when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadPartnersPage);
+} else {
+    loadPartnersPage();
+}
+</script>
 

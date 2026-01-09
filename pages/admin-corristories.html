@@ -1,13 +1,10 @@
 <div class="page-background">
     <section class="py-20 px-4 min-h-screen">
         <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between mb-8">
+            <div class="mb-8">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
-                    Corristories Beheren
+                    Corristories
                 </h1>
-                <a href="/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                    ← Terug
-                </a>
             </div>
 
             <div id="admin-access-denied" class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg text-center hidden mb-6">
@@ -368,7 +365,7 @@ if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.pathname === '/admin/corristories') {
+        if (window.location.pathname === '/beheer-corristories') {
             checkAdminAccess();
         }
     };

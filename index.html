@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Corridor - Urban Hub onder het Viaduct van Gentbrugge</title>
     <!-- Clean deployment -->
-    <link rel="icon" type="image/png" href="./public/LogoCorridor.png">
-    <link rel="apple-touch-icon" href="./public/LogoCorridor.png">
+    <link rel="icon" type="image/png" href="/public/LogoCorridor.png">
+    <link rel="apple-touch-icon" href="/public/LogoCorridor.png">
     <!-- Tailwind CSS CDN (development only - for production use PostCSS/Tailwind CLI) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -350,6 +350,22 @@
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
+            position: relative;
+            z-index: 10002;
+            pointer-events: auto;
+            /* Ensure all interactive elements are clickable */
+        }
+        
+        /* Ensure file inputs and other form elements are clickable */
+        .modal-content input[type="file"],
+        .modal-content input[type="text"],
+        .modal-content input[type="url"],
+        .modal-content select,
+        .modal-content textarea,
+        .modal-content button {
+            pointer-events: auto;
+            position: relative;
+            z-index: 10003;
         }
     </style>
 </head>
@@ -357,7 +373,7 @@
     <!-- Parallax Container (only for home page) -->
     <div id="parallax-container" class="fixed inset-0 pointer-events-none" style="display: none;">
         <!-- Background Layers -->
-        <div class="parallax-layer" data-speed="0.1" style="background-image: url('./public/asVanDeBrug.jpg'); background-size: cover; background-position: center; opacity: 0.3;"></div>
+        <div class="parallax-layer" data-speed="0.1" style="background-image: url('/public/asVanDeBrug.jpg'); background-size: cover; background-position: center; opacity: 0.3;"></div>
         <div class="parallax-layer bg-layer-skate" data-speed="0.2"></div>
         <div class="parallax-layer bg-layer-football" data-speed="0.3"></div>
         <div class="parallax-layer bg-layer-basketball" data-speed="0.4"></div>
@@ -665,7 +681,7 @@
                 await window.authManager.signOut();
                 if (window.navigation) window.navigation.updateAuthButtons();
                 const currentPath = window.location.pathname || '/';
-                if (currentPath === '/profiel' || currentPath.startsWith('/admin')) {
+                if (currentPath === '/profiel' || currentPath.startsWith('/beheer')) {
                     if (window.router) {
                         window.router.navigate('/');
                     } else {
@@ -784,6 +800,115 @@
                     }
                 } catch (error) {
                     // Silent fail for zones
+                }
+console.log('Container and video found! Loading animation from storage...');
+                                     
+                                     // Clear any existing sources (remove old hardcoded video if any)
+                                     animationVideo.innerHTML = '';
+                                     
+                                     // Create new source element with storage URL
+                                     const source = document.createElement('source');
+                                     source.src = publicUrl;
+                                     source.type = 'video/mp4';
+                                     animationVideo.appendChild(source);
+                                     
+                                     // Show the container (remove hidden class)
+                                     animationContainer.classList.remove('hidden');
+                                     console.log('Container shown, hidden class removed');
+                                     
+                // Load intro animation from storage
+                try {
+                    if (window.supabaseClient) {
+                        console.log('Loading animation from storage...');
+                        const { data: files, error } = await window.supabaseClient.storage
+                            .from('intro-animations')
+                            .list('', {
+                                limit: 1,
+                                sortBy: { column: 'created_at', order: 'desc' }
+                            });
+
+                        console.log('Storage list result:', { files, error });
+
+                        if (error) {
+                            console.error('Error listing files:', error);
+                        } else if (files && files.length > 0) {
+                            const fileName = files[0].name;
+                            console.log('Found animation file:', fileName);
+                            
+                            const { data: { publicUrl } } = window.supabaseClient.storage
+                                .from('intro-animations')
+                                .getPublicUrl(fileName);
+
+                            console.log('Public URL:', publicUrl);
+
+                             // Wait for DOM elements to be available (retry mechanism)
+                             // The router loads HTML asynchronously, so elements might not be ready yet
+                             let attempts = 0;
+                             const maxAttempts = 50; // Try for 5 seconds (more time for router to load)
+                             
+                             const loadAnimationIntoDOM = () => {
+                                 // Try to find elements - check both in main content and in loaded page
+                                 const mainContent = document.getElementById('main-content');
+                                 let animationContainer = document.getElementById('animation-container');
+                                 let animationVideo = document.getElementById('intro-animation');
+                                 
+                                 // If not found in main document, try searching in main-content
+                                 if (!animationContainer && mainContent) {
+                                     animationContainer = mainContent.querySelector('#animation-container');
+                                 }
+                                 if (!animationVideo && mainContent) {
+                                     animationVideo = mainContent.querySelector('#intro-animation');
+                                 }
+                                 
+                                 if (animationContainer && animationVideo) {
+                                     
+                                     // Load and play the video
+                                     animationVideo.load();
+                                     
+                                     // Wait for video to load, then play
+                                     animationVideo.addEventListener('loadeddata', () => {
+                                         console.log('Video data loaded from storage, attempting to play');
+                                         animationVideo.play().catch(err => {
+                                             console.log('Autoplay prevented, user interaction required:', err);
+                                         });
+                                     }, { once: true });
+                                     
+                                     // Also try to play immediately (might fail due to autoplay policy)
+                                     animationVideo.play().catch(err => {
+                                         console.log('Immediate play failed (expected), will retry after load:', err);
+                                     });
+                                     
+                                     console.log('Animation loaded from storage:', publicUrl);
+                                     return true; // Success
+                                 } else {
+                                     attempts++;
+                                     if (attempts < maxAttempts) {
+                                         if (attempts % 5 === 0) { // Log every 5th attempt to reduce spam
+                                             console.log(`Elements not found yet, retrying... (${attempts}/${maxAttempts})`);
+                                         }
+                                         setTimeout(loadAnimationIntoDOM, 100);
+                                     } else {
+                                         console.error('Animation container or video element not found after', maxAttempts, 'attempts!');
+                                         console.error('Searched in:', {
+                                             mainDocument: !!document.getElementById('animation-container'),
+                                             mainContent: mainContent ? !!mainContent.querySelector('#animation-container') : 'main-content not found'
+                                         });
+                                     }
+                                     return false; // Not ready yet
+                                 }
+                             };
+                             
+                             // Start trying to load the animation
+                             loadAnimationIntoDOM();
+                        } else {
+                            console.log('No animation files found in storage');
+                        }
+                    } else {
+                        console.log('Supabase client not available');
+                    }
+                } catch (error) {
+                    console.error('Error loading animation from storage:', error);
+                    // Silent fail for animation - bucket might not exist yet
                 }
             } catch (error) {
                 console.error('Error loading data:', error.message);
