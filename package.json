@@ -6,7 +6,8 @@
     "build": "node scripts/build-config.js",
     "dev": "node scripts/build-config.js",
     "start": "node server.js",
-    "start:simple": "live-server --port=8000 --open=/"
+    "start:simple": "live-server --port=8000 --open=/",
+    "check-bucket": "node check-bucket.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"
