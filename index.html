@@ -693,6 +693,20 @@
             }
         }
 
+        // Clear any stale auth tokens on page load
+        async function clearStaleAuthTokens() {
+            try {
+                if (window.supabaseClient) {
+                    // Clear any stored session that might be causing refresh token errors
+                    await window.supabaseClient.auth.signOut({ scope: 'local' });
+                    console.log('Cleared stale auth tokens');
+                }
+            } catch (error) {
+                // Ignore errors during cleanup
+                console.log('Auth cleanup completed');
+            }
+        }
+
         // Wait for database manager to be ready
         async function waitForDbManager(maxAttempts = 50) {
             let attempts = 0;
@@ -834,21 +848,7 @@
                 } catch (error) {
                     // Silent fail for zones
                 }
-console.log('Container and video found! Loading animation from storage...');
-                                     
-                                     // Clear any existing sources (remove old hardcoded video if any)
-                                     animationVideo.innerHTML = '';
-                                     
-                                     // Create new source element with storage URL
-                                     const source = document.createElement('source');
-                                     source.src = publicUrl;
-                                     source.type = 'video/mp4';
-                                     animationVideo.appendChild(source);
-                                     
-                                     // Show the container (remove hidden class)
-                                     animationContainer.classList.remove('hidden');
-                                     console.log('Container shown, hidden class removed');
-                                     
+
                 // Load intro animation from storage
                 try {
                     if (window.supabaseClient) {
@@ -1027,6 +1027,9 @@ console.log('Container and video found! Loading animation from storage...');
             initSectionAnimations();
             initFloatingGif();
             initHeroVideo();
+
+            // Clear stale auth tokens to prevent refresh token errors
+            clearStaleAuthTokens();
 
             // Only load data for homepage
             if (window.location.pathname === '/' || window.location.pathname === '/home') {
