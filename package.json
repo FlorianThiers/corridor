@@ -6,8 +6,7 @@
     "build": "node scripts/build-config.js",
     "dev": "node scripts/build-config.js",
     "start": "node server.js",
-    "start:simple": "live-server --port=8000 --open=/",
-    "postinstall": "node scripts/build-config.js"
+    "start:simple": "live-server --port=8000 --open=/"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"

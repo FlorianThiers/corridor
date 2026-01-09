@@ -73,9 +73,8 @@ jspm_packages/
 # TernJS port file
 .tern-port
 
-# Development files
+# Development files (server.js not needed for static site)
 server.js
-scripts/
 
 # IDE files
 .vscode/
