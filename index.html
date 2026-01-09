@@ -706,6 +706,39 @@
             return false;
         }
 
+        // Debug function to test animation loading
+        window.testAnimation = function() {
+            console.log('Testing animation loading...');
+            const mainContent = document.getElementById('main-content');
+            const animationContainer = mainContent ? mainContent.querySelector('#animation-container') : null;
+            const animationVideo = mainContent ? mainContent.querySelector('#intro-animation') : null;
+
+            console.log('Elements found:', {
+                mainContent: !!mainContent,
+                animationContainer: !!animationContainer,
+                animationVideo: !!animationVideo
+            });
+
+            if (animationContainer && animationVideo) {
+                const testUrl = 'https://vwbrvxkzjwpppagkpipf.supabase.co/storage/v1/object/public/intro-animations/intro-animation.mp4';
+                console.log('Testing URL:', testUrl);
+
+                animationVideo.innerHTML = `<source src="${testUrl}" type="video/mp4">`;
+                animationVideo.load();
+
+                animationVideo.addEventListener('loadeddata', () => {
+                    console.log('✅ Video loaded successfully!');
+                    animationContainer.classList.remove('hidden');
+                }, { once: true });
+
+                animationVideo.addEventListener('error', (e) => {
+                    console.error('❌ Video failed to load:', e);
+                }, { once: true });
+            } else {
+                console.error('❌ Animation elements not found');
+            }
+        };
+
         // Load data from database
         window.isLoadingData = false;
         window.loadData = async function loadData() {
