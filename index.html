@@ -645,7 +645,7 @@
                 errorDiv.classList.add('hidden');
                 setTimeout(() => {
                     document.getElementById('login-modal').classList.remove('active');
-                    if (window.navigation) window.navigation.updateAuthButtons();
+                    if (window.updateMenuAuthButtons) window.updateMenuAuthButtons();
                 }, 1500);
             } catch (error) {
                 errorDiv.textContent = error.message || 'Inloggen mislukt. Probeer opnieuw.';
@@ -920,10 +920,18 @@
                                  });
 
                                  if (animationContainer && animationVideo) {
-                                     
+
+                                     // Set the video source first
+                                     animationVideo.innerHTML = `<source src="${publicUrl}" type="video/mp4">`;
+                                     console.log('Set video source to:', publicUrl);
+
+                                     // Show the container immediately (remove hidden class)
+                                     animationContainer.classList.remove('hidden');
+                                     console.log('Animation container made visible');
+
                                      // Load and play the video
                                      animationVideo.load();
-                                     
+
                                      // Wait for video to load, then play
                                      animationVideo.addEventListener('loadeddata', () => {
                                          console.log('Video data loaded from storage, attempting to play');
@@ -931,12 +939,12 @@
                                              console.log('Autoplay prevented, user interaction required:', err);
                                          });
                                      }, { once: true });
-                                     
+
                                      // Also try to play immediately (might fail due to autoplay policy)
                                      animationVideo.play().catch(err => {
                                          console.log('Immediate play failed (expected), will retry after load:', err);
                                      });
-                                     
+
                                      console.log('Animation loaded from storage:', publicUrl);
                                      return true; // Success
                                  } else {

@@ -118,8 +118,8 @@ class AuthManager {
         }
         
         // Trigger menu update if hamburger menu is initialized
-        if (window.updateMenuAuthButtons && typeof window.updateMenuAuthButtons === 'function') {
-            window.updateMenuAuthButtons();
+        if (window.navigation && typeof window.navigation.updateAuthButtons === 'function') {
+            window.navigation.updateAuthButtons();
         }
     }
 
