@@ -941,6 +941,37 @@ console.log('Container and video found! Loading animation from storage...');
                              }, 1000);
                         } else {
                             console.log('No animation files found in storage');
+                            // Fallback: try to load directly by filename if we know it exists
+                            console.log('Trying fallback: loading intro-animation.mp4 directly');
+                            const fallbackUrl = 'https://vwbrvxkzjwpppagkpipf.supabase.co/storage/v1/object/public/intro-animations/intro-animation.mp4';
+                            console.log('Fallback URL:', fallbackUrl);
+
+                            // Try to load with fallback URL
+                            const loadAnimationIntoDOMFallback = () => {
+                                const mainContent = document.getElementById('main-content');
+                                let animationContainer = mainContent ? mainContent.querySelector('#animation-container') : null;
+                                let animationVideo = mainContent ? mainContent.querySelector('#intro-animation') : null;
+
+                                if (animationContainer && animationVideo) {
+                                    console.log('Loading video with fallback URL...');
+                                    animationVideo.innerHTML = `<source src="${fallbackUrl}" type="video/mp4">`;
+                                    animationVideo.load();
+
+                                    animationVideo.addEventListener('loadeddata', () => {
+                                        console.log('Fallback video loaded successfully!');
+                                        animationContainer.classList.remove('hidden');
+                                    }, { once: true });
+
+                                    animationVideo.addEventListener('error', (e) => {
+                                        console.error('Fallback video failed to load:', e);
+                                    }, { once: true });
+                                } else {
+                                    console.log('Elements not found for fallback, retrying...');
+                                    setTimeout(loadAnimationIntoDOMFallback, 500);
+                                }
+                            };
+
+                            loadAnimationIntoDOMFallback();
                         }
                     } else {
                         console.log('Supabase client not available');
