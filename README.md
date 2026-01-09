@@ -108,6 +108,15 @@ Gebruik de `nginx.conf` configuratie als template voor je server setup.
    - `SUPABASE_ANON_KEY`
 4. **Deploy** - het `vercel.json` bestand regelt automatisch het routing
 
+**⚠️ Belangrijk voor Vercel:**
+- Zorg dat `SUPABASE_URL` en `SUPABASE_ANON_KEY` zijn ingesteld in Vercel dashboard (Project Settings > Environment Variables)
+- De build stap genereert automatisch `js/supabase-config.js`
+- Als deployment faalt:
+  1. Check de build logs in Vercel dashboard
+  2. Zorg dat alle environment variables correct zijn ingesteld
+  3. Controleer of de `.vercelignore` niet te veel bestanden uitsluit
+  4. Probeer een manual redeploy via Vercel dashboard
+
 #### **Netlify**
 1. **Push naar Git repository**
 2. **Import project** in Netlify dashboard
