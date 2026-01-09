@@ -121,22 +121,6 @@
             );
         }
 
-        /* Corrigirls page - pink/purple gradient */
-        .page-background.corrigirls-bg {
-            background: linear-gradient(180deg, 
-                rgba(255, 182, 193, 0.4) 0%,
-                rgba(255, 192, 203, 0.4) 10%,
-                rgba(255, 200, 220, 0.4) 20%,
-                rgba(255, 210, 230, 0.4) 30%,
-                rgba(240, 200, 240, 0.4) 40%,
-                rgba(230, 190, 250, 0.4) 50%,
-                rgba(220, 180, 255, 0.4) 60%,
-                rgba(230, 190, 250, 0.4) 70%,
-                rgba(240, 200, 240, 0.4) 80%,
-                rgba(255, 210, 230, 0.4) 90%,
-                rgba(255, 200, 220, 0.4) 100%
-            );
-        }
 
         /* Ensure sections blend seamlessly - transparent so background shows through */
         section[class*="section-gradient"] {
@@ -467,11 +451,11 @@
 
     <!-- Scripts -->
     <!-- Load Supabase modules first -->
-    <script src="js/supabase-config.js"></script>
-    <script src="js/database.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/router.js"></script>
-    <script src="js/navigation.js"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/database.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/navigation.js"></script>
     
     <script>
         // Initialize GSAP ScrollTrigger
@@ -480,7 +464,8 @@
         // Parallax effect for background layers (only on home page)
         function initParallax() {
             const parallaxContainer = document.getElementById('parallax-container');
-            if (parallaxContainer && (window.location.hash === '#/' || window.location.hash === '')) {
+            const currentPath = window.location.pathname || '/';
+            if (parallaxContainer && (currentPath === '/' || currentPath === '/home')) {
                 parallaxContainer.style.display = 'block';
                 
                 gsap.utils.toArray('.parallax-layer').forEach((layer) => {
@@ -503,13 +488,14 @@
 
         // Smooth scrolling for anchor links
         document.addEventListener('click', function(e) {
-            if (e.target.matches('a[href^="#"]')) {
-                const href = e.target.getAttribute('href');
-                if (href.startsWith('#/')) {
-                    // Let router handle it
+            const link = e.target.closest('a[href^="#"]');
+            if (link) {
+                const href = link.getAttribute('href');
+                // Skip if it's a route link (starts with /) - router handles those
+                if (href.startsWith('/')) {
                     return;
                 }
-                // Handle anchor links within pages
+                // Handle anchor links within pages (like #section-id)
                 e.preventDefault();
                 const target = document.querySelector(href);
                 if (target) {
@@ -678,12 +664,30 @@
             try {
                 await window.authManager.signOut();
                 if (window.navigation) window.navigation.updateAuthButtons();
-                if (window.location.hash === '#/profiel' || window.location.hash === '#/admin') {
-                    window.location.hash = '#/';
+                const currentPath = window.location.pathname || '/';
+                if (currentPath === '/profiel' || currentPath.startsWith('/admin')) {
+                    if (window.router) {
+                        window.router.navigate('/');
+                    } else {
+                        window.location.pathname = '/';
+                    }
                 }
             } catch (error) {
                 console.error('Logout failed:', error.message);
             }
+        }
+
+        // Wait for database manager to be ready
+        async function waitForDbManager(maxAttempts = 50) {
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+                if (window.dbManager && window.dbManager.supabase && window.supabaseClient) {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            return false;
         }
 
         // Load data from database
@@ -694,62 +698,38 @@
                 return;
             }
 
+            // Wait for database manager if not ready
             if (!window.supabaseClient || !window.dbManager || !window.dbManager.supabase) {
-                setTimeout(window.loadData, 500);
-                return;
+                const dbReady = await waitForDbManager();
+                if (!dbReady) {
+                    setTimeout(window.loadData, 500);
+                    return;
+                }
             }
 
             window.isLoadingData = true;
             
             try {
-                // Load activities
+                // Load evenementen (large events)
                 try {
-                    const activities = await window.dbManager.getActivities();
-                    const activiteitenContainer = document.getElementById('activiteiten-container');
-                    if (activiteitenContainer && activities && activities.length > 0) {
-                        activiteitenContainer.innerHTML = activities.map(activity => `
-                            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">${activity.title}</h3>
-                                <p class="text-gray-700 text-sm mb-2">${activity.description || ''}</p>
-                                ${activity.zones ? `<p class="text-gray-600 text-xs">Zone: ${activity.zones.name}</p>` : ''}
-                            </div>
-                        `).join('');
-                    }
-                } catch (error) {
-                    console.error('Error loading activities:', error.message);
-                }
-
-                // Load Corrigirls activities
-                try {
-                    const corrigirls = await window.dbManager.getActivities('corrigirls');
-                    const corrigirlsContainer = document.getElementById('corrigirls-container');
-                    if (corrigirlsContainer && corrigirls && corrigirls.length > 0) {
-                        corrigirlsContainer.innerHTML = corrigirls.map(activity => `
-                            <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">${activity.title}</h3>
-                                <p class="text-gray-700 text-sm">${activity.description || ''}</p>
-                            </div>
-                        `).join('');
-                    }
-                } catch (error) {
-                    // Silent fail for Corrigirls activities
-                }
-
-                // Load agenda items
-                try {
-                    const agendaItems = await window.dbManager.getAgendaItems();
+                    const evenementen = await window.dbManager.getEvenementen();
+                    
                     const evenementenContainer = document.getElementById('evenementen-container');
                     const agendaContainer = document.getElementById('agenda-container');
                     
-                    if (agendaItems && agendaItems.length > 0) {
-                        const agendaHTML = agendaItems.map(item => {
+                    if (evenementen && evenementen.length > 0) {
+                        const agendaHTML = evenementen.map(item => {
                             const startDate = new Date(item.start_datetime);
                             const endDate = item.end_datetime ? new Date(item.end_datetime) : null;
+                            const isCorrigirls = item.for_girls;
                             return `
-                                <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover ${item.for_girls ? 'border-l-4 border-pink-500' : ''}">
+                                <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover ${isCorrigirls ? 'border-l-4 border-pink-500' : ''}">
                                     <div class="flex items-start justify-between mb-2">
                                         <h3 class="text-xl font-bold text-gray-800">${item.title}</h3>
-                                        ${item.for_girls ? '<span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium whitespace-nowrap">Corrigirls</span>' : ''}
+                                        <div class="flex gap-2">
+                                            <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium whitespace-nowrap">Evenement</span>
+                                            ${isCorrigirls ? '<span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium whitespace-nowrap">Corrigirls</span>' : ''}
+                                        </div>
                                     </div>
                                     ${item.description ? `<p class="text-gray-700 text-sm mb-2">${item.description}</p>` : ''}
                                     <div class="flex items-center gap-4 text-xs text-gray-600">
@@ -827,8 +807,9 @@
         }
 
         // Listen for route changes - reload data when returning to homepage
-        window.addEventListener('hashchange', () => {
-            const route = window.location.hash.slice(1) || '/';
+        // Use popstate for History API navigation
+        window.addEventListener('popstate', () => {
+            const route = window.location.pathname || '/';
             // Reload data when navigating to homepage
             if (route === '/' || route === '/home') {
                 // Reset loading flag to allow reload
@@ -836,6 +817,22 @@
                     window.isLoadingData = false;
                 }
                 // Wait a bit for page to load, then reload data
+                setTimeout(() => {
+                    if (window.loadData) {
+                        window.loadData();
+                    }
+                }, 300);
+            }
+            setTimeout(initializePage, 100);
+        });
+        
+        // Also listen for custom route change events from router
+        window.addEventListener('routechange', () => {
+            const route = window.location.pathname || '/';
+            if (route === '/' || route === '/home') {
+                if (window.isLoadingData !== undefined) {
+                    window.isLoadingData = false;
+                }
                 setTimeout(() => {
                     if (window.loadData) {
                         window.loadData();

@@ -106,7 +106,7 @@
 // Calendar functionality
 (function() {
     let currentDate = new Date();
-    let agendaItems = [];
+    let agendaItems = []; // Large events
     let selectedDate = null;
 
     function initCalendar() {
@@ -161,55 +161,37 @@
             // Check if this day has events
             const dayEvents = getEventsForDate(cellDate);
             const hasEvents = dayEvents.length > 0;
-            const girlsEventsCount = dayEvents.filter(e => e.for_girls).length;
-            const totalEventsCount = dayEvents.length;
-            const girlsPercentage = totalEventsCount > 0 ? (girlsEventsCount / totalEventsCount) * 100 : 0;
             
-            // Determine background style based on events
+            // Debug: log first day with events
+            if (day === 1 && hasEvents) {
+                console.log('Day 1 events:', dayEvents, 'dateStr:', dateStr, 'activities count:', activities.length);
+            }
+            
+            // Determine background style - only for today
             let backgroundStyle = '';
             let textColor = 'text-gray-800';
             
             if (isToday(cellDate)) {
-                // Today gets special treatment - always pink
-                backgroundStyle = 'bg-pink-500';
+                // Today gets special treatment - always blue
+                backgroundStyle = 'bg-blue-500';
                 textColor = 'text-white font-bold';
-            } else if (hasEvents) {
-                // Calculate gradient based on Corrigirls percentage
-                if (girlsPercentage === 100) {
-                    // All events are Corrigirls - full pink
-                    backgroundStyle = 'bg-pink-400';
-                    textColor = 'text-white';
-                } else if (girlsPercentage === 0) {
-                    // No Corrigirls events - rainbow gradient (like page background)
-                    // Use inline style for complex gradient
-                    dayCell.style.background = `linear-gradient(135deg, 
-                        rgba(255, 182, 193, 0.6) 0%,
-                        rgba(255, 200, 189, 0.6) 20%,
-                        rgba(255, 218, 185, 0.6) 40%,
-                        rgba(255, 255, 186, 0.6) 60%,
-                        rgba(186, 255, 201, 0.6) 80%,
-                        rgba(186, 225, 255, 0.6) 100%
-                    )`;
-                    backgroundStyle = ''; // Clear class since we're using inline style
-                } else {
-                    // Mixed - create gradient with pink on left, rainbow on right
-                    // The percentage determines where the split happens
-                    const pinkStop = girlsPercentage;
-                    dayCell.style.background = `linear-gradient(to right, 
-                        rgba(251, 113, 133, 0.8) 0%, 
-                        rgba(251, 113, 133, 0.8) ${pinkStop}%,
-                        rgba(255, 182, 193, 0.6) ${pinkStop}%,
-                        rgba(255, 200, 189, 0.6) ${Math.min(pinkStop + 10, 90)}%,
-                        rgba(255, 218, 185, 0.6) ${Math.min(pinkStop + 20, 95)}%,
-                        rgba(255, 255, 186, 0.6) 70%,
-                        rgba(186, 255, 201, 0.6) 85%,
-                        rgba(186, 225, 255, 0.6) 100%
-                    )`;
-                    backgroundStyle = ''; // Clear class since we're using inline style
-                }
             } else {
-                // No events - gray background
+                // Normal day - light gray background
                 backgroundStyle = 'bg-gray-100/50';
+            }
+            
+            // Create dots for events
+            let dotsHTML = '';
+            if (hasEvents) {
+                const dots = [];
+                // Add dots for evenementen - purple for normal, pink for corrigirls
+                dayEvents.forEach(event => {
+                    const isCorrigirls = event.for_girls;
+                    const dotColor = isCorrigirls ? 'bg-pink-500' : 'bg-purple-500';
+                    dots.push(`<div class="w-2 h-2 rounded-full ${dotColor}"></div>`);
+                });
+                
+                dotsHTML = `<div class="flex flex-wrap gap-1 mt-1 justify-center">${dots.join('')}</div>`;
             }
             
             dayCell.className = `aspect-square p-2 rounded-lg cursor-pointer transition-all ${backgroundStyle} ${textColor} ${
@@ -218,9 +200,7 @@
             
             dayCell.innerHTML = `
                 <div class="text-sm font-medium">${day}</div>
-                ${hasEvents ? `<div class="text-xs mt-1">
-                    <div class="text-gray-700 font-semibold">${dayEvents.length}</div>
-                </div>` : ''}
+                ${dotsHTML}
             `;
             
             if (hasEvents) {
@@ -234,7 +214,11 @@
     }
 
     function formatDateString(date) {
-        return date.toISOString().split('T')[0];
+        // Use local date to avoid timezone issues
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     function isToday(date) {
@@ -246,11 +230,21 @@
 
     function getEventsForDate(date) {
         const dateStr = formatDateString(date);
-        return agendaItems.filter(item => {
-            const eventDate = new Date(item.start_datetime);
-            const eventDateStr = formatDateString(eventDate);
-            return eventDateStr === dateStr;
+        const events = [];
+        
+        // Add agenda items (large events)
+        agendaItems.forEach(item => {
+            if (item.start_datetime) {
+                const eventDate = new Date(item.start_datetime);
+                const eventDateStr = formatDateString(eventDate);
+                if (eventDateStr === dateStr) {
+                    events.push(item);
+                }
+            }
         });
+        
+        
+        return events;
     }
 
     function selectDate(date, events) {
@@ -269,22 +263,33 @@
         const eventsList = document.getElementById('selected-day-events-list');
         eventsList.innerHTML = '';
         
-        if (events.length === 0) {
+        // Sort events by start_datetime (time of day)
+        const sortedEvents = events.sort((a, b) => {
+            const dateA = new Date(a.start_datetime);
+            const dateB = new Date(b.start_datetime);
+            return dateA - dateB;
+        });
+        
+        if (sortedEvents.length === 0) {
             eventsList.innerHTML = '<p class="text-gray-600">Geen events op deze dag.</p>';
         } else {
-            events.forEach(event => {
+            sortedEvents.forEach(event => {
                 const startDate = new Date(event.start_datetime);
                 const endDate = event.end_datetime ? new Date(event.end_datetime) : null;
                 
                 const eventCard = document.createElement('div');
+                const isCorrigirls = event.for_girls;
                 eventCard.className = `bg-white/80 backdrop-blur-sm rounded-2xl p-4 card-hover ${
-                    event.for_girls ? 'border-l-4 border-pink-500' : ''
+                    isCorrigirls ? 'border-l-4 border-pink-500' : ''
                 }`;
                 
                 eventCard.innerHTML = `
                     <div class="flex items-start justify-between mb-2">
                         <h4 class="text-lg font-bold text-gray-800">${event.title}</h4>
-                        ${event.for_girls ? '<span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">Corrigirls</span>' : ''}
+                        <div class="flex gap-2">
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">Evenement</span>
+                            ${isCorrigirls ? '<span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">Corrigirls</span>' : ''}
+                        </div>
                     </div>
                     ${event.description ? `<p class="text-gray-700 text-sm mb-2">${event.description}</p>` : ''}
                     <div class="flex items-center gap-4 text-xs text-gray-600">
@@ -304,19 +309,39 @@
         document.getElementById('selected-day-events').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
+    // Wait for database manager to be ready
+    async function waitForDbManager(maxAttempts = 50) {
+        let attempts = 0;
+        while (attempts < maxAttempts) {
+            if (window.dbManager && window.dbManager.supabase) {
+                return true;
+            }
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        return false;
+    }
+
     async function loadAgendaItems() {
         try {
-            if (window.dbManager) {
-                agendaItems = await window.dbManager.getAgendaItems();
-                renderCalendar();
-                renderAllEvents();
-            } else {
-                setTimeout(loadAgendaItems, 500);
+            // Wait for database manager if not ready
+            if (!window.dbManager || !window.dbManager.supabase) {
+                const dbReady = await waitForDbManager();
+                if (!dbReady) {
+                    console.error('Database manager not ready for loadAgendaItems');
+                    setTimeout(loadAgendaItems, 500);
+                    return;
+                }
             }
+            
+            agendaItems = await window.dbManager.getEvenementen();
+            renderCalendar();
+            renderAllEvents();
         } catch (error) {
-            console.error('Error loading agenda items:', error);
+            console.error('Error loading evenementen:', error);
         }
     }
+
 
     function renderAllEvents() {
         const container = document.getElementById('all-events-list');
@@ -327,15 +352,29 @@
             return;
         }
         
+        // Use agenda items (evenementen)
+        const allEvents = [...agendaItems];
+        
         // Group events by date
         const eventsByDate = {};
-        agendaItems.forEach(event => {
-            const date = new Date(event.start_datetime);
-            const dateStr = formatDateString(date);
-            if (!eventsByDate[dateStr]) {
-                eventsByDate[dateStr] = [];
+        allEvents.forEach(event => {
+            if (event.start_datetime) {
+                const date = new Date(event.start_datetime);
+                const dateStr = formatDateString(date);
+                if (!eventsByDate[dateStr]) {
+                    eventsByDate[dateStr] = [];
+                }
+                eventsByDate[dateStr].push(event);
             }
-            eventsByDate[dateStr].push(event);
+        });
+        
+        // Sort events within each date by start_datetime
+        Object.keys(eventsByDate).forEach(dateStr => {
+            eventsByDate[dateStr].sort((a, b) => {
+                const dateA = new Date(a.start_datetime);
+                const dateB = new Date(b.start_datetime);
+                return dateA - dateB;
+            });
         });
         
         // Render events grouped by date
@@ -359,11 +398,14 @@
                             
                             return `
                                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 card-hover ${
-                                    event.for_girls ? 'border-l-4 border-pink-500' : ''
-                                }">
+                                    (event.for_girls || event.activity_type === 'corrigirls') ? 'border-l-4 border-pink-500' : ''
+                                } ${event.is_activity ? 'opacity-90' : ''}">
                                     <div class="flex items-start justify-between mb-2">
                                         <h4 class="text-lg font-bold text-gray-800">${event.title}</h4>
-                                        ${event.for_girls ? '<span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">Corrigirls</span>' : ''}
+                                        <div class="flex gap-2">
+                                            ${event.is_activity ? '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Activiteit</span>' : '<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">Evenement</span>'}
+                                            ${(event.for_girls || event.activity_type === 'corrigirls') ? '<span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">Corrigirls</span>' : ''}
+                                        </div>
                                     </div>
                                     ${event.description ? `<p class="text-gray-700 text-sm mb-2">${event.description}</p>` : ''}
                                     <div class="flex items-center gap-4 text-xs text-gray-600">
@@ -380,10 +422,23 @@
     }
 
     // Initialize when page loads
+    function initializeAgenda() {
+        console.log('Initializing agenda page...');
+        // Reset agendaItems to ensure fresh load
+        agendaItems = [];
+        initCalendar();
+    }
+    
+    // Make functions available globally for router
+    window.initCalendar = initCalendar;
+    window.initializeAgenda = initializeAgenda;
+    
+    // Initialize immediately
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initCalendar);
     } else {
-        initCalendar();
+        // Small delay to ensure DOM is ready
+        setTimeout(initCalendar, 50);
     }
 })();
 </script>

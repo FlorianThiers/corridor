@@ -118,8 +118,7 @@ function updateProfilePage() {
         
         const roleNames = {
             'admin': 'Admin',
-            'bestuurder': 'Bestuurder',
-            'programmer': 'Programmeur',
+            'partner': 'Partner',
             'user': 'Gebruiker'
         };
         const roleDisplay = roleNames[user.role] || 'Gebruiker';
@@ -142,7 +141,7 @@ if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.hash === '#/profiel') {
+        if (window.location.pathname === '/profiel') {
             updateProfilePage();
         }
     };

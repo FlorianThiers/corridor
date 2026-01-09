@@ -5,7 +5,7 @@
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
                     Zones Beheren
                 </h1>
-                <a href="#/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                <a href="/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
                     ← Terug
                 </a>
             </div>
@@ -79,8 +79,21 @@ if (!window.adminZones) {
     };
 }
 
+// Wait for database manager to be ready
+async function waitForDbManager(maxAttempts = 50) {
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+        if (window.dbManager && window.dbManager.supabase) {
+            return true;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    return false;
+}
+
 // Check admin access
-function checkAdminAccess() {
+async function checkAdminAccess() {
     const isAdmin = window.authManager && window.authManager.isAdmin();
     const adminContent = document.getElementById('admin-content');
     const adminAccessDenied = document.getElementById('admin-access-denied');
@@ -88,7 +101,17 @@ function checkAdminAccess() {
     if (isAdmin) {
         if (adminContent) adminContent.classList.remove('hidden');
         if (adminAccessDenied) adminAccessDenied.classList.add('hidden');
-        loadZones();
+        // Wait for database manager before loading data
+        const dbReady = await waitForDbManager();
+        if (dbReady) {
+            loadZones();
+        } else {
+            console.error('Database manager not ready after waiting');
+            const container = document.getElementById('zones-list');
+            if (container) {
+                container.innerHTML = '<p class="text-red-600 text-center">Fout bij verbinden met database. Probeer de pagina te verversen.</p>';
+            }
+        }
     } else {
         if (adminContent) adminContent.classList.add('hidden');
         if (adminAccessDenied) adminAccessDenied.classList.remove('hidden');
@@ -98,8 +121,20 @@ function checkAdminAccess() {
 // Load zones
 async function loadZones() {
     try {
-        if (window.dbManager) {
-            const zones = await window.dbManager.getZones();
+        // Wait for database manager if not ready
+        if (!window.dbManager || !window.dbManager.supabase) {
+            const dbReady = await waitForDbManager();
+            if (!dbReady) {
+                console.error('Database manager not ready for loadZones');
+                const container = document.getElementById('zones-list');
+                if (container) {
+                    container.innerHTML = '<p class="text-red-600 text-center">Fout bij verbinden met database. Probeer de pagina te verversen.</p>';
+                }
+                return;
+            }
+        }
+        
+        const zones = await window.dbManager.getZones();
             const container = document.getElementById('zones-list');
             if (container) {
                 if (!zones || zones.length === 0) {
@@ -291,7 +326,7 @@ if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.hash === '#/admin/zones') {
+        if (window.location.pathname === '/admin/zones') {
             checkAdminAccess();
         }
     };

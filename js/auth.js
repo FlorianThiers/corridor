@@ -94,12 +94,13 @@ class AuthManager {
     }
     
     isAdmin() {
-        // Check if user has admin or programmer role (programmers have highest access)
-        return this.role === 'admin' || this.role === 'programmer';
+        // Check if user has admin role
+        return this.role === 'admin';
     }
     
-    isProgrammer() {
-        return this.role === 'programmer';
+    canManagePartners() {
+        // Check if user can manage partners (admin or partner role)
+        return this.role === 'admin' || this.role === 'partner';
     }
     
     hasRole(requiredRole) {

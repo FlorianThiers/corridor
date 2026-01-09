@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto">
             <div class="flex items-center justify-between mb-8">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
-                    Evenementen Beheren
+                    Partners Beheren
                 </h1>
                 <a href="/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
                     ← Terug
@@ -16,84 +16,85 @@
             </div>
 
             <div id="admin-content" class="hidden">
-                <!-- Add New Event Button -->
+                <!-- Add New Partner Button -->
                 <div class="mb-6">
-                    <button onclick="openEventModal()" class="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium">
-                        + Nieuw Evenement
+                    <button onclick="openPartnerModal()" class="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium">
+                        + Nieuwe Partner
                     </button>
                 </div>
 
-                <!-- Events List -->
-                <div id="events-list" class="space-y-4">
-                    <p class="text-gray-600 text-center">Evenementen worden geladen...</p>
+                <!-- Partners List -->
+                <div id="partners-list" class="space-y-4">
+                    <p class="text-gray-600 text-center">Partners worden geladen...</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Event Modal -->
-    <div id="event-modal" class="modal">
+    <!-- Partner Modal -->
+    <div id="partner-modal" class="modal">
         <div class="modal-content max-w-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h2 id="event-modal-title" class="text-2xl font-bold text-gray-800">Nieuw Evenement</h2>
-                <button onclick="closeEventModal()" class="text-gray-500 hover:text-gray-700">
+                <h2 id="partner-modal-title" class="text-2xl font-bold text-gray-800">Nieuwe Partner</h2>
+                <button onclick="closePartnerModal()" class="text-gray-500 hover:text-gray-700">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <form id="event-form" class="space-y-4">
+            <form id="partner-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Titel *</label>
-                    <input type="text" id="event-title" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Naam *</label>
+                    <input type="text" id="partner-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Beschrijving</label>
-                    <textarea id="event-description" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"></textarea>
+                    <textarea id="partner-description" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"></textarea>
                 </div>
                 <div class="grid md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Datum & Tijd *</label>
-                        <input type="datetime-local" id="event-start" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+                        <select id="partner-type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                            <option value="intern">Intern</option>
+                            <option value="extern">Extern</option>
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Eind Datum & Tijd</label>
-                        <input type="datetime-local" id="event-end" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                    </div>
-                </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Zone</label>
-                        <select id="event-zone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Zone (voor mede-eigenaren)</label>
+                        <select id="partner-zone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
                             <option value="">Geen zone</option>
                         </select>
                     </div>
-                    <div class="flex items-end">
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" id="event-for-girls" class="w-5 h-5 text-pink-500 rounded focus:ring-pink-500">
-                            <span class="text-sm font-medium text-gray-700">Corrigirls Evenement</span>
-                        </label>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Website URL</label>
+                        <input type="url" id="partner-website" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
+                        <input type="url" id="partner-logo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="https://... of ../public/...">
                     </div>
                 </div>
                 <div class="flex gap-4">
                     <button type="submit" class="flex-1 bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium">
                         Opslaan
                     </button>
-                    <button type="button" onclick="closeEventModal()" class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                    <button type="button" onclick="closePartnerModal()" class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
                         Annuleren
                     </button>
                 </div>
             </form>
-            <div id="event-error" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg hidden"></div>
+            <div id="partner-error" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg hidden"></div>
         </div>
     </div>
 </div>
 
 <script>
 // Use window object to prevent redeclaration errors when scripts are re-executed
-if (!window.adminEvents) {
-    window.adminEvents = {
-        currentEventId: null,
+if (!window.adminPartners) {
+    window.adminPartners = {
+        currentPartnerId: null,
         zones: []
     };
 }
@@ -111,23 +112,23 @@ async function waitForDbManager(maxAttempts = 50) {
     return false;
 }
 
-// Check admin access
+// Check admin access - allow admins, programmers, and partners
 async function checkAdminAccess() {
-    const isAdmin = window.authManager && window.authManager.isAdmin();
+    const canManage = window.authManager && (window.authManager.isAdmin() || window.authManager.canManagePartners());
     const adminContent = document.getElementById('admin-content');
     const adminAccessDenied = document.getElementById('admin-access-denied');
     
-    if (isAdmin) {
+    if (canManage) {
         if (adminContent) adminContent.classList.remove('hidden');
         if (adminAccessDenied) adminAccessDenied.classList.add('hidden');
         // Wait for database manager before loading data
         const dbReady = await waitForDbManager();
         if (dbReady) {
             loadZones();
-            loadEvents();
+            loadPartners();
         } else {
             console.error('Database manager not ready after waiting');
-            const container = document.getElementById('events-list');
+            const container = document.getElementById('partners-list');
             if (container) {
                 container.innerHTML = '<p class="text-red-600 text-center">Fout bij verbinden met database. Probeer de pagina te verversen.</p>';
             }
@@ -150,26 +151,26 @@ async function loadZones() {
             }
         }
         
-        window.adminEvents.zones = await window.dbManager.getZones();
-        const zoneSelect = document.getElementById('event-zone');
+        window.adminPartners.zones = await window.dbManager.getZones();
+        const zoneSelect = document.getElementById('partner-zone');
         if (zoneSelect) {
             zoneSelect.innerHTML = '<option value="">Geen zone</option>' + 
-                window.adminEvents.zones.map(zone => `<option value="${zone.id}">Zone ${zone.zone_number}: ${zone.name}</option>`).join('');
+                window.adminPartners.zones.map(zone => `<option value="${zone.id}">Zone ${zone.zone_number}: ${zone.name}</option>`).join('');
         }
     } catch (error) {
         console.error('Error loading zones:', error);
     }
 }
 
-// Load events (using evenementen - these are large events)
-async function loadEvents() {
+// Load partners
+async function loadPartners() {
     try {
         // Wait for database manager if not ready
         if (!window.dbManager || !window.dbManager.supabase) {
             const dbReady = await waitForDbManager();
             if (!dbReady) {
-                console.error('Database manager not ready for loadEvents');
-                const container = document.getElementById('events-list');
+                console.error('Database manager not ready for loadPartners');
+                const container = document.getElementById('partners-list');
                 if (container) {
                     container.innerHTML = '<p class="text-red-600 text-center">Fout bij verbinden met database. Probeer de pagina te verversen.</p>';
                 }
@@ -177,39 +178,43 @@ async function loadEvents() {
             }
         }
         
-        const events = await window.dbManager.getEvenementen();
-        const container = document.getElementById('events-list');
+        const partners = await window.dbManager.getPartners();
+        const container = document.getElementById('partners-list');
         if (container) {
-            if (events.length === 0) {
-                container.innerHTML = '<p class="text-gray-600 text-center">Geen evenementen gevonden.</p>';
+            if (partners.length === 0) {
+                container.innerHTML = '<p class="text-gray-600 text-center">Geen partners gevonden.</p>';
             } else {
-                container.innerHTML = events.map(event => {
-                    const startDate = new Date(event.start_datetime);
-                    const endDate = event.end_datetime ? new Date(event.end_datetime) : null;
-                    const zoneName = event.zones ? `Zone ${event.zones.zone_number}: ${event.zones.name}` : 'Geen zone';
-                    const corrigirlsBadge = event.for_girls 
-                        ? '<span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">Corrigirls</span>'
+                container.innerHTML = partners.map(partner => {
+                    // Type badge - only show if type column exists
+                    const typeBadge = partner.type 
+                        ? (partner.type === 'extern' 
+                            ? '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Extern</span>'
+                            : '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Intern</span>')
                         : '';
+                    
+                    const zoneName = partner.zones ? `Zone ${partner.zones.zone_number}: ${partner.zones.name}` : '';
+                    const zoneBadge = zoneName ? `<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">${zoneName}</span>` : '';
+                    
                     return `
-                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 card-hover ${event.for_girls ? 'border-l-4 border-pink-500' : ''}">
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 card-hover">
                             <div class="flex items-start justify-between mb-4">
                                 <div class="flex-1">
-                                    <h3 class="text-xl font-bold text-gray-800 mb-2">${event.title}</h3>
-                                    ${event.description ? `<p class="text-gray-700 mb-2">${event.description}</p>` : ''}
-                                    <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                                        <span>📅 ${startDate.toLocaleDateString('nl-NL')}</span>
-                                        <span>🕐 ${startDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}${endDate ? ` - ${endDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}` : ''}</span>
+                                    <div class="flex items-center gap-3 mb-2">
+                                        ${partner.logo_url ? `<img src="${partner.logo_url}" alt="${partner.name}" class="h-12 w-auto object-contain" onerror="this.style.display='none'">` : ''}
+                                        <h3 class="text-xl font-bold text-gray-800">${partner.name}</h3>
                                     </div>
-                                    <div class="flex items-center gap-4 text-sm text-gray-600">
-                                        <span>📍 ${zoneName}</span>
-                                        ${corrigirlsBadge}
+                                    ${partner.description ? `<p class="text-gray-700 mb-2">${partner.description}</p>` : ''}
+                                    <div class="flex items-center gap-3 flex-wrap mt-3">
+                                        ${typeBadge}
+                                        ${zoneBadge}
+                                        ${partner.website ? `<a href="${partner.website}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm underline">Website</a>` : ''}
                                     </div>
                                 </div>
                                 <div class="flex gap-2">
-                                    <button onclick="editEvent('${event.id}')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                                    <button onclick="editPartner('${partner.id}')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
                                         Bewerken
                                     </button>
-                                    <button onclick="deleteEvent('${event.id}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
+                                    <button onclick="deletePartner('${partner.id}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
                                         Verwijderen
                                     </button>
                                 </div>
@@ -220,103 +225,98 @@ async function loadEvents() {
             }
         }
     } catch (error) {
-        console.error('Error loading events:', error);
-        const container = document.getElementById('events-list');
+        console.error('Error loading partners:', error);
+        const container = document.getElementById('partners-list');
         if (container) {
             container.innerHTML = `<p class="text-red-600 text-center">Fout bij laden: ${error.message}</p>`;
         }
     }
 }
 
-// Open modal for new event
-function openEventModal(eventId = null) {
-    window.adminEvents.currentEventId = eventId;
-    const modal = document.getElementById('event-modal');
-    const form = document.getElementById('event-form');
-    const title = document.getElementById('event-modal-title');
-    const errorDiv = document.getElementById('event-error');
+// Open modal for new partner
+function openPartnerModal(partnerId = null) {
+    window.adminPartners.currentPartnerId = partnerId;
+    const modal = document.getElementById('partner-modal');
+    const form = document.getElementById('partner-form');
+    const title = document.getElementById('partner-modal-title');
+    const errorDiv = document.getElementById('partner-error');
     
     if (errorDiv) errorDiv.classList.add('hidden');
     
-    if (eventId) {
-        if (title) title.textContent = 'Evenement Bewerken';
-        loadEventData(eventId);
+    if (partnerId) {
+        if (title) title.textContent = 'Partner Bewerken';
+        // Load partner data
+        loadPartnerData(partnerId);
     } else {
-        if (title) title.textContent = 'Nieuw Evenement';
+        if (title) title.textContent = 'Nieuwe Partner';
         if (form) form.reset();
-        // Set default start time to now
-        const startInput = document.getElementById('event-start');
-        if (startInput) {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            startInput.value = now.toISOString().slice(0, 16);
-        }
     }
     
     if (modal) modal.classList.add('active');
 }
 
-// Load event data for editing
-async function loadEventData(eventId) {
+// Load partner data for editing
+async function loadPartnerData(partnerId) {
     try {
-        const events = await window.dbManager.getEvenementen();
-        const event = events.find(e => e.id === eventId);
+        const partner = await window.dbManager.getPartner(partnerId);
         
-        if (event) {
-            document.getElementById('event-title').value = event.title || '';
-            document.getElementById('event-description').value = event.description || '';
-            document.getElementById('event-zone').value = event.zone_id || '';
-            document.getElementById('event-for-girls').checked = event.for_girls || false;
-            
-            // Format datetime for input
-            const startDate = new Date(event.start_datetime);
-            startDate.setMinutes(startDate.getMinutes() - startDate.getTimezoneOffset());
-            document.getElementById('event-start').value = startDate.toISOString().slice(0, 16);
-            
-            if (event.end_datetime) {
-                const endDate = new Date(event.end_datetime);
-                endDate.setMinutes(endDate.getMinutes() - endDate.getTimezoneOffset());
-                document.getElementById('event-end').value = endDate.toISOString().slice(0, 16);
+        if (partner) {
+            document.getElementById('partner-name').value = partner.name || '';
+            // Only set fields if they exist in the database
+            if (partner.description !== undefined) {
+                document.getElementById('partner-description').value = partner.description || '';
+            }
+            if (partner.type) {
+                document.getElementById('partner-type').value = partner.type || 'intern';
+            }
+            if (partner.zone_id) {
+                document.getElementById('partner-zone').value = partner.zone_id || '';
+            }
+            if (partner.website) {
+                document.getElementById('partner-website').value = partner.website || '';
+            }
+            if (partner.logo_url) {
+                document.getElementById('partner-logo').value = partner.logo_url || '';
             }
         }
     } catch (error) {
-        console.error('Error loading event:', error);
-        showError('Fout bij laden van evenement');
+        console.error('Error loading partner:', error);
+        showError('Fout bij laden van partner');
     }
 }
 
 // Close modal
-function closeEventModal() {
-    const modal = document.getElementById('event-modal');
+function closePartnerModal() {
+    const modal = document.getElementById('partner-modal');
     if (modal) modal.classList.remove('active');
-    window.adminEvents.currentEventId = null;
-    const form = document.getElementById('event-form');
+    window.adminPartners.currentPartnerId = null;
+    const form = document.getElementById('partner-form');
     if (form) form.reset();
 }
 
-// Edit event
-function editEvent(eventId) {
-    openEventModal(eventId);
+// Edit partner
+function editPartner(partnerId) {
+    openPartnerModal(partnerId);
 }
 
-// Delete event
-async function deleteEvent(eventId) {
-    if (!confirm('Weet je zeker dat je dit evenement wilt verwijderen?')) {
+// Delete partner
+async function deletePartner(partnerId) {
+    if (!confirm('Weet je zeker dat je deze partner wilt verwijderen?')) {
         return;
     }
     
     try {
-        await window.dbManager.deleteEvenement(eventId);
-        loadEvents();
+        await window.dbManager.deletePartner(partnerId);
+        loadPartners();
     } catch (error) {
-        console.error('Error deleting event:', error);
+        console.error('Error deleting partner:', error);
         alert('Fout bij verwijderen: ' + error.message);
     }
 }
 
 // Show error
 function showError(message) {
-    const errorDiv = document.getElementById('event-error');
+    const errorDiv = document.getElementById('partner-error');
     if (errorDiv) {
         errorDiv.textContent = message;
         errorDiv.classList.remove('hidden');
@@ -324,8 +324,8 @@ function showError(message) {
 }
 
 // Initialize page - called directly and on DOMContentLoaded
-function initializeAdminEvents() {
-    const form = document.getElementById('event-form');
+function initializeAdminPartners() {
+    const form = document.getElementById('partner-form');
     if (form) {
         // Remove existing listener to prevent duplicates
         const newForm = form.cloneNode(true);
@@ -334,36 +334,49 @@ function initializeAdminEvents() {
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const title = document.getElementById('event-title').value;
-            const description = document.getElementById('event-description').value;
-            const start = document.getElementById('event-start').value;
-            const end = document.getElementById('event-end').value;
-            const zoneId = document.getElementById('event-zone').value;
-            const forGirls = document.getElementById('event-for-girls').checked;
+            const name = document.getElementById('partner-name').value;
+            const description = document.getElementById('partner-description').value;
+            const type = document.getElementById('partner-type').value;
+            const zoneId = document.getElementById('partner-zone').value;
+            const website = document.getElementById('partner-website').value;
+            const logoUrl = document.getElementById('partner-logo').value;
             
-            // Convert local datetime to ISO string
-            const startDatetime = start ? new Date(start).toISOString() : null;
-            const endDatetime = end ? new Date(end).toISOString() : null;
-            
-            const eventData = {
-                title,
-                description: description || null,
-                start_datetime: startDatetime,
-                end_datetime: endDatetime || null,
-                zone_id: zoneId || null,
-                for_girls: forGirls
+            // Build partner data - only include fields that exist in the database
+            // Based on the errors, it seems the partners table might only have: name, description
+            const partnerData = {
+                name
             };
             
+            // Only add description if it exists (try it, if it fails we'll know)
+            if (description) {
+                partnerData.description = description;
+            }
+            
+            // Note: The following columns don't exist in your partners table yet:
+            // - zone_id (you may want to add this column for zone relationships)
+            // - website (you may want to add this column)
+            // - logo_url (you may want to add this column)  
+            // - type (you may want to add this column for intern/extern)
+            // 
+            // To add these columns in Supabase:
+            // 1. Go to your Supabase dashboard
+            // 2. Navigate to Table Editor > partners
+            // 3. Add the columns you need:
+            //    - zone_id: uuid (foreign key to zones.id)
+            //    - website: text
+            //    - logo_url: text
+            //    - type: text (for 'intern' or 'extern')
+            
             try {
-                if (window.adminEvents.currentEventId) {
-                    await window.dbManager.updateEvenement(window.adminEvents.currentEventId, eventData);
+                if (window.adminPartners.currentPartnerId) {
+                    await window.dbManager.updatePartner(window.adminPartners.currentPartnerId, partnerData);
                 } else {
-                    await window.dbManager.createEvenement(eventData);
+                    await window.dbManager.createPartner(partnerData);
                 }
-                closeEventModal();
-                loadEvents();
+                closePartnerModal();
+                loadPartners();
             } catch (error) {
-                console.error('Error saving event:', error);
+                console.error('Error saving partner:', error);
                 showError('Fout bij opslaan: ' + error.message);
             }
         });
@@ -373,14 +386,14 @@ function initializeAdminEvents() {
 }
 
 // Call immediately (for router navigation)
-initializeAdminEvents();
+initializeAdminPartners();
 
 // Also call on DOMContentLoaded (for direct page loads)
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeAdminEvents);
+    document.addEventListener('DOMContentLoaded', initializeAdminPartners);
 } else {
     // Already loaded, call immediately
-    initializeAdminEvents();
+    initializeAdminPartners();
 }
 
 // Update when auth state changes
@@ -388,7 +401,7 @@ if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.pathname === '/admin/evenementen') {
+        if (window.location.pathname === '/admin/partners') {
             checkAdminAccess();
         }
     };

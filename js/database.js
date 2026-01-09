@@ -52,98 +52,8 @@ class DatabaseManager {
         return data;
     }
 
-    // Activities
-    async getActivities(activityType = null) {
-        if (!this.supabase) {
-            throw new Error('Supabase client not initialized');
-        }
-
-        // Validate and sanitize input to prevent injection
-        // Supabase already protects against SQL injection, but we add extra validation
-        if (activityType !== null && activityType !== undefined) {
-            // Only allow alphanumeric, underscore, and hyphen
-            if (!/^[a-zA-Z0-9_-]+$/.test(activityType)) {
-                throw new Error('Invalid activityType: only alphanumeric characters, underscore, and hyphen allowed');
-            }
-            // Limit length
-            if (activityType.length > 50) {
-                throw new Error('Invalid activityType: maximum length is 50 characters');
-            }
-        }
-
-        console.log('getActivities called, activityType:', activityType);
-        
-        try {
-            let queryBuilder = this.supabase.from('activities');
-            queryBuilder = queryBuilder.select('*, zones(*)');
-            queryBuilder = queryBuilder.order('created_at', { ascending: false });
-            
-            if (activityType) {
-                // Supabase .eq() automatically escapes the value - safe from SQL injection
-                queryBuilder = queryBuilder.eq('activity_type', activityType);
-            }
-            
-            const { data, error } = await queryBuilder;
-            
-            if (error) {
-                // Log error details for debugging in production
-                console.error('Database error in getActivities:', {
-                    code: error.code,
-                    message: error.message,
-                    details: error.details,
-                    hint: error.hint
-                });
-                throw error;
-            }
-            
-            return data || [];
-        } catch (error) {
-            // Log critical errors for production debugging
-            console.error('Error in getActivities:', error.message);
-            throw error;
-        }
-    }
-
-    async createActivity(activity) {
-        const { data: { user } } = await this.supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
-
-        const { data, error } = await this.supabase
-            .from('activities')
-            .insert([{
-                ...activity,
-                created_by: user.id
-            }])
-            .select()
-            .single();
-        
-        if (error) throw error;
-        return data;
-    }
-
-    async updateActivity(id, updates) {
-        const { data, error } = await this.supabase
-            .from('activities')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-        
-        if (error) throw error;
-        return data;
-    }
-
-    async deleteActivity(id) {
-        const { error } = await this.supabase
-            .from('activities')
-            .delete()
-            .eq('id', id);
-        
-        if (error) throw error;
-    }
-
-    // Agenda Items
-    async getAgendaItems(zoneId = null) {
+    // Evenementen (Large Events)
+    async getEvenementen(zoneId = null) {
         // Validate zoneId if provided
         if (zoneId !== null && zoneId !== undefined) {
             // zoneId should be a UUID or integer
@@ -157,7 +67,7 @@ class DatabaseManager {
         }
 
         let query = this.supabase
-            .from('agenda_items')
+            .from('evenementen')
             .select('*, zones(*)')
             .order('start_datetime', { ascending: true });
         
@@ -171,14 +81,14 @@ class DatabaseManager {
         return data;
     }
 
-    async createAgendaItem(item) {
+    async createEvenement(evenement) {
         const { data: { user } } = await this.supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
 
         const { data, error } = await this.supabase
-            .from('agenda_items')
+            .from('evenementen')
             .insert([{
-                ...item,
+                ...evenement,
                 created_by: user.id
             }])
             .select()
@@ -188,9 +98,9 @@ class DatabaseManager {
         return data;
     }
 
-    async updateAgendaItem(id, updates) {
+    async updateEvenement(id, updates) {
         const { data, error } = await this.supabase
-            .from('agenda_items')
+            .from('evenementen')
             .update(updates)
             .eq('id', id)
             .select()
@@ -200,13 +110,30 @@ class DatabaseManager {
         return data;
     }
 
-    async deleteAgendaItem(id) {
+    async deleteEvenement(id) {
         const { error } = await this.supabase
-            .from('agenda_items')
+            .from('evenementen')
             .delete()
             .eq('id', id);
         
         if (error) throw error;
+    }
+
+    // Legacy method name for backwards compatibility (deprecated)
+    async getAgendaItems(zoneId = null) {
+        return this.getEvenementen(zoneId);
+    }
+
+    async createAgendaItem(item) {
+        return this.createEvenement(item);
+    }
+
+    async updateAgendaItem(id, updates) {
+        return this.updateEvenement(id, updates);
+    }
+
+    async deleteAgendaItem(id) {
+        return this.deleteEvenement(id);
     }
 
     // Corristories
@@ -304,7 +231,312 @@ class DatabaseManager {
         if (error) throw error;
     }
 
-    // Partners are now hardcoded in HTML, no database method needed
+    // Partners
+    async getPartners() {
+        const { data, error } = await this.supabase
+            .from('partners')
+            .select('*')
+            .order('name', { ascending: true });
+        
+        if (error) throw error;
+        
+        // Load zones separately if zone_id column exists and has values
+        if (data && data.length > 0) {
+            // Check if any partner has zone_id (column might not exist)
+            const zoneIds = [...new Set(data.map(p => p.zone_id).filter(Boolean))];
+            if (zoneIds.length > 0) {
+                const { data: zones } = await this.supabase
+                    .from('zones')
+                    .select('*')
+                    .in('id', zoneIds);
+                
+                if (zones) {
+                    const zonesMap = new Map(zones.map(z => [z.id, z]));
+                    data.forEach(partner => {
+                        if (partner.zone_id && zonesMap.has(partner.zone_id)) {
+                            partner.zones = zonesMap.get(partner.zone_id);
+                        }
+                    });
+                }
+            }
+        }
+        
+        return data || [];
+    }
+
+    async getPartner(partnerId) {
+        if (!partnerId) {
+            throw new Error('partnerId is required');
+        }
+        if (typeof partnerId !== 'string' && typeof partnerId !== 'number') {
+            throw new Error('Invalid partnerId: must be a string or number');
+        }
+
+        const { data, error } = await this.supabase
+            .from('partners')
+            .select('*')
+            .eq('id', partnerId)
+            .single();
+        
+        if (error) throw error;
+        
+        // Load zone separately if zone_id column exists and has a value
+        if (data && data.zone_id) {
+            const { data: zone } = await this.supabase
+                .from('zones')
+                .select('*')
+                .eq('id', data.zone_id)
+                .single();
+            
+            if (zone) {
+                data.zones = zone;
+            }
+        }
+        
+        return data;
+    }
+
+    async createPartner(partner) {
+        // Check if user is authenticated
+        const { data: { user } } = await this.supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+        
+        // Note: partners table doesn't have created_by column, so we don't include it
+        const { data, error } = await this.supabase
+            .from('partners')
+            .insert([partner])
+            .select('*')
+            .single();
+        
+        if (error) {
+            // Provide more helpful error message for RLS policy errors
+            if (error.code === '42501' || error.message.includes('row-level security')) {
+                throw new Error('Geen toestemming om partners toe te voegen. Controleer de RLS policies in Supabase.');
+            }
+            throw error;
+        }
+        
+        // Load zone separately if zone_id column exists and has a value
+        if (data && data.zone_id) {
+            const { data: zone } = await this.supabase
+                .from('zones')
+                .select('*')
+                .eq('id', data.zone_id)
+                .single();
+            
+            if (zone) {
+                data.zones = zone;
+            }
+        }
+        
+        return data;
+    }
+
+    async updatePartner(id, updates) {
+        const { data, error } = await this.supabase
+            .from('partners')
+            .update(updates)
+            .eq('id', id)
+            .select('*')
+            .single();
+        
+        if (error) throw error;
+        
+        // Load zone separately if zone_id column exists and has a value
+        if (data && data.zone_id) {
+            const { data: zone } = await this.supabase
+                .from('zones')
+                .select('*')
+                .eq('id', data.zone_id)
+                .single();
+            
+            if (zone) {
+                data.zones = zone;
+            }
+        }
+        
+        return data;
+    }
+
+    async deletePartner(id) {
+        const { error } = await this.supabase
+            .from('partners')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+    }
+
+    // Pages
+    async getPages() {
+        const { data, error } = await this.supabase
+            .from('pages')
+            .select('*')
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        return data || [];
+    }
+
+    async getPage(route) {
+        const { data, error } = await this.supabase
+            .from('pages')
+            .select('*')
+            .eq('route', route)
+            .single();
+        
+        if (error) {
+            // Return null if page not found (fallback to HTML)
+            if (error.code === 'PGRST116') return null;
+            throw error;
+        }
+        return data;
+    }
+
+    async createPage(page) {
+        const { data: { user } } = await this.supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        const { data, error } = await this.supabase
+            .from('pages')
+            .insert([{
+                ...page,
+                created_by: user.id
+            }])
+            .select()
+            .single();
+        
+        if (error) throw error;
+        return data;
+    }
+
+    async updatePage(id, updates) {
+        const { data, error } = await this.supabase
+            .from('pages')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+        
+        if (error) throw error;
+        return data;
+    }
+
+    async deletePage(id) {
+        const { error } = await this.supabase
+            .from('pages')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+    }
+
+    // Sections
+    async getSections(pageId) {
+        const { data, error } = await this.supabase
+            .from('sections')
+            .select('*')
+            .eq('page_id', pageId)
+            .order('order_index', { ascending: true });
+        
+        if (error) throw error;
+        return data || [];
+    }
+
+    async getSectionsByRoute(route) {
+        // First get the page by route
+        const page = await this.getPage(route);
+        if (!page) return [];
+        
+        return await this.getSections(page.id);
+    }
+
+    async createSection(section) {
+        const { data: { user } } = await this.supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        const { data, error } = await this.supabase
+            .from('sections')
+            .insert([{
+                ...section,
+                created_by: user.id
+            }])
+            .select()
+            .single();
+        
+        if (error) throw error;
+        return data;
+    }
+
+    async updateSection(id, updates) {
+        const { data, error } = await this.supabase
+            .from('sections')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+        
+        if (error) throw error;
+        return data;
+    }
+
+    async deleteSection(id) {
+        const { error } = await this.supabase
+            .from('sections')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+    }
+
+    // Navigation Links
+    async getNavigationLinks() {
+        const { data, error } = await this.supabase
+            .from('navigation_links')
+            .select('*')
+            .order('order_index', { ascending: true });
+        
+        if (error) throw error;
+        return data || [];
+    }
+
+    async createNavigationLink(link) {
+        const { data: { user } } = await this.supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        const { data, error } = await this.supabase
+            .from('navigation_links')
+            .insert([{
+                ...link,
+                created_by: user.id
+            }])
+            .select()
+            .single();
+        
+        if (error) throw error;
+        return data;
+    }
+
+    async updateNavigationLink(id, updates) {
+        const { data, error } = await this.supabase
+            .from('navigation_links')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+        
+        if (error) throw error;
+        return data;
+    }
+
+    async deleteNavigationLink(id) {
+        const { error } = await this.supabase
+            .from('navigation_links')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+    }
 }
 
 // Initialize database manager

@@ -5,7 +5,7 @@
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
                     Corristories Beheren
                 </h1>
-                <a href="#/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                <a href="/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
                     ← Terug
                 </a>
             </div>
@@ -90,8 +90,21 @@ if (!window.adminCorristories) {
     };
 }
 
+// Wait for database manager to be ready
+async function waitForDbManager(maxAttempts = 50) {
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+        if (window.dbManager && window.dbManager.supabase) {
+            return true;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    return false;
+}
+
 // Check admin access
-function checkAdminAccess() {
+async function checkAdminAccess() {
     const isAdmin = window.authManager && window.authManager.isAdmin();
     const adminContent = document.getElementById('admin-content');
     const adminAccessDenied = document.getElementById('admin-access-denied');
@@ -99,8 +112,18 @@ function checkAdminAccess() {
     if (isAdmin) {
         if (adminContent) adminContent.classList.remove('hidden');
         if (adminAccessDenied) adminAccessDenied.classList.add('hidden');
-        loadZones();
-        loadStories();
+        // Wait for database manager before loading data
+        const dbReady = await waitForDbManager();
+        if (dbReady) {
+            loadZones();
+            loadStories();
+        } else {
+            console.error('Database manager not ready after waiting');
+            const container = document.getElementById('stories-list');
+            if (container) {
+                container.innerHTML = '<p class="text-red-600 text-center">Fout bij verbinden met database. Probeer de pagina te verversen.</p>';
+            }
+        }
     } else {
         if (adminContent) adminContent.classList.add('hidden');
         if (adminAccessDenied) adminAccessDenied.classList.remove('hidden');
@@ -110,13 +133,20 @@ function checkAdminAccess() {
 // Load zones for dropdown
 async function loadZones() {
     try {
-        if (window.dbManager) {
-            window.adminCorristories.zones = await window.dbManager.getZones();
-            const zoneSelect = document.getElementById('story-zone');
-            if (zoneSelect) {
-                zoneSelect.innerHTML = '<option value="">Geen zone</option>' + 
-                    window.adminCorristories.zones.map(zone => `<option value="${zone.id}">Zone ${zone.zone_number}: ${zone.name}</option>`).join('');
+        // Wait for database manager if not ready
+        if (!window.dbManager || !window.dbManager.supabase) {
+            const dbReady = await waitForDbManager();
+            if (!dbReady) {
+                console.error('Database manager not ready for loadZones');
+                return;
             }
+        }
+        
+        window.adminCorristories.zones = await window.dbManager.getZones();
+        const zoneSelect = document.getElementById('story-zone');
+        if (zoneSelect) {
+            zoneSelect.innerHTML = '<option value="">Geen zone</option>' + 
+                window.adminCorristories.zones.map(zone => `<option value="${zone.id}">Zone ${zone.zone_number}: ${zone.name}</option>`).join('');
         }
     } catch (error) {
         console.error('Error loading zones:', error);
@@ -126,6 +156,19 @@ async function loadZones() {
 // Load all stories (including unpublished for admin)
 async function loadStories() {
     try {
+        // Wait for database manager if not ready
+        if (!window.dbManager || !window.dbManager.supabase) {
+            const dbReady = await waitForDbManager();
+            if (!dbReady) {
+                console.error('Database manager not ready for loadStories');
+                const container = document.getElementById('stories-list');
+                if (container) {
+                    container.innerHTML = '<p class="text-red-600 text-center">Fout bij verbinden met database. Probeer de pagina te verversen.</p>';
+                }
+                return;
+            }
+        }
+        
         if (window.dbManager && window.dbManager.supabase) {
             // Get all stories, not just published ones
             const { data: stories, error } = await window.dbManager.supabase
@@ -325,7 +368,7 @@ if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.hash === '#/admin/corristories') {
+        if (window.location.pathname === '/admin/corristories') {
             checkAdminAccess();
         }
     };

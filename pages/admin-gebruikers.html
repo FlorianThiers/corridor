@@ -5,7 +5,7 @@
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text">
                     Gebruikers Beheren
                 </h1>
-                <a href="#/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                <a href="/admin" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
                     ← Terug
                 </a>
             </div>
@@ -49,9 +49,8 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Rol *</label>
                     <select id="user-role" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
                         <option value="user">Gebruiker</option>
-                        <option value="programmer">Programmeur</option>
-                        <option value="bestuurder">Bestuurder</option>
                         <option value="admin">Admin</option>
+                        <option value="partner">Partner</option>
                     </select>
                 </div>
                 <div class="flex gap-4">
@@ -76,8 +75,21 @@ if (!window.adminUsers) {
     };
 }
 
+// Wait for database manager to be ready
+async function waitForDbManager(maxAttempts = 50) {
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+        if (window.dbManager && window.dbManager.supabase) {
+            return true;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    return false;
+}
+
 // Check admin access
-function checkAdminAccess() {
+async function checkAdminAccess() {
     const isAdmin = window.authManager && window.authManager.isAdmin();
     const adminContent = document.getElementById('admin-content');
     const adminAccessDenied = document.getElementById('admin-access-denied');
@@ -85,7 +97,17 @@ function checkAdminAccess() {
     if (isAdmin) {
         if (adminContent) adminContent.classList.remove('hidden');
         if (adminAccessDenied) adminAccessDenied.classList.add('hidden');
-        loadUsers();
+        // Wait for database manager before loading data
+        const dbReady = await waitForDbManager();
+        if (dbReady) {
+            loadUsers();
+        } else {
+            console.error('Database manager not ready after waiting');
+            const container = document.getElementById('users-list');
+            if (container) {
+                container.innerHTML = '<p class="text-red-600 text-center">Fout bij verbinden met database. Probeer de pagina te verversen.</p>';
+            }
+        }
     } else {
         if (adminContent) adminContent.classList.add('hidden');
         if (adminAccessDenied) adminAccessDenied.classList.remove('hidden');
@@ -95,8 +117,20 @@ function checkAdminAccess() {
 // Load users
 async function loadUsers() {
     try {
-        if (window.dbManager) {
-            const users = await window.dbManager.getUsers();
+        // Wait for database manager if not ready
+        if (!window.dbManager || !window.dbManager.supabase) {
+            const dbReady = await waitForDbManager();
+            if (!dbReady) {
+                console.error('Database manager not ready for loadUsers');
+                const container = document.getElementById('users-list');
+                if (container) {
+                    container.innerHTML = '<p class="text-red-600 text-center">Fout bij verbinden met database. Probeer de pagina te verversen.</p>';
+                }
+                return;
+            }
+        }
+        
+        const users = await window.dbManager.getUsers();
             const container = document.getElementById('users-list');
             if (container) {
                 if (!users || users.length === 0) {
@@ -104,8 +138,7 @@ async function loadUsers() {
                 } else {
                     const roleNames = {
                         'admin': 'Admin',
-                        'bestuurder': 'Bestuurder',
-                        'programmer': 'Programmeur',
+                        'partner': 'Partner',
                         'user': 'Gebruiker'
                     };
                     
@@ -113,8 +146,7 @@ async function loadUsers() {
                         const roleDisplay = roleNames[user.role] || 'Gebruiker';
                         const roleColors = {
                             'admin': 'bg-red-100 text-red-700',
-                            'bestuurder': 'bg-blue-100 text-blue-700',
-                            'programmer': 'bg-purple-100 text-purple-700',
+                            'partner': 'bg-orange-100 text-orange-700',
                             'user': 'bg-gray-100 text-gray-700'
                         };
                         const roleColor = roleColors[user.role] || 'bg-gray-100 text-gray-700';
@@ -131,7 +163,7 @@ async function loadUsers() {
                                         <button onclick="editUser('${user.id}')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
                                             Bewerken
                                         </button>
-                                        ${user.role !== 'admin' && user.role !== 'programmer' ? `
+                                        ${user.role !== 'admin' ? `
                                             <button onclick="deleteUser('${user.id}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
                                                 Verwijderen
                                             </button>
@@ -179,24 +211,9 @@ async function loadUserData(userId) {
             if (roleSelect) {
                 roleSelect.value = user.role || 'user';
                 
-                // Disable role select if user is a programmer
-                if (user.role === 'programmer') {
-                    roleSelect.disabled = true;
-                    roleSelect.title = 'De rol van een programmeur kan niet worden gewijzigd.';
-                } else {
-                    roleSelect.disabled = false;
-                    roleSelect.title = '';
-                    
-                    // Check if current user can create programmers
-                    const currentUser = window.authManager?.getCurrentUser();
-                    if (currentUser?.role !== 'programmer') {
-                        // Remove programmer option if current user is not a programmer
-                        const programmerOption = roleSelect.querySelector('option[value="programmer"]');
-                        if (programmerOption) {
-                            programmerOption.remove();
-                        }
-                    }
-                }
+                // All admin roles (admin, programmer, bestuurder) can be edited by admins
+                roleSelect.disabled = false;
+                roleSelect.title = '';
             }
         }
     } catch (error) {
@@ -218,19 +235,6 @@ function closeUserModal() {
     if (roleSelect) {
         roleSelect.disabled = false;
         roleSelect.title = '';
-        // Restore programmer option if it was removed
-        const programmerOption = roleSelect.querySelector('option[value="programmer"]');
-        if (!programmerOption) {
-            const bestuurderOption = roleSelect.querySelector('option[value="bestuurder"]');
-            const newOption = document.createElement('option');
-            newOption.value = 'programmer';
-            newOption.textContent = 'Programmeur';
-            if (bestuurderOption) {
-                roleSelect.insertBefore(newOption, bestuurderOption);
-            } else {
-                roleSelect.appendChild(newOption);
-            }
-        }
     }
 }
 
@@ -251,11 +255,7 @@ async function deleteUser(userId) {
             return;
         }
         
-        if (user.role === 'programmer') {
-            alert('Programmeurs kunnen niet worden verwijderd.');
-            return;
-        }
-        
+        // Check if user is an admin
         if (user.role === 'admin') {
             alert('Admins kunnen niet worden verwijderd.');
             return;
@@ -297,25 +297,15 @@ function initializeAdminUsers() {
             const role = document.getElementById('user-role').value;
             
             try {
-                // Check if user being edited is a programmer
+                // Check if user exists
                 const user = await window.dbManager.getUser(window.adminUsers.currentUserId);
                 if (!user) {
                     showError('Gebruiker niet gevonden.');
                     return;
                 }
                 
-                // Prevent changing programmer role
-                if (user.role === 'programmer' && role !== 'programmer') {
-                    showError('De rol van een programmeur kan niet worden gewijzigd.');
-                    return;
-                }
-                
-                // Prevent non-programmers from creating programmers
-                const currentUser = window.authManager?.getCurrentUser();
-                if (role === 'programmer' && currentUser?.role !== 'programmer') {
-                    showError('Alleen programmeurs kunnen andere programmeurs aanmaken.');
-                    return;
-                }
+                // All admin roles can be changed by other admins
+                // No special restrictions needed
                 
                 const userData = {
                     full_name: fullName || null,
@@ -356,7 +346,7 @@ if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.hash === '#/admin/gebruikers') {
+        if (window.location.pathname === '/admin/gebruikers') {
             checkAdminAccess();
         }
     };
