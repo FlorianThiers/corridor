@@ -150,18 +150,9 @@ Gebruik de `nginx.conf` configuratie als template voor je server setup.
 1. **Voer Supabase SQL uit:**
    ```sql
    -- Voer supabase/rls-policies.sql uit in Supabase SQL Editor
-   -- Voer ook supabase/migrations/create_animations_storage_bucket.sql uit
    ```
 
-2. **Maak Storage Bucket aan:**
-   - Ga naar Supabase Dashboard → **Storage**
-   - Klik **New bucket**
-   - **Name:** `intro-animations`
-   - **Public bucket:** ✅ Aan
-   - **File size limit:** `104857600` (100MB)
-   - **Allowed MIME types:** `video/mp4`
-
-3. **Controleer Row Level Security policies**
+2. **Controleer Row Level Security policies**
 
 ### ✅ Controle na Deployment
 
@@ -170,10 +161,6 @@ Na deployment, test deze URLs:
 - ✅ `https://jouw-domein.com/evenementen` (moet werken, niet 404)
 - ✅ `https://jouw-domein.com/zones` (moet werken, niet 404)
 - ✅ `https://jouw-domein.com/beheer-evenementen` (alleen ingelogd als admin)
-
-**Intro video niet zichtbaar?**
-- Controleer of de `intro-animations` storage bucket bestaat: `node check-bucket.js`
-- Upload een video via `/beheer-animatie` als admin
 
 ### 🔍 Troubleshooting
 
@@ -185,10 +172,6 @@ Na deployment, test deze URLs:
 **JavaScript fouten?**
 - Controleer of alle bestanden zijn geüpload (js/, pages/, public/)
 - Controleer environment variables
-
-**Storage bucket problemen?**
-- Run `node check-bucket.js` om de status te controleren
-- Maak de bucket aan via Supabase Dashboard → Storage
 
 ## 📞 Contact
 

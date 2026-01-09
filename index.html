@@ -820,6 +820,19 @@ console.log('Container and video found! Loading animation from storage...');
                 try {
                     if (window.supabaseClient) {
                         console.log('Loading animation from storage...');
+
+                        // First test if we can access the bucket at all
+                        const { data: testData, error: testError } = await window.supabaseClient.storage
+                            .from('intro-animations')
+                            .list('', { limit: 1 });
+
+                        if (testError) {
+                            console.error('Cannot access intro-animations bucket:', testError);
+                            return;
+                        }
+
+                        console.log('Bucket access successful, found files:', testData);
+
                         const { data: files, error } = await window.supabaseClient.storage
                             .from('intro-animations')
                             .list('', {
@@ -831,15 +844,16 @@ console.log('Container and video found! Loading animation from storage...');
 
                         if (error) {
                             console.error('Error listing files:', error);
+                            console.error('Error details:', error.message, error.details);
                         } else if (files && files.length > 0) {
                             const fileName = files[0].name;
                             console.log('Found animation file:', fileName);
-                            
+
                             const { data: { publicUrl } } = window.supabaseClient.storage
                                 .from('intro-animations')
                                 .getPublicUrl(fileName);
 
-                            console.log('Public URL:', publicUrl);
+                            console.log('Generated Public URL:', publicUrl);
 
                              // Wait for DOM elements to be available (retry mechanism)
                              // The router loads HTML asynchronously, so elements might not be ready yet
@@ -851,15 +865,27 @@ console.log('Container and video found! Loading animation from storage...');
                                  const mainContent = document.getElementById('main-content');
                                  let animationContainer = document.getElementById('animation-container');
                                  let animationVideo = document.getElementById('intro-animation');
-                                 
+
+                                 console.log('Looking for animation elements...');
+                                 console.log('mainContent found:', !!mainContent);
+                                 console.log('animationContainer found directly:', !!animationContainer);
+                                 console.log('animationVideo found directly:', !!animationVideo);
+
                                  // If not found in main document, try searching in main-content
                                  if (!animationContainer && mainContent) {
                                      animationContainer = mainContent.querySelector('#animation-container');
+                                     console.log('animationContainer found in mainContent:', !!animationContainer);
                                  }
                                  if (!animationVideo && mainContent) {
                                      animationVideo = mainContent.querySelector('#intro-animation');
+                                     console.log('animationVideo found in mainContent:', !!animationVideo);
                                  }
-                                 
+
+                                 console.log('Final elements found:', {
+                                     animationContainer: !!animationContainer,
+                                     animationVideo: !!animationVideo
+                                 });
+
                                  if (animationContainer && animationVideo) {
                                      
                                      // Load and play the video
@@ -899,7 +925,20 @@ console.log('Container and video found! Loading animation from storage...');
                              };
                              
                              // Start trying to load the animation
+                             console.log('Starting animation load attempt...');
                              loadAnimationIntoDOM();
+
+                             // If elements not found initially, try again after a short delay
+                             setTimeout(() => {
+                                 const mainContent = document.getElementById('main-content');
+                                 const animationContainer = mainContent ? mainContent.querySelector('#animation-container') : null;
+                                 const animationVideo = mainContent ? mainContent.querySelector('#intro-animation') : null;
+
+                                 if (!animationContainer || !animationVideo) {
+                                     console.log('Elements still not found after initial attempt, trying again...');
+                                     loadAnimationIntoDOM();
+                                 }
+                             }, 1000);
                         } else {
                             console.log('No animation files found in storage');
                         }
@@ -924,10 +963,16 @@ console.log('Container and video found! Loading animation from storage...');
             initSectionAnimations();
             initFloatingGif();
             initHeroVideo();
-            // Wait a bit longer for Supabase to be ready
-            setTimeout(() => {
-                loadData();
-            }, 2000);
+
+            // Only load data for homepage
+            if (window.location.pathname === '/' || window.location.pathname === '/home') {
+                // Wait a bit longer for Supabase to be ready and page to be fully loaded
+                setTimeout(() => {
+                    console.log('Initializing page data loading for homepage...');
+                    loadData();
+                }, 3000); // Increased delay
+            }
+
             ScrollTrigger.refresh();
         }
 
