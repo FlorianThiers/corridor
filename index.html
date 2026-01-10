@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Corridor - Urban Hub onder het Viaduct van Gentbrugge</title>
     <!-- Clean deployment -->
     <link rel="icon" type="image/png" href="/public/LogoCorridor.png">
@@ -334,26 +334,84 @@
             height: 100%;
             background-color: rgba(0,0,0,0.5);
             backdrop-filter: blur(5px);
+            /* iOS safe area support */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
-        
+
         .modal.active {
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1rem; /* Reduced padding for better mobile fit */
         }
-        
+
+        /* On small screens, align to top to ensure buttons are visible */
+        @media (max-height: 700px) {
+            .modal.active {
+                align-items: flex-start;
+                padding-top: 2rem;
+            }
+        }
+
         .modal-content {
             background: white;
             border-radius: 20px;
             padding: 2rem;
             max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
+            width: 100%;
+            max-height: calc(var(--vh, 1vh) * 100 - 4rem); /* Use CSS custom property for better iOS support */
             overflow-y: auto;
             position: relative;
             z-index: 10002;
             pointer-events: auto;
-            /* Ensure all interactive elements are clickable */
+            margin-top: 2rem; /* Add top margin to prevent touching top of screen */
+            /* iOS safe area support */
+            padding-top: max(2rem, env(safe-area-inset-top));
+            padding-bottom: max(2rem, env(safe-area-inset-bottom));
+            /* Ensure buttons are always visible by adding bottom margin */
+            margin-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* iOS specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            .modal-content {
+                /* iOS Safari specific height handling */
+                max-height: calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4rem);
+            }
+        }
+
+        /* Mobile responsive modal adjustments */
+        @media (max-height: 600px) {
+            .modal.active {
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+
+            .modal-content {
+                max-height: calc(var(--vh, 1vh) * 100 - 2rem);
+                margin-top: 0;
+            }
+        }
+
+        /* iOS specific button visibility fix */
+        .modal-content form {
+            padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+        }
+
+        .modal-content form button[type="submit"] {
+            margin-top: 1rem;
+            /* Ensure button is always visible on iOS */
+            position: relative;
+        }
+
+        /* Additional bottom spacing for iOS home indicator */
+        @supports (-webkit-touch-callout: none) {
+            .modal-content form button[type="submit"] {
+                margin-bottom: calc(1rem + env(safe-area-inset-bottom));
+            }
         }
         
         /* Ensure file inputs and other form elements are clickable */
@@ -1088,6 +1146,32 @@
         });
 
         // Initial initialization
+        // iOS viewport height fix
+        function fixIOSViewportHeight() {
+            // Fix for iOS Safari viewport height issues
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+            // Update on resize/orientation change
+            window.addEventListener('resize', () => {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            });
+
+            // Update on orientation change (iOS specific)
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    const vh = window.innerHeight * 0.01;
+                    document.documentElement.style.setProperty('--vh', `${vh}px`);
+                }, 100);
+            });
+        }
+
+        // Apply iOS fixes
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            fixIOSViewportHeight();
+        }
+
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(initializePage, 500);
