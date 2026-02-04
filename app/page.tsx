@@ -33,7 +33,10 @@ export default async function HomePage() {
     zones = zonesData
     corristories = corristoriesData
   } catch (error) {
+    // Log error but don't crash the page
     console.error('Error loading data:', error)
+    // In production, we want to show the page even if data loading fails
+    // The page will just show empty states
   }
 
   return (

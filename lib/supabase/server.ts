@@ -6,11 +6,19 @@ export async function createClient() {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    // During build time, return a mock client that will fail gracefully
-    // This prevents build errors when env vars are not set
-    throw new Error(
-      'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env.local file.'
-    )
+    // Log error for debugging
+    const errorMsg = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel project settings (Environment Variables).'
+    
+    console.error('Missing Supabase environment variables:', {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseAnonKey,
+      env: process.env.NODE_ENV,
+      error: errorMsg,
+    })
+    
+    // During build time or runtime, throw error
+    // This will be caught by error boundaries or try-catch blocks
+    throw new Error(errorMsg)
   }
 
   const cookieStore = await cookies()
