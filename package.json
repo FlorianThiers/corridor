@@ -6,7 +6,10 @@
     "build": "node scripts/build-config.js",
     "dev": "node scripts/build-config.js",
     "start": "node server.js",
-    "start:simple": "live-server --port=8000 --open=/"
+    "start:simple": "live-server --port=8000 --open=/",
+    "optimize:videos": "powershell -ExecutionPolicy Bypass -File scripts/optimize-videos.ps1",
+    "optimize:images": "powershell -ExecutionPolicy Bypass -File scripts/convert-to-webp.ps1",
+    "optimize:all": "npm run optimize:videos && npm run optimize:images"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"

@@ -53,11 +53,11 @@ async function initializeSupabase() {
     // Load config from .env if available (development)
     await loadConfigFromEnv();
 
-    if (typeof supabase !== 'undefined') {
-        const { createClient } = supabase;
+if (typeof supabase !== 'undefined') {
+    const { createClient } = supabase;
         window.supabaseClient = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
         console.log('✅ Supabase client initialized');
-    } else {
+} else {
         console.error('❌ Supabase library not loaded. Make sure @supabase/supabase-js is loaded before this script.');
     }
 }

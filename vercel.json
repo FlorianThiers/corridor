@@ -27,6 +27,19 @@
       ]
     },
     {
+      "source": "/public/(.*\\.webp)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/webp"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/public/(.*\\.(pdf))",
       "headers": [
         {
