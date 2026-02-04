@@ -178,9 +178,31 @@ class Router {
                     const hasRequiredRole = allowedRoles.some(role => window.authManager.hasRole(role));
                     if (!hasRequiredRole) {
                         // Profile is loaded and user definitely doesn't have required role
-                        console.warn(`Beheer access denied for route ${route}: User does not have required role (${allowedRoles.join(' or ')})`);
+                        console.warn(`Beheer access denied for route ${route}: User role is '${window.authManager.role}', required: ${allowedRoles.join(' or ')}`);
                         window.location.href = '/';
                         return;
+                    }
+                } else {
+                    // Profile not loaded yet, try to reload it
+                    if (window.supabaseClient) {
+                        try {
+                            const { data: { session } } = await window.supabaseClient.auth.getSession();
+                            if (session && session.user) {
+                                console.log('Reloading user profile for admin access check...');
+                                await window.authManager.loadUserProfile(session.user.id);
+                                // Check again after reload
+                                if (window.authManager.currentUser) {
+                                    const hasRequiredRole = allowedRoles.some(role => window.authManager.hasRole(role));
+                                    if (!hasRequiredRole) {
+                                        console.warn(`Beheer access denied after profile reload: User role is '${window.authManager.role}', required: ${allowedRoles.join(' or ')}`);
+                                        window.location.href = '/';
+                                        return;
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error reloading user profile:', error);
+                        }
                     }
                 }
                 // If profile not loaded yet OR user has required role, allow page to load
