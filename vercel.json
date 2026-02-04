@@ -1,9 +1,9 @@
 {
-  "buildCommand": "node scripts/build-config.js",
+  "buildCommand": "npm run build",
   "rewrites": [
     { 
-      "source": "/((?!public|js|pages|.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|mp4|webm|mov|pdf|webp|json|html)$).*)", 
-      "destination": "/index.html" 
+      "source": "/:path*",
+      "destination": "/index.html"
     }
   ],
   "headers": [
@@ -140,6 +140,15 @@
     },
     {
       "source": "/js/:file.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/css/:file.css",
       "headers": [
         {
           "key": "Cache-Control",
