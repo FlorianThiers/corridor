@@ -3,7 +3,7 @@
   "outputDirectory": ".",
   "rewrites": [
     { 
-      "source": "/:path*",
+      "source": "/((?!css|js|public|pages).*)",
       "destination": "/index.html"
     }
   ],
