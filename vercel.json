@@ -5,26 +5,6 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/css/:path*",
-      "destination": "/css/:path*"
-    },
-    {
-      "source": "/js/:path*",
-      "destination": "/js/:path*"
-    },
-    {
-      "source": "/public/:path*",
-      "destination": "/public/:path*"
-    },
-    {
-      "source": "/pages/:path*",
-      "destination": "/pages/:path*"
-    },
-    {
-      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|mp4|webm|mov|pdf|webp|json|html))",
-      "destination": "/$1"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
