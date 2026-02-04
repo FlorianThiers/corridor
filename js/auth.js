@@ -23,7 +23,9 @@ class AuthManager {
             if (error) {
                 // Silent fail for unauthenticated users (normal behavior)
             } else if (session) {
+                // Session exists, load user profile
                 await this.loadUserProfile(session.user.id);
+                this.updateUI();
             }
         } catch (error) {
             // Silent fail for auth errors
@@ -38,8 +40,26 @@ class AuthManager {
                 this.currentUser = null;
                 this.role = 'user';
                 this.updateUI();
+            } else if (event === 'TOKEN_REFRESHED' && session) {
+                // Refresh user profile when token is refreshed
+                if (session.user) {
+                    await this.loadUserProfile(session.user.id);
+                }
             }
         });
+
+        // Refresh session periodically to keep user logged in
+        setInterval(async () => {
+            try {
+                const { data: { session } } = await window.supabaseClient.auth.getSession();
+                if (session) {
+                    // Refresh the session to extend expiry
+                    await window.supabaseClient.auth.refreshSession();
+                }
+            } catch (error) {
+                // Silent fail for refresh errors
+            }
+        }, 30 * 60 * 1000); // Refresh every 30 minutes
 
         this.updateUI();
     }
@@ -61,9 +81,6 @@ class AuthManager {
             if (data) {
                 this.currentUser = data;
                 this.role = data.role || 'user';
-                console.log('User profile loaded:', { id: data.id, email: data.email, role: this.role });
-            } else {
-                console.warn('No user data returned for userId:', userId);
             }
         } catch (error) {
             console.error('Exception loading user profile:', error);
@@ -80,6 +97,15 @@ class AuthManager {
                     full_name: fullName
                 }
             }
+        });
+
+        if (error) throw error;
+        return data;
+    }
+
+    async resetPassword(email) {
+        const { data, error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password`,
         });
 
         if (error) throw error;
@@ -157,6 +183,38 @@ class AuthManager {
 
     getCurrentUser() {
         return this.currentUser;
+    }
+    
+    // Wait for user profile to be loaded (useful for admin checks)
+    async waitForProfile(maxAttempts = 50) {
+        let attempts = 0;
+        
+        while (attempts < maxAttempts) {
+            // If profile is loaded, return true
+            if (this.currentUser) {
+                return true;
+            }
+            
+            // If no profile but we have a session, try to load it
+            if (!this.currentUser && window.supabaseClient) {
+                try {
+                    const { data: { session } } = await window.supabaseClient.auth.getSession();
+                    if (session && session.user) {
+                        await this.loadUserProfile(session.user.id);
+                        if (this.currentUser) {
+                            return true;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading profile in waitForProfile:', error);
+                }
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        return false; // Profile not loaded after max attempts
     }
 }
 

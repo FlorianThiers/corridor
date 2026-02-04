@@ -1,7 +1,10 @@
 {
   "buildCommand": "node scripts/build-config.js",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { 
+      "source": "/((?!public|js|pages|.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|mp4|webm|mov|pdf|webp|json|html)$).*)", 
+      "destination": "/index.html" 
+    }
   ],
   "headers": [
     {

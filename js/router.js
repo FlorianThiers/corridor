@@ -591,22 +591,10 @@ class Router {
                 
                 // Set the content directly - no need to filter nested elements as pages shouldn't have them
                 if (bodyContent && bodyContent.length > 100) {
-                    console.log('Setting content for', pagePath, 'length:', bodyContent.length);
-                    // Log last 200 chars to see if content is complete
-                    console.log('Content ends with:', bodyContent.substring(bodyContent.length - 200));
                     mainContent.innerHTML = bodyContent;
-                    
-                    // Verify content was set correctly
-                    setTimeout(() => {
-                        const setContent = mainContent.innerHTML;
-                        console.log('Content after setting, length:', setContent.length);
-                        console.log('Contains footer:', setContent.includes('footer') || setContent.includes('Footer'));
-                        console.log('Contains contact:', setContent.includes('contact') || setContent.includes('Contact'));
-                    }, 100);
                 } else {
                     console.error('ERROR: No valid content to set for', pagePath);
                     console.error('Body content length:', bodyContent.length);
-                    console.error('Body content preview:', bodyContent.substring(0, 500));
                 }
                 
                 // Show/hide parallax container based on route

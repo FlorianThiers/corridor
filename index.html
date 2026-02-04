@@ -298,6 +298,10 @@
             gap: 0.5rem;
         }
 
+        .sidebar-auth-top {
+            margin-bottom: 1rem;
+        }
+
         .sidebar-auth {
             margin-top: auto;
         }
@@ -313,6 +317,14 @@
             transition: all 0.2s ease;
             text-decoration: none;
             width: 100%;
+        }
+
+        #admin-nav-collapse-icon {
+            transition: transform 0.2s ease;
+        }
+
+        #admin-nav-links {
+            transition: all 0.3s ease;
         }
 
         .sidebar-link:hover {
@@ -482,13 +494,18 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Wachtwoord</label>
                         <div class="relative">
                             <input type="password" id="login-password" required class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                            <button type="button" onclick="togglePasswordVisibility('login-password', 'login-password-toggle')" id="login-password-toggle" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <button type="button" onclick="togglePasswordVisibility('login-password', 'login-password-toggle-icon')" id="login-password-toggle" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none z-10">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="login-password-toggle-icon">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                 </svg>
                             </button>
                         </div>
+                    </div>
+                    <div class="text-right">
+                        <button type="button" onclick="showForgotPassword()" class="text-sm text-pink-600 hover:text-pink-700 font-medium">
+                            Wachtwoord vergeten?
+                        </button>
                     </div>
                     <button type="submit" class="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium">
                         Inloggen
@@ -499,6 +516,25 @@
                         Nog geen account? 
                         <button onclick="showSignUp()" class="text-pink-600 hover:text-pink-700 font-medium">Registreer hier</button>
                     </p>
+                </div>
+            </div>
+            <div id="forgot-password-tab" class="tab-content hidden">
+                <form id="forgot-password-form" class="space-y-4">
+                    <p class="text-sm text-gray-600 mb-4">
+                        Voer je emailadres in en we sturen je een link om je wachtwoord opnieuw in te stellen.
+                    </p>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="forgot-password-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+                    <button type="submit" class="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium">
+                        Verstuur reset link
+                    </button>
+                </form>
+                <div class="mt-4 text-center">
+                    <button onclick="showLogin()" class="text-sm text-pink-600 hover:text-pink-700 font-medium">
+                        Terug naar inloggen
+                    </button>
                 </div>
             </div>
             <div id="signup-tab" class="tab-content hidden">
@@ -515,7 +551,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Wachtwoord</label>
                         <div class="relative">
                             <input type="password" id="signup-password" required class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                            <button type="button" onclick="togglePasswordVisibility('signup-password', 'signup-password-toggle')" id="signup-password-toggle" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <button type="button" onclick="togglePasswordVisibility('signup-password', 'signup-password-toggle-icon')" id="signup-password-toggle" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none z-10">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="signup-password-toggle-icon">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -678,15 +714,18 @@
 
         function showLogin() {
             document.getElementById('signup-tab').classList.add('hidden');
+            document.getElementById('forgot-password-tab').classList.add('hidden');
             document.getElementById('login-tab').classList.remove('hidden');
             document.getElementById('login-error').classList.add('hidden');
             document.getElementById('login-success').classList.add('hidden');
         }
 
         // Toggle password visibility
-        function togglePasswordVisibility(passwordId, toggleId) {
+        function togglePasswordVisibility(passwordId, iconId) {
             const passwordInput = document.getElementById(passwordId);
-            const toggleIcon = document.getElementById(toggleId + '-icon');
+            const toggleIcon = document.getElementById(iconId);
+            
+            if (!passwordInput || !toggleIcon) return;
             
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
@@ -703,6 +742,49 @@
                 `;
             }
         }
+
+        // Show forgot password form
+        function showForgotPassword() {
+            document.getElementById('login-tab').classList.add('hidden');
+            document.getElementById('signup-tab').classList.add('hidden');
+            document.getElementById('forgot-password-tab').classList.remove('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-success').classList.add('hidden');
+        }
+
+        // Forgot Password Form Handler
+        document.getElementById('forgot-password-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot-password-email').value;
+            const errorDiv = document.getElementById('login-error');
+            const successDiv = document.getElementById('login-success');
+
+            try {
+                if (!window.supabaseClient) {
+                    throw new Error('Supabase client niet beschikbaar');
+                }
+
+                const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                // Show success message
+                errorDiv.classList.add('hidden');
+                successDiv.classList.remove('hidden');
+                successDiv.textContent = 'Reset link is verzonden naar je emailadres. Check je inbox (en spam folder).';
+                
+                // Clear form
+                document.getElementById('forgot-password-email').value = '';
+            } catch (error) {
+                errorDiv.classList.remove('hidden');
+                successDiv.classList.add('hidden');
+                errorDiv.textContent = error.message || 'Fout bij verzenden van reset link. Probeer opnieuw.';
+            }
+        });
 
         // Login Form Handler
         document.getElementById('login-form')?.addEventListener('submit', async (e) => {
@@ -767,19 +849,8 @@
             }
         }
 
-        // Clear any stale auth tokens on page load
-        async function clearStaleAuthTokens() {
-            try {
-                if (window.supabaseClient) {
-                    // Clear any stored session that might be causing refresh token errors
-                    await window.supabaseClient.auth.signOut({ scope: 'local' });
-                    console.log('Cleared stale auth tokens');
-                }
-            } catch (error) {
-                // Ignore errors during cleanup
-                console.log('Auth cleanup completed');
-            }
-        }
+        // Removed clearStaleAuthTokens - it was clearing sessions on every page load
+        // Supabase handles session persistence automatically
 
         // Wait for database manager to be ready
         async function waitForDbManager(maxAttempts = 50) {
@@ -926,8 +997,6 @@
                 // Load intro animation from storage
                 try {
                     if (window.supabaseClient) {
-                        console.log('Loading animation from storage...');
-
                         // First test if we can access the bucket at all
                         const { data: testData, error: testError } = await window.supabaseClient.storage
                             .from('intro-animations')
@@ -938,8 +1007,6 @@
                             return;
                         }
 
-                        console.log('Bucket access successful, found files:', testData);
-
                         const { data: files, error } = await window.supabaseClient.storage
                             .from('intro-animations')
                             .list('', {
@@ -947,20 +1014,14 @@
                                 sortBy: { column: 'created_at', order: 'desc' }
                             });
 
-                        console.log('Storage list result:', { files, error });
-
                         if (error) {
                             console.error('Error listing files:', error);
-                            console.error('Error details:', error.message, error.details);
                         } else if (files && files.length > 0) {
                             const fileName = files[0].name;
-                            console.log('Found animation file:', fileName);
 
                             const { data: { publicUrl } } = window.supabaseClient.storage
                                 .from('intro-animations')
                                 .getPublicUrl(fileName);
-
-                            console.log('Generated Public URL:', publicUrl);
 
                              // Wait for DOM elements to be available (retry mechanism)
                              // The router loads HTML asynchronously, so elements might not be ready yet
@@ -973,35 +1034,20 @@
                                  let animationContainer = document.getElementById('animation-container');
                                  let animationVideo = document.getElementById('intro-animation');
 
-                                 console.log('Looking for animation elements...');
-                                 console.log('mainContent found:', !!mainContent);
-                                 console.log('animationContainer found directly:', !!animationContainer);
-                                 console.log('animationVideo found directly:', !!animationVideo);
-
                                  // If not found in main document, try searching in main-content
                                  if (!animationContainer && mainContent) {
                                      animationContainer = mainContent.querySelector('#animation-container');
-                                     console.log('animationContainer found in mainContent:', !!animationContainer);
                                  }
                                  if (!animationVideo && mainContent) {
                                      animationVideo = mainContent.querySelector('#intro-animation');
-                                     console.log('animationVideo found in mainContent:', !!animationVideo);
                                  }
 
-                                 console.log('Final elements found:', {
-                                     animationContainer: !!animationContainer,
-                                     animationVideo: !!animationVideo
-                                 });
-
                                  if (animationContainer && animationVideo) {
-
                                      // Set the video source first
                                      animationVideo.innerHTML = `<source src="${publicUrl}" type="video/mp4">`;
-                                     console.log('Set video source to:', publicUrl);
 
                                      // Show the container immediately (remove hidden class)
                                      animationContainer.classList.remove('hidden');
-                                     console.log('Animation container made visible');
 
                                      // Load and play the video
                                      animationVideo.load();
@@ -1019,7 +1065,6 @@
                                          console.log('Immediate play failed (expected), will retry after load:', err);
                                      });
 
-                                     console.log('Animation loaded from storage:', publicUrl);
                                      return true; // Success
                                  } else {
                                      attempts++;
@@ -1057,7 +1102,6 @@
                         } else {
                             console.log('No animation files found in storage');
                             // Fallback: try to load directly by filename if we know it exists
-                            console.log('Trying fallback: loading intro-animation.mp4 directly');
                             const fallbackUrl = 'https://vwbrvxkzjwpppagkpipf.supabase.co/storage/v1/object/public/intro-animations/intro-animation.mp4';
                             console.log('Fallback URL:', fallbackUrl);
 
@@ -1068,20 +1112,18 @@
                                 let animationVideo = mainContent ? mainContent.querySelector('#intro-animation') : null;
 
                                 if (animationContainer && animationVideo) {
-                                    console.log('Loading video with fallback URL...');
                                     animationVideo.innerHTML = `<source src="${fallbackUrl}" type="video/mp4">`;
                                     animationVideo.load();
 
                                     animationVideo.addEventListener('loadeddata', () => {
-                                        console.log('Fallback video loaded successfully!');
                                         animationContainer.classList.remove('hidden');
+                                        animationVideo.play().catch(() => {});
                                     }, { once: true });
 
-                                    animationVideo.addEventListener('error', (e) => {
-                                        console.error('Fallback video failed to load:', e);
+                                    animationVideo.addEventListener('error', () => {
+                                        // Silent fail for fallback video
                                     }, { once: true });
                                 } else {
-                                    console.log('Elements not found for fallback, retrying...');
                                     setTimeout(loadAnimationIntoDOMFallback, 500);
                                 }
                             };
@@ -1111,13 +1153,12 @@
             initHeroVideo();
 
             // Clear stale auth tokens to prevent refresh token errors
-            clearStaleAuthTokens();
+            // Removed clearStaleAuthTokens() - it was logging users out on refresh
 
             // Only load data for homepage
             if (window.location.pathname === '/' || window.location.pathname === '/home') {
                 // Wait a bit longer for Supabase to be ready and page to be fully loaded
                 setTimeout(() => {
-                    console.log('Initializing page data loading for homepage...');
                     loadData();
                 }, 3000); // Increased delay
             }

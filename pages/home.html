@@ -3,19 +3,19 @@
 <!-- Hero Section -->
 <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden">
     <!-- Fallback Background Image -->
-    <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0" style="background-image: url('../public/FlyerVoorkant.webp'), url('../public/FlyerVoorkant.png');"></div>
+    <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0" style="background-image: url('/public/FlyerVoorkant.webp'), url('/public/FlyerVoorkant.png');"></div>
     
     <!-- Video Background -->
     <video muted loop playsinline preload="metadata" class="absolute inset-0 w-full h-full object-cover z-0" id="hero-video" style="display: none;" loading="lazy">
-        <source src="../public/VideoGuillaume.mp4" type="video/mp4">
+        <source src="/public/VideoGuillaume.mp4" type="video/mp4">
         Je browser ondersteunt geen video.
     </video>
     
     <!-- Dark overlay for better text readability -->
     <div class="absolute inset-0 bg-black/40 z-10"></div>
     
-    <!-- Social Media Icons at top right - outside flex container -->
-    <div class="social-icons-fixed z-[10000] flex flex-col space-y-3">
+    <!-- Social Media Icons at top right - below navigation bar -->
+    <div class="social-icons-fixed z-[10000] flex flex-col space-y-3" style="top: 5rem;">
         <a href="https://www.facebook.com/corridor.gentbrugge" class="w-10 h-10 text-white/80 hover:text-white hover:scale-110 transition-all backdrop-blur-sm bg-gray-600/80 rounded-full flex items-center justify-center shadow-lg" target="_blank" aria-label="Facebook">
                 <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -39,8 +39,8 @@
         <div class="mb-2 mt-2">
             <div class="w-32 h-32 md:w-40 md:h-40 mx-auto organic-shape shadow-lg opacity-95 bg-white/90 backdrop-blur-sm flex items-center justify-center">
                 <picture>
-                    <source srcset="../public/LogoCorridor-removebg-preview.webp" type="image/webp">
-                    <img src="../public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-28 h-28 md:w-36 md:h-36 object-contain" loading="eager" fetchpriority="high">
+                    <source srcset="/public/LogoCorridor-removebg-preview.webp" type="image/webp">
+                    <img src="/public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-28 h-28 md:w-36 md:h-36 object-contain" loading="eager" fetchpriority="high">
                 </picture>
             </div>
         </div>
@@ -129,7 +129,7 @@
             <p class="text-gray-700 mb-6">
                 Deze plek fungeert ook als leerecosysteem, ondersteund door het Europees programma WSE. Samen met organisaties en vrijwilligers bouwen we een netwerk uit dat de ruimte gebruikt als springplank naar levenslang leren en uitwisseling.
             </p>
-            <a href="../public/corridorGeschiedenis.pdf" target="_blank" class="inline-flex items-center px-6 py-3 bg-white/60 hover:bg-white/80 rounded-full text-gray-800 font-medium transition-all hover:scale-105">
+            <a href="/public/corridorGeschiedenis.pdf" target="_blank" class="inline-flex items-center px-6 py-3 bg-white/60 hover:bg-white/80 rounded-full text-gray-800 font-medium transition-all hover:scale-105">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
@@ -139,7 +139,7 @@
             <!-- Floating GIF positioned to bridge sections -->
             <div class="relative">
                 <video id="floating-gif" class="floating-gif absolute z-20" autoplay muted loop preload="metadata" loading="lazy">
-                    <source src="../public/corridorGif.mp4" type="video/mp4">
+                    <source src="/public/corridorGif.mp4" type="video/mp4">
                 </video>
             </div>
         </div>
@@ -200,15 +200,15 @@
 </section>
 
 <!-- Footer -->
-<footer id="footer" class="py-12 px-4 relative" style="background-image: url('../public/FlyerAchterkant.webp'), url('../public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
+<footer id="footer" class="py-12 px-4 relative" style="background-image: url('/public/FlyerAchterkant.webp'), url('/public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
     <!-- Overlay for better text readability -->
     <div class="absolute inset-0 bg-black/50"></div>
     <div class="max-w-4xl mx-auto text-center relative z-10">
         <div class="mb-8">
             <div class="w-16 h-16 mx-auto organic-shape shadow-lg mb-4 bg-white/90 backdrop-blur-sm flex items-center justify-center">
                 <picture>
-                    <source srcset="../public/LogoCorridor-removebg-preview.webp" type="image/webp">
-                    <img src="../public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain" loading="lazy">
+                    <source srcset="/public/LogoCorridor-removebg-preview.webp" type="image/webp">
+                    <img src="/public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain" loading="lazy">
                 </picture>
             </div>
             <h3 class="text-3xl font-bold text-white graffiti-text mb-4">CORRIDOR</h3>

@@ -40,50 +40,35 @@ class Navigation {
                         </div>
                     </div>
 
-                    <!-- Navigation Links -->
-                    <div class="sidebar-nav">
-                        <a href="/" class="nav-link sidebar-link">
+                    <!-- Auth Section (Login/Profile) - Above navigation links -->
+                    <div class="sidebar-auth-top mb-4">
+                        <button id="sidebar-login-btn" class="sidebar-link w-full bg-pink-500 text-white hover:bg-pink-600 hidden mb-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                             </svg>
-                            <span>Home</span>
-                        </a>
-                        <a href="/agenda" class="nav-link sidebar-link">
+                            <span>Inloggen</span>
+                        </button>
+                        <button id="sidebar-profile-btn" class="sidebar-link hidden" onclick="if(window.router){window.router.navigate('/profiel')}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
-                            <span>Agenda</span>
-                        </a>
-                        <a href="/zones" class="nav-link sidebar-link">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            <span>Zones</span>
-                        </a>
-                        <a href="/evenementen" class="nav-link sidebar-link">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <span>Evenementen</span>
-                        </a>
-                        <a href="/corristories" class="nav-link sidebar-link">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                            </svg>
-                            <span>Corristories</span>
-                        </a>
-                        <a href="/partners" class="nav-link sidebar-link">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                            <span>Partners</span>
-                        </a>
+                            <span>Profiel</span>
+                        </button>
+                    </div>
 
-                        <!-- Admin Links (only visible for admins) -->
-                        <div id="admin-nav-section" class="hidden">
-                            <div class="border-t border-gray-200 pt-4 mt-4 mb-4">
-                                <p class="text-xs font-semibold text-gray-500 uppercase mb-2 px-4">Admin</p>
-                            </div>
+                    <!-- Admin Links (only visible for admins) - Moved to top -->
+                    <div id="admin-nav-section" class="hidden mb-4">
+                        <!-- Collapse Toggle for Admin Nav -->
+                        <div class="mb-2">
+                            <button id="toggle-admin-nav" class="sidebar-link w-full text-left text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100" onclick="window.navigation?.toggleAdminNav()">
+                                <svg id="admin-nav-collapse-icon" class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                                <span>Admin</span>
+                            </button>
+                        </div>
+                        
+                        <div id="admin-nav-links">
                             <a href="/beheer-evenementen" class="nav-link sidebar-link admin-nav-link">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -123,27 +108,45 @@ class Navigation {
                         </div>
                     </div>
 
-                    <!-- Auth Section -->
-                    <div class="sidebar-auth">
-                        <div class="border-t border-gray-200 pt-4 mt-4">
-                            <button id="sidebar-login-btn" class="sidebar-link w-full bg-pink-500 text-white hover:bg-pink-600 hidden">
+                    <!-- Navigation Links -->
+                    <div id="main-nav-section" class="sidebar-nav">
+                        <div id="main-nav-links">
+                            <a href="/" class="nav-link sidebar-link">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                                 </svg>
-                                <span>Inloggen</span>
-                            </button>
-                            <button id="sidebar-profile-btn" class="sidebar-link hidden" onclick="if(window.router){window.router.navigate('/profiel')}">
+                                <span>Home</span>
+                            </a>
+                            <a href="/agenda" class="nav-link sidebar-link">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                                 </svg>
-                                <span>Profiel</span>
-                            </button>
-                            <button id="sidebar-logout-btn" class="sidebar-link text-red-600 hover:bg-red-50 hidden">
+                                <span>Agenda</span>
+                            </a>
+                            <a href="/zones" class="nav-link sidebar-link">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
-                                <span>Uitloggen</span>
-                            </button>
+                                <span>Zones</span>
+                            </a>
+                            <a href="/evenementen" class="nav-link sidebar-link">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>Evenementen</span>
+                            </a>
+                            <a href="/corristories" class="nav-link sidebar-link">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                                <span>Corristories</span>
+                            </a>
+                            <a href="/partners" class="nav-link sidebar-link">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <span>Partners</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -176,13 +179,7 @@ class Navigation {
             });
         }
 
-        // Close sidebar when clicking on nav links
-        const navLinks = document.querySelectorAll('.sidebar-link');
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                setTimeout(() => this.closeSidebar(), 300);
-            });
-        });
+        // Don't auto-close sidebar when clicking nav links - let user close manually
 
         // Close sidebar on Escape key
         document.addEventListener('keydown', (e) => {
@@ -254,14 +251,14 @@ class Navigation {
         const isLoggedIn = window.authManager && window.authManager.isAuthenticated();
         const isAdmin = window.authManager && window.authManager.isAdmin();
 
-        const loginBtn = document.getElementById('sidebar-login-btn');
-        const profileBtn = document.getElementById('sidebar-profile-btn');
-        const logoutBtn = document.getElementById('sidebar-logout-btn');
+        // Sidebar buttons
+        const sidebarLoginBtn = document.getElementById('sidebar-login-btn');
+        const sidebarProfileBtn = document.getElementById('sidebar-profile-btn');
         const adminNavSection = document.getElementById('admin-nav-section');
 
-        if (loginBtn) loginBtn.classList.toggle('hidden', isLoggedIn);
-        if (profileBtn) profileBtn.classList.toggle('hidden', !isLoggedIn);
-        if (logoutBtn) logoutBtn.classList.toggle('hidden', !isLoggedIn);
+        // Update sidebar buttons
+        if (sidebarLoginBtn) sidebarLoginBtn.classList.toggle('hidden', isLoggedIn);
+        if (sidebarProfileBtn) sidebarProfileBtn.classList.toggle('hidden', !isLoggedIn);
 
         // Show/hide admin navigation section
         if (adminNavSection) {
@@ -269,8 +266,8 @@ class Navigation {
         }
 
         // Attach login handler
-        if (loginBtn) {
-            loginBtn.onclick = () => {
+        if (sidebarLoginBtn) {
+            sidebarLoginBtn.onclick = () => {
                 this.closeSidebar();
                 setTimeout(() => {
                     const loginModal = document.getElementById('login-modal');
@@ -278,15 +275,23 @@ class Navigation {
                 }, 300);
             };
         }
+    }
 
-        // Attach logout handler
-        if (logoutBtn) {
-            logoutBtn.onclick = async () => {
-                this.closeSidebar();
-                if (typeof handleSignOut === 'function') {
-                    await handleSignOut();
-                }
-            };
+    // Toggle admin navigation
+    toggleAdminNav() {
+        const adminNavLinks = document.getElementById('admin-nav-links');
+        const collapseIcon = document.getElementById('admin-nav-collapse-icon');
+        
+        if (adminNavLinks && collapseIcon) {
+            const isCollapsed = adminNavLinks.classList.contains('hidden');
+            
+            if (isCollapsed) {
+                adminNavLinks.classList.remove('hidden');
+                collapseIcon.style.transform = 'rotate(0deg)';
+            } else {
+                adminNavLinks.classList.add('hidden');
+                collapseIcon.style.transform = 'rotate(-90deg)';
+            }
         }
     }
 

@@ -78,7 +78,7 @@
                             <span id="partner-logo-file-name" class="text-sm text-gray-600"></span>
                         </div>
                         <p class="text-xs text-gray-500 mb-1">Of gebruik een URL:</p>
-                        <input type="url" id="partner-logo-url" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="https://... of ../public/...">
+                        <input type="url" id="partner-logo-url" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="https://... of /public/...">
                     </div>
                 </div>
                 <div class="flex gap-4">
@@ -119,9 +119,32 @@ async function waitForDbManager(maxAttempts = 50) {
 
 // Check admin access - only admins
 async function checkAdminAccess() {
+    // Wait for authManager to exist
+    if (!window.authManager) {
+        let attempts = 0;
+        while (!window.authManager && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+    }
+    
+    // Wait for user profile to be loaded
+    if (window.authManager && typeof window.authManager.waitForProfile === 'function') {
+        await window.authManager.waitForProfile();
+    }
+    
+    // Now check admin access
     const canManage = window.authManager && window.authManager.isAdmin();
     const adminContent = document.getElementById('admin-content');
     const adminAccessDenied = document.getElementById('admin-access-denied');
+    
+    // Debug logging (can be removed in production)
+    // console.log('Admin access check:', {
+    //     hasAuthManager: !!window.authManager,
+    //     hasCurrentUser: !!window.authManager?.currentUser,
+    //     role: window.authManager?.role,
+    //     isAdmin: canManage
+    // });
     
     if (canManage) {
         if (adminContent) adminContent.classList.remove('hidden');
@@ -141,6 +164,7 @@ async function checkAdminAccess() {
     } else {
         if (adminContent) adminContent.classList.add('hidden');
         if (adminAccessDenied) adminAccessDenied.classList.remove('hidden');
+        // console.warn('Admin access denied. Role:', window.authManager?.role, 'Current user:', window.authManager?.currentUser);
     }
 }
 
@@ -201,25 +225,25 @@ async function loadPartners() {
                     const zoneBadge = zoneName ? `<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">${zoneName}</span>` : '';
                     
                     return `
-                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 card-hover">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        ${partner.logo_url ? `<img src="${partner.logo_url}" alt="${partner.name}" class="h-12 w-auto object-contain" onerror="this.style.display='none'">` : ''}
-                                        <h3 class="text-xl font-bold text-gray-800">${partner.name}</h3>
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 card-hover overflow-hidden">
+                            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-3 mb-2 flex-wrap">
+                                        ${partner.logo_url ? `<img src="${partner.logo_url}" alt="${partner.name}" class="h-10 md:h-12 w-auto object-contain flex-shrink-0" onerror="this.style.display='none'">` : ''}
+                                        <h3 class="text-lg md:text-xl font-bold text-gray-800 break-words">${partner.name}</h3>
                                     </div>
-                                    ${partner.description ? `<p class="text-gray-700 mb-2">${partner.description}</p>` : ''}
-                                    <div class="flex items-center gap-3 flex-wrap mt-3">
+                                    ${partner.description ? `<p class="text-gray-700 mb-2 text-sm md:text-base break-words">${partner.description}</p>` : ''}
+                                    <div class="flex items-center gap-2 md:gap-3 flex-wrap mt-3">
                                         ${typeBadge}
                                         ${zoneBadge}
-                                        ${partner.website ? `<a href="${partner.website}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm underline">Website</a>` : ''}
+                                        ${partner.website ? `<a href="${partner.website}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs md:text-sm underline break-all">Website</a>` : ''}
                                     </div>
                                 </div>
-                                <div class="flex gap-2">
-                                    <button onclick="editPartner('${partner.id}')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                                <div class="flex gap-2 flex-shrink-0">
+                                    <button onclick="editPartner('${partner.id}')" class="px-3 py-2 md:px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-xs md:text-sm whitespace-nowrap">
                                         Bewerken
                                     </button>
-                                    <button onclick="deletePartner('${partner.id}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
+                                    <button onclick="deletePartner('${partner.id}')" class="px-3 py-2 md:px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs md:text-sm whitespace-nowrap">
                                         Verwijderen
                                     </button>
                                 </div>
@@ -557,13 +581,13 @@ if (window.authManager) {
 </script>
 
     <!-- Footer -->
-    <footer id="footer" class="py-12 px-4 relative" style="background-image: url('../public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
+    <footer id="footer" class="py-12 px-4 relative" style="background-image: url('/public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
         <!-- Overlay for better text readability -->
         <div class="absolute inset-0 bg-black/50"></div>
         <div class="max-w-4xl mx-auto text-center relative z-10">
             <div class="mb-8">
                 <div class="w-16 h-16 mx-auto organic-shape shadow-lg mb-4 bg-white/90 backdrop-blur-sm flex items-center justify-center">
-                    <img src="../public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain">
+                    <img src="/public/LogoCorridor-removebg-preview.png" alt="Corridor Logo" class="w-14 h-14 object-contain">
                 </div>
                 <h3 class="text-3xl font-bold text-white graffiti-text mb-4">CORRIDOR</h3>
                 <p class="text-white/90">Urban Sport Hub van Gentbrugge - Onder het E17 viaduct</p>

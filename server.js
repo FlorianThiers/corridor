@@ -20,18 +20,20 @@ const params = {
             let pathname = parsedUrl.pathname;
             
             // Skip API requests, node_modules, and special paths
-            // Also allow /pages/ directory to be served directly (for SPA page fragments)
+            // Also allow /pages/, /public/, and /js/ directories to be served directly
             if (pathname.startsWith('/api/') || 
                 pathname.startsWith('/node_modules/') ||
                 pathname.startsWith('/.well-known/') ||
                 pathname.startsWith('/supabase/') ||
-                pathname.startsWith('/pages/')) {
+                pathname.startsWith('/pages/') ||
+                pathname.startsWith('/public/') ||
+                pathname.startsWith('/js/')) {
                 return next();
             }
             
             // Check if it's a static file request (has extension)
             const ext = path.extname(pathname).toLowerCase();
-            const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.mp4', '.pdf', '.json', '.html'];
+            const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.mp4', '.webm', '.mov', '.pdf', '.webp', '.json', '.html'];
             
             // IMPORTANT: Always allow static files (especially .js, .css, .html) to be served directly
             // Don't redirect them to index.html
