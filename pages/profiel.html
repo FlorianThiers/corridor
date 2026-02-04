@@ -103,16 +103,46 @@
 
 <script>
 // Update profile page when loaded
-function updateProfilePage() {
+async function updateProfilePage() {
+    // Wait for authManager to be initialized
+    if (!window.authManager) {
+        let attempts = 0;
+        while (!window.authManager && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+    }
+    
+    if (window.authManager && !window.authManager.isInitialized) {
+        let attempts = 0;
+        while (!window.authManager.isInitialized && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+    }
+    
     const user = window.authManager ? window.authManager.getCurrentUser() : null;
     const profileInfo = document.getElementById('profile-info');
     const profileNotLoggedIn = document.getElementById('profile-not-logged-in');
     
-    if (user && profileInfo) {
+    // Get email from Supabase auth session (not from database user record)
+    let userEmail = '';
+    if (window.supabaseClient && user) {
+        try {
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            if (session && session.user) {
+                userEmail = session.user.email || '';
+            }
+        } catch (error) {
+            console.error('Error getting email from session:', error);
+        }
+    }
+    
+    if (user && profileInfo && window.authManager && window.authManager.isAuthenticated()) {
         profileInfo.classList.remove('hidden');
         if (profileNotLoggedIn) profileNotLoggedIn.classList.add('hidden');
         
-        document.getElementById('profile-email').textContent = user.email || '';
+        document.getElementById('profile-email').textContent = userEmail || 'Niet beschikbaar';
         document.getElementById('profile-name').textContent = user.full_name || 'Niet opgegeven';
         document.getElementById('profile-name-display').textContent = user.full_name || 'Gebruiker';
         
@@ -130,23 +160,32 @@ function updateProfilePage() {
     }
 }
 
-// Update when page loads
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateProfilePage);
-} else {
-    updateProfilePage();
-}
+// Update when page loads - wait a bit for auth to initialize
+setTimeout(() => {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', updateProfilePage);
+    } else {
+        updateProfilePage();
+    }
+}, 200);
 
 // Update when auth state changes
 if (window.authManager) {
     const originalUpdateUI = window.authManager.updateUI;
     window.authManager.updateUI = function() {
         if (originalUpdateUI) originalUpdateUI.call(this);
-        if (window.location.pathname === '/profiel') {
+        if (window.location.pathname === '/profiel' || window.location.pathname === '/profiel/') {
             updateProfilePage();
         }
     };
+}
+
+// Also listen for route changes
+window.addEventListener('routechange', () => {
+    if (window.location.pathname === '/profiel' || window.location.pathname === '/profiel/') {
+        setTimeout(updateProfilePage, 100);
     }
+});
 </script>
     </section>
 </div>

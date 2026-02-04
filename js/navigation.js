@@ -42,13 +42,13 @@ class Navigation {
 
                     <!-- Auth Section (Login/Profile) - Above navigation links -->
                     <div class="sidebar-auth-top mb-4">
-                        <button id="sidebar-login-btn" class="sidebar-link w-full bg-pink-500 text-white hover:bg-pink-600 hidden mb-2">
+                        <button id="sidebar-login-btn" class="sidebar-link w-full bg-pink-500 text-white hover:bg-pink-600 mb-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                             </svg>
                             <span>Inloggen</span>
                         </button>
-                        <button id="sidebar-profile-btn" class="sidebar-link hidden" onclick="if(window.router){window.router.navigate('/profiel')}">
+                        <button id="sidebar-profile-btn" class="sidebar-link hidden" style="display: none !important;" onclick="if(window.router){window.router.navigate('/profiel')}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
@@ -179,6 +179,23 @@ class Navigation {
             });
         }
 
+        // Attach login button handler immediately when sidebar is created
+        const sidebarLoginBtn = document.getElementById('sidebar-login-btn');
+        if (sidebarLoginBtn) {
+            const handleLogin = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeSidebar();
+                setTimeout(() => {
+                    const loginModal = document.getElementById('login-modal');
+                    if (loginModal) {
+                        loginModal.classList.add('active');
+                    }
+                }, 300);
+            };
+            sidebarLoginBtn.addEventListener('click', handleLogin);
+        }
+
         // Don't auto-close sidebar when clicking nav links - let user close manually
 
         // Close sidebar on Escape key
@@ -195,20 +212,47 @@ class Navigation {
             });
         }
 
-        // Update auth buttons
-        this.updateAuthButtons();
+        // Initially hide all auth elements (will show login button)
+        // This ensures nothing is visible until auth is confirmed
+        this.hideAllAuthElements();
+
+        // Wait for authManager to be initialized before showing anything
+        const waitForAuthInit = async () => {
+            let attempts = 0;
+            while (attempts < 100) { // Wait up to 10 seconds
+                if (window.authManager && window.authManager.isInitialized) {
+                    await this.updateAuthButtons();
+                    return;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            // If authManager never initializes, show login button
+            this.hideAllAuthElements();
+        };
+        
+        waitForAuthInit();
 
         // Also update when authManager becomes available (if not ready yet)
         if (!window.authManager) {
             const checkAuthManager = setInterval(() => {
-                if (window.authManager) {
+                if (window.authManager && window.authManager.isInitialized) {
                     clearInterval(checkAuthManager);
                     this.updateAuthButtons();
                 }
             }, 100);
 
-            // Stop checking after 5 seconds
-            setTimeout(() => clearInterval(checkAuthManager), 5000);
+            // Stop checking after 10 seconds
+            setTimeout(() => clearInterval(checkAuthManager), 10000);
+        }
+
+        // Listen for auth state changes
+        if (window.supabaseClient) {
+            window.supabaseClient.auth.onAuthStateChange(() => {
+                if (window.authManager && window.authManager.isInitialized) {
+                    this.updateAuthButtons();
+                }
+            });
         }
     }
 
@@ -247,33 +291,124 @@ class Navigation {
         }
     }
 
-    updateAuthButtons() {
-        const isLoggedIn = window.authManager && window.authManager.isAuthenticated();
-        const isAdmin = window.authManager && window.authManager.isAdmin();
+    async updateAuthButtons() {
+        // ALWAYS start by hiding everything (safe default)
+        // This ensures nothing is visible until we confirm auth state
+        const sidebarLoginBtn = document.getElementById('sidebar-login-btn');
+        const sidebarProfileBtn = document.getElementById('sidebar-profile-btn');
+        const adminNavSection = document.getElementById('admin-nav-section');
+        
+        // Force hide profile and admin immediately
+        if (sidebarProfileBtn) sidebarProfileBtn.classList.add('hidden');
+        if (adminNavSection) adminNavSection.classList.add('hidden');
+        // Show login by default
+        if (sidebarLoginBtn) sidebarLoginBtn.classList.remove('hidden');
+        
+        // Attach login handler FIRST, before any returns - ensure it always works
+        if (sidebarLoginBtn && !sidebarLoginBtn.hasAttribute('data-handler-attached')) {
+            sidebarLoginBtn.setAttribute('data-handler-attached', 'true');
+            const handleLogin = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeSidebar();
+                setTimeout(() => {
+                    const loginModal = document.getElementById('login-modal');
+                    if (loginModal) {
+                        loginModal.classList.add('active');
+                    } else {
+                        console.error('Login modal not found');
+                    }
+                }, 300);
+            };
+            sidebarLoginBtn.addEventListener('click', handleLogin);
+        }
+        
+        // Wait for authManager to be ready and initialized
+        if (!window.authManager) {
+            // Still show login button even if authManager doesn't exist
+            if (sidebarLoginBtn) {
+                sidebarLoginBtn.classList.remove('hidden');
+                sidebarLoginBtn.style.display = '';
+            }
+            return;
+        }
+        
+        // Wait for authManager to be fully initialized
+        let attempts = 0;
+        while (!window.authManager.isInitialized && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
 
-        // Sidebar buttons
+        // Wait for profile to be loaded if there's a session
+        if (window.supabaseClient) {
+            try {
+                const { data: { session } } = await window.supabaseClient.auth.getSession();
+                if (session && session.user && !window.authManager.currentUser) {
+                    // Session exists but profile not loaded yet, wait for it
+                    await window.authManager.waitForProfile(20); // Wait up to 2 seconds
+                }
+            } catch (error) {
+                // Silent fail
+            }
+        }
+
+        // Now check auth state - only show elements if user is definitely authenticated
+        // Double check: must have currentUser AND be authenticated
+        const hasUser = window.authManager && window.authManager.currentUser !== null;
+        const isAuthenticated = window.authManager && window.authManager.isAuthenticated();
+        const isLoggedIn = hasUser && isAuthenticated;
+        const isAdmin = isLoggedIn && window.authManager.isAdmin();
+
+        // Update sidebar buttons - only show if definitely logged in
+        if (sidebarLoginBtn) {
+            if (isLoggedIn) {
+                sidebarLoginBtn.classList.add('hidden');
+            } else {
+                sidebarLoginBtn.classList.remove('hidden');
+            }
+        }
+        
+        // Only show profile button if user is definitely logged in
+        if (sidebarProfileBtn) {
+            if (isLoggedIn && hasUser) {
+                sidebarProfileBtn.classList.remove('hidden');
+                sidebarProfileBtn.style.display = ''; // Remove inline style
+            } else {
+                sidebarProfileBtn.classList.add('hidden');
+                sidebarProfileBtn.style.display = 'none'; // Force hide with inline style
+            }
+        }
+
+        // Show/hide admin navigation section - only show if definitely admin
+        if (adminNavSection) {
+            if (isAdmin && isLoggedIn) {
+                adminNavSection.classList.remove('hidden');
+            } else {
+                adminNavSection.classList.add('hidden');
+            }
+        }
+
+    }
+
+    hideAllAuthElements() {
+        // Hide all auth-dependent elements by default
         const sidebarLoginBtn = document.getElementById('sidebar-login-btn');
         const sidebarProfileBtn = document.getElementById('sidebar-profile-btn');
         const adminNavSection = document.getElementById('admin-nav-section');
 
-        // Update sidebar buttons
-        if (sidebarLoginBtn) sidebarLoginBtn.classList.toggle('hidden', isLoggedIn);
-        if (sidebarProfileBtn) sidebarProfileBtn.classList.toggle('hidden', !isLoggedIn);
-
-        // Show/hide admin navigation section
-        if (adminNavSection) {
-            adminNavSection.classList.toggle('hidden', !isAdmin);
-        }
-
-        // Attach login handler
+        // Show login, hide profile and admin (with inline style for extra security)
         if (sidebarLoginBtn) {
-            sidebarLoginBtn.onclick = () => {
-                this.closeSidebar();
-                setTimeout(() => {
-                    const loginModal = document.getElementById('login-modal');
-                    if (loginModal) loginModal.classList.add('active');
-                }, 300);
-            };
+            sidebarLoginBtn.classList.remove('hidden');
+            sidebarLoginBtn.style.display = '';
+        }
+        if (sidebarProfileBtn) {
+            sidebarProfileBtn.classList.add('hidden');
+            sidebarProfileBtn.style.display = 'none'; // Force hide
+        }
+        if (adminNavSection) {
+            adminNavSection.classList.add('hidden');
+            adminNavSection.style.display = 'none'; // Force hide
         }
     }
 

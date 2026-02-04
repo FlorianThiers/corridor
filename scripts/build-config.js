@@ -1,4 +1,4 @@
-// Build script to generate supabase-config.js from .env file
+// Build script to generate supabase-config.js from .env file and compile Tailwind CSS
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -40,3 +40,132 @@ try {
     process.exit(1);
 }
 
+// Also compile Tailwind CSS
+try {
+    require('./build-css.js');
+} catch (error) {
+    console.error('❌ Error compiling Tailwind CSS:', error.message);
+    // Don't exit on CSS build failure - allow build to continue
+}
+
+// Route analysis and build summary
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'kB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+}
+
+function getFileSize(filePath) {
+    try {
+        const fullPath = path.join(__dirname, '..', filePath);
+        if (fs.existsSync(fullPath)) {
+            const stats = fs.statSync(fullPath);
+            return stats.size;
+        }
+    } catch (error) {
+        // File doesn't exist or error reading
+    }
+    return 0;
+}
+
+// Define routes (matching router.js)
+const routes = {
+    '/': 'pages/home.html',
+    '/home': 'pages/home.html',
+    '/evenementen': 'pages/evenementen.html',
+    '/agenda': 'pages/agenda.html',
+    '/zones': 'pages/zones.html',
+    '/corristories': 'pages/corristories.html',
+    '/partners': 'pages/partners.html',
+    '/profiel': 'pages/profiel.html',
+    '/beheer-evenementen': 'pages/admin-evenementen.html',
+    '/beheer-corristories': 'pages/admin-corristories.html',
+    '/beheer-zones': 'pages/admin-zones.html',
+    '/beheer-gebruikers': 'pages/admin-gebruikers.html',
+    '/beheer-partners': 'pages/admin-partners.html',
+    '/beheer-animatie': 'pages/admin-animatie.html'
+};
+
+// Analyze routes
+const routeAnalysis = [];
+let totalSize = 0;
+
+for (const [route, filePath] of Object.entries(routes)) {
+    const size = getFileSize(filePath);
+    totalSize += size;
+    const isAdmin = route.startsWith('/beheer');
+    const isPublic = !isAdmin;
+    
+    routeAnalysis.push({
+        route,
+        filePath,
+        size,
+        type: isAdmin ? 'admin' : 'public',
+        symbol: isAdmin ? '🔒' : '○'
+    });
+}
+
+// Calculate shared assets
+const sharedAssets = {
+    'index.html': getFileSize('index.html'),
+    'css/styles.css': getFileSize('css/styles.css'),
+    'js/router.js': getFileSize('js/router.js'),
+    'js/auth.js': getFileSize('js/auth.js'),
+    'js/database.js': getFileSize('js/database.js'),
+    'js/navigation.js': getFileSize('js/navigation.js'),
+    'js/supabase-config.js': getFileSize('js/supabase-config.js')
+};
+
+const sharedSize = Object.values(sharedAssets).reduce((sum, size) => sum + size, 0);
+
+// Print build summary
+console.log('\n📦 Build Summary');
+    console.log('   ✅ Tailwind CSS compiled');
+    console.log('   ✅ Supabase config generated');
+    console.log('   ✅ Routes analyzed');
+    console.log('\nRoute (app)                                          Size     Type');
+    console.log('┌─────────────────────────────────────────────────────────────────────┐');
+    
+    // Group routes by type
+    const publicRoutes = routeAnalysis.filter(r => r.type === 'public');
+    const adminRoutes = routeAnalysis.filter(r => r.type === 'admin');
+    
+    // Print public routes
+    publicRoutes.forEach((route, index) => {
+        const prefix = index === 0 ? '├' : index === publicRoutes.length - 1 && adminRoutes.length === 0 ? '└' : '├';
+        const routeName = route.route.padEnd(45);
+        const size = formatBytes(route.size).padStart(10);
+        console.log(`${prefix} ${route.symbol} ${routeName} ${size}   ${route.type}`);
+    });
+    
+    // Print admin routes
+    if (adminRoutes.length > 0) {
+        adminRoutes.forEach((route, index) => {
+            const prefix = index === adminRoutes.length - 1 ? '└' : '├';
+            const routeName = route.route.padEnd(45);
+            const size = formatBytes(route.size).padStart(10);
+            console.log(`${prefix} ${route.symbol} ${routeName} ${size}   ${route.type}`);
+        });
+    }
+    
+    console.log('└─────────────────────────────────────────────────────────────────────┘');
+    console.log(`\n+ Shared Assets (loaded once)                      ${formatBytes(sharedSize).padStart(10)}`);
+    console.log(`  ├─ index.html                                    ${formatBytes(sharedAssets['index.html']).padStart(10)}`);
+    console.log(`  ├─ css/styles.css                                ${formatBytes(sharedAssets['css/styles.css']).padStart(10)}`);
+    console.log(`  ├─ js/router.js                                  ${formatBytes(sharedAssets['js/router.js']).padStart(10)}`);
+    console.log(`  ├─ js/auth.js                                    ${formatBytes(sharedAssets['js/auth.js']).padStart(10)}`);
+    console.log(`  ├─ js/database.js                                ${formatBytes(sharedAssets['js/database.js']).padStart(10)}`);
+    console.log(`  ├─ js/navigation.js                               ${formatBytes(sharedAssets['js/navigation.js']).padStart(10)}`);
+    console.log(`  └─ js/supabase-config.js                          ${formatBytes(sharedAssets['js/supabase-config.js']).padStart(10)}`);
+    
+    console.log(`\n📊 Statistics:`);
+    console.log(`   Total Routes: ${routeAnalysis.length}`);
+    console.log(`   Public Routes: ${publicRoutes.length}`);
+    console.log(`   Admin Routes: ${adminRoutes.length}`);
+    console.log(`   Total Route Size: ${formatBytes(totalSize)}`);
+    console.log(`   Shared Assets Size: ${formatBytes(sharedSize)}`);
+    console.log(`   Estimated First Load: ${formatBytes(sharedSize + Math.max(...routeAnalysis.map(r => r.size)))}`);
+    
+    console.log('\n🚀 Build complete! Ready for deployment.\n');

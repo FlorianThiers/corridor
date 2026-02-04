@@ -20,14 +20,15 @@ const params = {
             let pathname = parsedUrl.pathname;
             
             // Skip API requests, node_modules, and special paths
-            // Also allow /pages/, /public/, and /js/ directories to be served directly
+            // Also allow /pages/, /public/, /js/, and /css/ directories to be served directly
             if (pathname.startsWith('/api/') || 
                 pathname.startsWith('/node_modules/') ||
                 pathname.startsWith('/.well-known/') ||
                 pathname.startsWith('/supabase/') ||
                 pathname.startsWith('/pages/') ||
                 pathname.startsWith('/public/') ||
-                pathname.startsWith('/js/')) {
+                pathname.startsWith('/js/') ||
+                pathname.startsWith('/css/')) {
                 return next();
             }
             

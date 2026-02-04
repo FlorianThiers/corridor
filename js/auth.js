@@ -1,5 +1,31 @@
 // Authentication module for Corridor website
 
+// Cookie helper functions
+const CookieStorage = {
+    set(name, value, days = 30) {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+        document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+    },
+    
+    get(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) {
+                return decodeURIComponent(c.substring(nameEQ.length, c.length));
+            }
+        }
+        return null;
+    },
+    
+    remove(name) {
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+    }
+};
+
 // Prevent re-execution if already loaded
 if (typeof window.AuthManager !== 'undefined') {
     // Already loaded, skip
@@ -8,13 +34,41 @@ class AuthManager {
     constructor() {
         this.currentUser = null;
         this.role = 'user';
+        this.isInitialized = false;
         this.init();
     }
 
     async init() {
         if (!window.supabaseClient) {
             console.error('Supabase client not initialized');
-            return;
+            // Clear cookies if no supabase client
+            CookieStorage.remove('auth_user_id');
+            CookieStorage.remove('auth_role');
+            // Wait a bit for supabaseClient to be initialized
+            let attempts = 0;
+            while (!window.supabaseClient && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            // If still not available after waiting, mark as initialized but not ready
+            if (!window.supabaseClient) {
+                this.isInitialized = true;
+                this.updateUI();
+                return;
+            }
+        }
+
+        // First check cookies for quick auth state
+        const cookieUserId = CookieStorage.get('auth_user_id');
+        const cookieRole = CookieStorage.get('auth_role');
+        
+        // If no cookies, definitely not logged in - clear state immediately
+        if (!cookieUserId) {
+            this.currentUser = null;
+            this.role = 'user';
+            this.isInitialized = true;
+            this.updateUI();
         }
 
         // Check for existing session - wrap in try/catch to prevent errors
@@ -22,14 +76,35 @@ class AuthManager {
             const { data: { session }, error } = await window.supabaseClient.auth.getSession();
             if (error) {
                 // Silent fail for unauthenticated users (normal behavior)
+                this.clearAuthState();
             } else if (session) {
                 // Session exists, load user profile
                 await this.loadUserProfile(session.user.id);
+                // Save to cookies
+                if (this.currentUser) {
+                    CookieStorage.set('auth_user_id', this.currentUser.id, 30);
+                    CookieStorage.set('auth_role', this.role, 30);
+                }
                 this.updateUI();
+            } else {
+                // No session, clear cookies
+                this.clearAuthState();
             }
         } catch (error) {
             // Silent fail for auth errors
+            this.clearAuthState();
         }
+        
+        this.isInitialized = true;
+        this.updateUI();
+    }
+    
+    clearAuthState() {
+        this.currentUser = null;
+        this.role = 'user';
+        CookieStorage.remove('auth_user_id');
+        CookieStorage.remove('auth_role');
+    }
 
         // Listen for auth state changes
         window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -37,8 +112,7 @@ class AuthManager {
                 await this.loadUserProfile(session.user.id);
                 this.updateUI();
             } else if (event === 'SIGNED_OUT') {
-                this.currentUser = null;
-                this.role = 'user';
+                this.clearAuthState();
                 this.updateUI();
             } else if (event === 'TOKEN_REFRESHED' && session) {
                 // Refresh user profile when token is refreshed
@@ -81,6 +155,9 @@ class AuthManager {
             if (data) {
                 this.currentUser = data;
                 this.role = data.role || 'user';
+                // Save to cookies
+                CookieStorage.set('auth_user_id', data.id, 30);
+                CookieStorage.set('auth_role', this.role, 30);
             }
         } catch (error) {
             console.error('Exception loading user profile:', error);
@@ -124,7 +201,6 @@ class AuthManager {
             // Wait a bit for session to be fully established
             await new Promise(resolve => setTimeout(resolve, 100));
             await this.loadUserProfile(data.user.id);
-            this.updateUI();
             
             // Verify profile was loaded
             if (!this.currentUser) {
@@ -132,6 +208,14 @@ class AuthManager {
                 await new Promise(resolve => setTimeout(resolve, 500));
                 await this.loadUserProfile(data.user.id);
             }
+            
+            // Save to cookies after successful login
+            if (this.currentUser) {
+                CookieStorage.set('auth_user_id', this.currentUser.id, 30);
+                CookieStorage.set('auth_role', this.role, 30);
+            }
+            
+            this.updateUI();
         }
         
         return data;
@@ -141,8 +225,7 @@ class AuthManager {
         const { error } = await window.supabaseClient.auth.signOut();
         if (error) throw error;
         
-        this.currentUser = null;
-        this.role = 'user';
+        this.clearAuthState();
         this.updateUI();
     }
     
@@ -171,8 +254,8 @@ class AuthManager {
             loginModal.classList.remove('active');
         }
         
-        // Trigger menu update if hamburger menu is initialized
-        if (window.navigation && typeof window.navigation.updateAuthButtons === 'function') {
+        // Trigger menu update if hamburger menu is initialized and auth is initialized
+        if (this.isInitialized && window.navigation && typeof window.navigation.updateAuthButtons === 'function') {
             window.navigation.updateAuthButtons();
         }
     }
