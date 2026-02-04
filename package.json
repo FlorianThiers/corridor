@@ -3,22 +3,27 @@
   "version": "2.0.0",
   "description": "Corridor - Urban Sport Hub van Gentbrugge met Supabase backend",
   "scripts": {
-    "build": "npm run build:css && node scripts/build-config.js",
-    "build:css": "node scripts/build-css.js",
-    "dev": "npm run build && concurrently \"npm run watch:css\" \"npm run serve\"",
-    "watch:css": "node scripts/watch-css.js",
-    "serve": "node server.js",
-    "start": "npm run dev",
-    "start:simple": "live-server --port=8000 --open=/",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "optimize:videos": "powershell -ExecutionPolicy Bypass -File scripts/optimize-videos.ps1",
     "optimize:images": "powershell -ExecutionPolicy Bypass -File scripts/convert-to-webp.ps1",
     "optimize:all": "npm run optimize:videos && npm run optimize:images"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "gsap": "^3.14.2",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^25.2.0",
+    "@types/react": "^19.2.11",
+    "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.24",
     "chokidar": "^5.0.0",
     "concurrently": "^9.2.1",
@@ -26,6 +31,7 @@
     "live-server": "^1.2.2",
     "nodemon": "^3.1.11",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3"
   }
 }

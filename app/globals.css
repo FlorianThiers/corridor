@@ -1,0 +1,449 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-family-sans: 'Fredoka', cursive;
+}
+
+:root {
+  --vh: 1vh;
+}
+
+html {
+  background: transparent;
+}
+
+body {
+  font-family: 'Fredoka', cursive;
+  background: transparent;
+  min-height: 100vh;
+}
+
+/* Custom styles from index.html <style> block */
+.parallax-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    will-change: transform;
+}
+
+.graffiti-text {
+    text-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+}
+
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.gradient-bg {
+    background: linear-gradient(180deg,
+        rgba(255, 182, 193, 0.4) 0%,
+        rgba(255, 200, 189, 0.4) 10%,
+        rgba(255, 218, 185, 0.4) 20%,
+        rgba(255, 236, 185, 0.4) 30%,
+        rgba(255, 255, 186, 0.4) 40%,
+        rgba(220, 255, 193, 0.4) 50%,
+        rgba(186, 255, 201, 0.4) 60%,
+        rgba(186, 240, 228, 0.4) 70%,
+        rgba(186, 225, 255, 0.4) 80%,
+        rgba(203, 205, 255, 0.4) 90%,
+        rgba(221, 186, 255, 0.4) 100%
+    );
+}
+
+/* Smooth section backgrounds - seamless transitions */
+.section-gradient-1 {
+    background: linear-gradient(180deg,
+        rgba(255, 182, 193, 0.3) 0%,
+        rgba(255, 200, 189, 0.3) 50%,
+        rgba(255, 218, 185, 0.3) 100%
+    );
+}
+.section-gradient-2 {
+    background: linear-gradient(180deg,
+        rgba(255, 218, 185, 0.3) 0%,
+        rgba(255, 236, 185, 0.3) 50%,
+        rgba(255, 255, 186, 0.3) 100%
+    );
+}
+.section-gradient-3 {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 186, 0.3) 0%,
+        rgba(220, 255, 193, 0.3) 50%,
+        rgba(186, 255, 201, 0.3) 100%
+    );
+}
+.section-gradient-4 {
+    background: linear-gradient(180deg,
+        rgba(186, 255, 201, 0.3) 0%,
+        rgba(186, 240, 228, 0.3) 50%,
+        rgba(186, 225, 255, 0.3) 100%
+    );
+}
+.section-gradient-5 {
+    background: linear-gradient(180deg,
+        rgba(186, 225, 255, 0.3) 0%,
+        rgba(203, 205, 255, 0.3) 50%,
+        rgba(221, 186, 255, 0.3) 100%
+    );
+}
+.section-gradient-6 {
+    background: linear-gradient(180deg,
+        rgba(221, 186, 255, 0.3) 0%,
+        rgba(240, 190, 230, 0.3) 50%,
+        rgba(255, 182, 193, 0.3) 100%
+    );
+}
+
+/* Page background wrapper - smooth gradient flow */
+.page-background {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(180deg,
+        rgba(255, 182, 193, 0.3) 0%,
+        rgba(255, 200, 189, 0.3) 8%,
+        rgba(255, 218, 185, 0.3) 16%,
+        rgba(255, 236, 185, 0.3) 24%,
+        rgba(255, 255, 186, 0.3) 32%,
+        rgba(220, 255, 193, 0.3) 40%,
+        rgba(186, 255, 201, 0.3) 48%,
+        rgba(186, 240, 228, 0.3) 56%,
+        rgba(186, 225, 255, 0.3) 64%,
+        rgba(203, 205, 255, 0.3) 72%,
+        rgba(221, 186, 255, 0.3) 80%,
+        rgba(240, 190, 230, 0.3) 88%,
+        rgba(255, 182, 193, 0.3) 100%
+    );
+    background-attachment: fixed;
+}
+
+
+/* Ensure sections blend seamlessly - transparent so background shows through */
+section[class*="section-gradient"] {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    position: relative;
+    background: transparent !important;
+}
+
+section[class*="section-gradient"] + section[class*="section-gradient"] {
+    margin-top: -1px;
+}
+
+/* Page sections - transparent background so page-background shows through */
+.page-background section {
+    background: transparent !important;
+    position: relative;
+}
+
+/* Ensure smooth transitions between sections */
+.page-background section + section {
+    margin-top: 0;
+}
+
+/* Background layers for future images */
+.bg-layer-skate { background: linear-gradient(180deg, rgba(255, 182, 193, 0.15) 0%, rgba(255, 200, 189, 0.15) 100%); }
+.bg-layer-football { background: linear-gradient(180deg, rgba(255, 200, 189, 0.15) 0%, rgba(255, 218, 185, 0.15) 100%); }
+.bg-layer-basketball { background: linear-gradient(180deg, rgba(255, 218, 185, 0.15) 0%, rgba(255, 255, 186, 0.15) 100%); }
+.bg-layer-bar { background: linear-gradient(180deg, rgba(255, 255, 186, 0.15) 0%, rgba(186, 255, 201, 0.15) 100%); }
+.bg-layer-freerun { background: linear-gradient(180deg, rgba(186, 255, 201, 0.15) 0%, rgba(186, 225, 255, 0.15) 100%); }
+.bg-layer-community { background: linear-gradient(180deg, rgba(186, 225, 255, 0.15) 0%, rgba(221, 186, 255, 0.15) 100%); }
+
+/* Floating elements */
+.floating-gif {
+    width: 180px;
+    height: 180px;
+    opacity: 0.7;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    margin-left: -120px;
+    margin-top: -40px;
+}
+
+.floating-gif:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+    .floating-gif {
+        width: 120px;
+        height: 120px;
+        margin-left: -60px;
+        margin-top: -20px;
+    }
+}
+
+/* Organic logo shapes */
+.organic-shape {
+    border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+    animation: morphShape 8s ease-in-out infinite;
+}
+
+@keyframes morphShape {
+    0%, 100% {
+        border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+    }
+    25% {
+        border-radius: 40% 60% 70% 30% / 40% 40% 60% 60%;
+    }
+    50% {
+        border-radius: 54% 46% 38% 62% / 49% 70% 30% 51%;
+    }
+    75% {
+        border-radius: 31% 69% 60% 40% / 70% 50% 50% 30%;
+    }
+}
+
+/* Hamburger Button */
+.hamburger-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 10001;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+}
+
+/* Social Icons - Force right position */
+.social-icons-fixed {
+    position: fixed !important;
+    right: 0.75rem !important;
+    top: 1.5rem !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    cursor: pointer;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    max-width: 85vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar.open {
+    transform: translateX(0);
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem;
+    padding-top: 5rem;
+}
+
+.sidebar-header {
+    margin-bottom: 1rem;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-auth-top {
+    margin-bottom: 1rem;
+}
+
+.sidebar-auth {
+    margin-top: auto;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #374151;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    width: 100%;
+}
+
+#admin-nav-collapse-icon {
+    transition: transform 0.2s ease;
+}
+
+#admin-nav-links {
+    transition: all 0.3s ease;
+}
+
+.sidebar-link:hover {
+    background-color: #f3f4f6;
+    color: #6366f1;
+}
+
+.sidebar-link.active {
+    background-color: #eef2ff;
+    color: #6366f1;
+}
+
+.sidebar-link svg {
+    flex-shrink: 0;
+}
+
+.sidebar-link span {
+    flex: 1;
+}
+
+/* Nav link styles */
+.nav-link {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+    /* iOS safe area support */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem; /* Reduced padding for better mobile fit */
+}
+
+/* On small screens, align to top to ensure buttons are visible */
+@media (max-height: 700px) {
+    .modal.active {
+        align-items: flex-start;
+        padding-top: 2rem;
+    }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    max-height: calc(var(--vh, 1vh) * 100 - 4rem); /* Use CSS custom property for better iOS support */
+    overflow-y: auto;
+    position: relative;
+    z-index: 10002;
+    pointer-events: auto;
+    margin-top: 2rem; /* Add top margin to prevent touching top of screen */
+    /* iOS safe area support */
+    padding-top: max(2rem, env(safe-area-inset-top));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    /* Ensure buttons are always visible by adding bottom margin */
+    margin-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .modal-content {
+        /* iOS Safari specific height handling */
+        max-height: calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4rem);
+    }
+}
+
+/* Mobile responsive modal adjustments */
+@media (max-height: 600px) {
+    .modal.active {
+        align-items: flex-start;
+        padding-top: 1rem;
+    }
+
+    .modal-content {
+        max-height: calc(var(--vh, 1vh) * 100 - 2rem);
+        margin-top: 0;
+    }
+}
+
+/* iOS specific button visibility fix */
+.modal-content form {
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+}
+
+.modal-content form button[type="submit"] {
+    margin-top: 1rem;
+    /* Ensure button is always visible on iOS */
+    position: relative;
+}
+
+/* Additional bottom spacing for iOS home indicator */
+@supports (-webkit-touch-callout: none) {
+    .modal-content form button[type="submit"] {
+        margin-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+}
+
+/* Ensure file inputs and other form elements are clickable */
+.modal-content input[type="file"],
+.modal-content input[type="text"],
+.modal-content input[type="url"],
+.modal-content select,
+.modal-content textarea,
+.modal-content button {
+    pointer-events: auto;
+    position: relative;
+    z-index: 10003;
+}
+
+/* Password toggle button should be absolutely positioned */
+.modal-content .relative > button[type="button"] {
+    position: absolute !important;
+    z-index: 10004 !important;
+}

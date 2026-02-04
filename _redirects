@@ -1,6 +1,0 @@
-# Netlify redirects for SPA routing
-# Redirect all requests to index.html except existing files
-/*    /index.html   200
-
-# Optional: Handle API routes (if you had any)
-/api/*  https://your-api-endpoint.com/:splat  200

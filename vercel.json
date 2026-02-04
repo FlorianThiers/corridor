@@ -1,14 +1,4 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".",
-  "cleanUrls": false,
-  "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -32,11 +22,15 @@
         {
           "key": "Permissions-Policy",
           "value": "geolocation=(), microphone=(), camera=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
         }
       ]
     },
     {
-      "source": "/public/:file.mp4",
+      "source": "/:file*.mp4",
       "headers": [
         {
           "key": "Cache-Control",
@@ -49,7 +43,7 @@
       ]
     },
     {
-      "source": "/public/:file.webm",
+      "source": "/:file*.webm",
       "headers": [
         {
           "key": "Cache-Control",
@@ -62,20 +56,7 @@
       ]
     },
     {
-      "source": "/public/:file.mov",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        },
-        {
-          "key": "Accept-Ranges",
-          "value": "bytes"
-        }
-      ]
-    },
-    {
-      "source": "/public/:file.jpg",
+      "source": "/:file*.jpg",
       "headers": [
         {
           "key": "Cache-Control",
@@ -84,7 +65,7 @@
       ]
     },
     {
-      "source": "/public/:file.jpeg",
+      "source": "/:file*.jpeg",
       "headers": [
         {
           "key": "Cache-Control",
@@ -93,7 +74,7 @@
       ]
     },
     {
-      "source": "/public/:file.png",
+      "source": "/:file*.png",
       "headers": [
         {
           "key": "Cache-Control",
@@ -102,7 +83,7 @@
       ]
     },
     {
-      "source": "/public/:file.gif",
+      "source": "/:file*.gif",
       "headers": [
         {
           "key": "Cache-Control",
@@ -111,7 +92,7 @@
       ]
     },
     {
-      "source": "/public/:file.webp",
+      "source": "/:file*.webp",
       "headers": [
         {
           "key": "Content-Type",
@@ -124,7 +105,7 @@
       ]
     },
     {
-      "source": "/public/:file.svg",
+      "source": "/:file*.svg",
       "headers": [
         {
           "key": "Cache-Control",
@@ -133,7 +114,7 @@
       ]
     },
     {
-      "source": "/public/:file.pdf",
+      "source": "/:file*.pdf",
       "headers": [
         {
           "key": "Cache-Control",
@@ -142,42 +123,11 @@
       ]
     },
     {
-      "source": "/js/:file.js",
+      "source": "/_next/static/:path*",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/css/:file.css",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/pages/:file.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
-      ]
-    },
-    {
-      "source": "/index.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        },
-        {
-          "key": "ETag",
-          "value": "true"
         }
       ]
     }
