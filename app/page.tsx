@@ -25,17 +25,26 @@ export default async function HomePage() {
     const supabase = await createClient()
     // Fetch all data in parallel to reduce total request time
     const [evenementenData, zonesData, corristoriesData] = await Promise.all([
-      getEvenementen(supabase),
-      getZones(supabase),
-      getCorristories(supabase)
+      getEvenementen(supabase).catch(err => {
+        console.error('Error loading evenementen:', err)
+        return []
+      }),
+      getZones(supabase).catch(err => {
+        console.error('Error loading zones:', err)
+        return []
+      }),
+      getCorristories(supabase).catch(err => {
+        console.error('Error loading corristories:', err)
+        return []
+      })
     ])
     evenementen = evenementenData
     zones = zonesData
     corristories = corristoriesData
   } catch (error) {
     // Log error but don't crash the page
-    console.error('Error loading data:', error)
-    // In production, we want to show the page even if data loading fails
+    console.error('Error initializing Supabase client:', error)
+    // In production, we want to show the page even if Supabase fails
     // The page will just show empty states
   }
 
