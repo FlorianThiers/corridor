@@ -42,8 +42,19 @@ try {
 
 // Also compile Tailwind CSS
 try {
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/bcf47e13-993b-46f6-b9a9-8094a0b71fbc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'build-config.js:44',message:'Starting CSS build',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     require('./build-css.js');
+    // #region agent log
+    const cssPath = path.join(__dirname, '..', 'css', 'styles.css');
+    const cssExists = fs.existsSync(cssPath);
+    fetch('http://127.0.0.1:7243/ingest/bcf47e13-993b-46f6-b9a9-8094a0b71fbc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'build-config.js:47',message:'CSS build completed check',data:{cssExists,cssPath,cssSize:cssExists?fs.statSync(cssPath).size:0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
 } catch (error) {
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/bcf47e13-993b-46f6-b9a9-8094a0b71fbc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'build-config.js:49',message:'CSS build error caught',data:{error:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     console.error('❌ Error compiling Tailwind CSS:', error.message);
     // Don't exit on CSS build failure - allow build to continue
 }

@@ -23,7 +23,7 @@ function buildCSS() {
   
   const buildProcess = spawn('node', [path.join(__dirname, 'build-css.js')], {
     stdio: 'inherit',
-    shell: true,
+    shell: false,
     cwd: path.join(__dirname, '..')
   });
   

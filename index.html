@@ -24,6 +24,27 @@
     
     <!-- Tailwind CSS (compiled for production) -->
     <link rel="stylesheet" href="/css/styles.css">
+    <script>
+        // #region agent log
+        (function() {
+            const cssLink = document.querySelector('link[href="/css/styles.css"]');
+            fetch('http://127.0.0.1:7243/ingest/bcf47e13-993b-46f6-b9a9-8094a0b71fbc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:26',message:'CSS link check',data:{cssLinkExists:!!cssLink,href:cssLink?.href},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+            if (cssLink) {
+                cssLink.onload = function() {
+                    fetch('http://127.0.0.1:7243/ingest/bcf47e13-993b-46f6-b9a9-8094a0b71fbc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:26',message:'CSS link loaded',data:{href:cssLink.href},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                };
+                cssLink.onerror = function() {
+                    fetch('http://127.0.0.1:7243/ingest/bcf47e13-993b-46f6-b9a9-8094a0b71fbc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:26',message:'CSS link error',data:{href:cssLink.href},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                };
+                fetch('/css/styles.css').then(r => {
+                    fetch('http://127.0.0.1:7243/ingest/bcf47e13-993b-46f6-b9a9-8094a0b71fbc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:26',message:'CSS fetch test',data:{status:r.status,statusText:r.statusText,contentType:r.headers.get('content-type')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                }).catch(e => {
+                    fetch('http://127.0.0.1:7243/ingest/bcf47e13-993b-46f6-b9a9-8094a0b71fbc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:26',message:'CSS fetch error',data:{error:e.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                });
+            }
+        })();
+        // #endregion
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
