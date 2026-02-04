@@ -30,29 +30,7 @@
       ]
     },
     {
-      "source": "/(.*\\.(html|htm))",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "gzip, br"
-        }
-      ]
-    },
-    {
-      "source": "/(.*\\.(js|css))",
-      "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "gzip, br"
-        }
-      ]
-    },
-    {
-      "source": "/public/(.*\\.(mp4|webm|mov))",
+      "source": "/public/:file.mp4",
       "headers": [
         {
           "key": "Cache-Control",
@@ -65,7 +43,33 @@
       ]
     },
     {
-      "source": "/public/(.*\\.(jpg|jpeg|png|gif|webp|svg))",
+      "source": "/public/:file.webm",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Accept-Ranges",
+          "value": "bytes"
+        }
+      ]
+    },
+    {
+      "source": "/public/:file.mov",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Accept-Ranges",
+          "value": "bytes"
+        }
+      ]
+    },
+    {
+      "source": "/public/:file.jpg",
       "headers": [
         {
           "key": "Cache-Control",
@@ -74,7 +78,34 @@
       ]
     },
     {
-      "source": "/public/(.*\\.webp)",
+      "source": "/public/:file.jpeg",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/public/:file.png",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/public/:file.gif",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/public/:file.webp",
       "headers": [
         {
           "key": "Content-Type",
@@ -87,16 +118,7 @@
       ]
     },
     {
-      "source": "/public/(.*\\.(pdf))",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
-    },
-    {
-      "source": "/js/(.*\\.js)",
+      "source": "/public/:file.svg",
       "headers": [
         {
           "key": "Cache-Control",
@@ -105,15 +127,29 @@
       ]
     },
     {
-      "source": "/pages/(.*\\.html)",
+      "source": "/public/:file.pdf",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/js/:file.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/pages/:file.html",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "gzip, br"
         }
       ]
     },
