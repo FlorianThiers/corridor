@@ -79,13 +79,14 @@ class Router {
         // Protect beheer routes - allow different roles for different routes
         if (route.startsWith('/beheer')) {
             // Define which roles have access to which beheer routes
+            // Both 'admin' and 'programmer' have full admin access
             const routePermissions = {
-                '/beheer-evenementen': ['admin'],
-                '/beheer-corristories': ['admin'],
-                '/beheer-zones': ['admin'],
-                '/beheer-gebruikers': ['admin'],
-                '/beheer-partners': ['admin'],
-                '/beheer-animatie': ['admin']
+                '/beheer-evenementen': ['admin', 'programmer'],
+                '/beheer-corristories': ['admin', 'programmer'],
+                '/beheer-zones': ['admin', 'programmer'],
+                '/beheer-gebruikers': ['admin', 'programmer'],
+                '/beheer-partners': ['admin', 'programmer'],
+                '/beheer-animatie': ['admin', 'programmer']
             };
 
             const allowedRoles = routePermissions[route] || ['admin'];

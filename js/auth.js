@@ -45,15 +45,29 @@ class AuthManager {
     }
 
     async loadUserProfile(userId) {
-        const { data, error } = await window.supabaseClient
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .single();
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('users')
+                .select('*')
+                .eq('id', userId)
+                .single();
 
-        if (data && !error) {
-            this.currentUser = data;
-            this.role = data.role || 'user';
+            if (error) {
+                console.error('Error loading user profile:', error);
+                // Don't clear current user on error, might be temporary
+                return;
+            }
+
+            if (data) {
+                this.currentUser = data;
+                this.role = data.role || 'user';
+                console.log('User profile loaded:', { id: data.id, email: data.email, role: this.role });
+            } else {
+                console.warn('No user data returned for userId:', userId);
+            }
+        } catch (error) {
+            console.error('Exception loading user profile:', error);
+            // Don't clear current user on exception
         }
     }
 
@@ -81,8 +95,17 @@ class AuthManager {
         if (error) throw error;
         
         if (data.user) {
+            // Wait a bit for session to be fully established
+            await new Promise(resolve => setTimeout(resolve, 100));
             await this.loadUserProfile(data.user.id);
             this.updateUI();
+            
+            // Verify profile was loaded
+            if (!this.currentUser) {
+                console.warn('User profile not loaded after sign in, retrying...');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await this.loadUserProfile(data.user.id);
+            }
         }
         
         return data;
@@ -98,13 +121,18 @@ class AuthManager {
     }
     
     isAdmin() {
-        // Check if user has admin role
-        return this.role === 'admin';
+        // Check if user has admin or programmer role (both have admin privileges)
+        return this.role === 'admin' || this.role === 'programmer';
     }
     
     
     hasRole(requiredRole) {
         return this.role === requiredRole;
+    }
+    
+    // Check if user has any of the specified roles
+    hasAnyRole(roles) {
+        return roles.includes(this.role);
     }
 
     updateUI() {
