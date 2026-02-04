@@ -4,9 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Corridor - Urban Hub onder het Viaduct van Gentbrugge</title>
+    
+    <!-- Resource Hints for Performance -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://vwbrvxkzjwpppagkpipf.supabase.co">
+    
     <!-- Clean deployment -->
     <link rel="icon" type="image/png" href="/public/LogoCorridor.png">
     <link rel="apple-touch-icon" href="/public/LogoCorridor.png">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/js/supabase-config.js" as="script">
+    <link rel="preload" href="/js/router.js" as="script">
+    <link rel="preload" href="/public/LogoCorridor-removebg-preview.webp" as="image" type="image/webp">
+    <link rel="preload" href="/public/LogoCorridor-removebg-preview.png" as="image" type="image/png">
+    
     <!-- Tailwind CSS CDN (development only - for production use PostCSS/Tailwind CLI) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
