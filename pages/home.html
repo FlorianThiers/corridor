@@ -3,11 +3,10 @@
 <!-- Hero Section -->
 <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden">
     <!-- Fallback Background Image -->
-    <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0" style="background-image: url('../public/FlyerVoorkant.webp'), url('../public/FlyerVoorkant.png');" loading="lazy"></div>
+    <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0" style="background-image: url('../public/FlyerVoorkant.webp'), url('../public/FlyerVoorkant.png');"></div>
     
     <!-- Video Background -->
     <video muted loop playsinline preload="metadata" class="absolute inset-0 w-full h-full object-cover z-0" id="hero-video" style="display: none;" loading="lazy">
-        <source src="../public/VideoGuillaume-compressed.mp4" type="video/mp4">
         <source src="../public/VideoGuillaume.mp4" type="video/mp4">
         Je browser ondersteunt geen video.
     </video>
@@ -140,7 +139,6 @@
             <!-- Floating GIF positioned to bridge sections -->
             <div class="relative">
                 <video id="floating-gif" class="floating-gif absolute z-20" autoplay muted loop preload="metadata" loading="lazy">
-                    <source src="../public/corridorGif-compressed.mp4" type="video/mp4">
                     <source src="../public/corridorGif.mp4" type="video/mp4">
                 </video>
             </div>
@@ -202,7 +200,7 @@
 </section>
 
 <!-- Footer -->
-<footer id="footer" class="py-12 px-4 relative" style="background-image: url('../public/FlyerAchterkant.png'); background-size: cover; background-position: center;" loading="lazy">
+<footer id="footer" class="py-12 px-4 relative" style="background-image: url('../public/FlyerAchterkant.webp'), url('../public/FlyerAchterkant.png'); background-size: cover; background-position: center;">
     <!-- Overlay for better text readability -->
     <div class="absolute inset-0 bg-black/50"></div>
     <div class="max-w-4xl mx-auto text-center relative z-10">

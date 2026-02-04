@@ -1,14 +1,14 @@
 # Image to WebP Conversion Script for Corridor Website
 # Converts PNG and JPG images to WebP format for better compression
 
-Write-Host "🖼️  Starting image optimization (WebP conversion)..." -ForegroundColor Cyan
+Write-Host "Starting image optimization (WebP conversion)..." -ForegroundColor Cyan
 
 # Check if ImageMagick or cwebp is available
 $hasImageMagick = Get-Command magick -ErrorAction SilentlyContinue
 $hasCwebp = Get-Command cwebp -ErrorAction SilentlyContinue
 
 if (-not $hasImageMagick -and -not $hasCwebp) {
-    Write-Host "❌ No image conversion tool found!" -ForegroundColor Red
+    Write-Host "ERROR: No image conversion tool found!" -ForegroundColor Red
     Write-Host "   Please install one of the following:" -ForegroundColor Yellow
     Write-Host "   1. ImageMagick: https://imagemagick.org/script/download.php" -ForegroundColor Yellow
     Write-Host "   2. WebP tools: https://developers.google.com/speed/webp/download" -ForegroundColor Yellow
@@ -32,13 +32,15 @@ function Convert-ToWebP-ImageMagick {
     $inputFile = Get-Item $InputPath
     $outputPath = $InputPath -replace '\.(png|jpg|jpeg)$', '.webp'
     
-    Write-Host "🔄 Converting: $($inputFile.Name)" -ForegroundColor Cyan
+    Write-Host "Converting: $($inputFile.Name)" -ForegroundColor Cyan
     
     $originalSizeMB = [math]::Round($inputFile.Length / 1MB, 2)
     Write-Host "   Original size: $originalSizeMB MB" -ForegroundColor Gray
     
-    # Backup original
-    Copy-Item $InputPath "$backupDir\$($inputFile.Name)"
+    # Backup original (only if not already backed up)
+    if (-not (Test-Path "$backupDir\$($inputFile.Name)")) {
+        Copy-Item $InputPath "$backupDir\$($inputFile.Name)"
+    }
     
     # Convert to WebP
     magick "$InputPath" -quality $Quality "$outputPath"
@@ -48,10 +50,10 @@ function Convert-ToWebP-ImageMagick {
         $newSizeMB = [math]::Round($newFile.Length / 1MB, 2)
         $reduction = [math]::Round((1 - ($newFile.Length / $inputFile.Length)) * 100, 1)
         
-        Write-Host "   ✅ WebP size: $newSizeMB MB ($reduction% reduction)" -ForegroundColor Green
+        Write-Host "   SUCCESS: WebP size: $newSizeMB MB ($reduction% reduction)" -ForegroundColor Green
         Write-Host ""
     } else {
-        Write-Host "   ❌ Conversion failed!" -ForegroundColor Red
+        Write-Host "   ERROR: Conversion failed!" -ForegroundColor Red
         Write-Host ""
     }
 }
@@ -66,13 +68,15 @@ function Convert-ToWebP-Cwebp {
     $inputFile = Get-Item $InputPath
     $outputPath = $InputPath -replace '\.(png|jpg|jpeg)$', '.webp'
     
-    Write-Host "🔄 Converting: $($inputFile.Name)" -ForegroundColor Cyan
+    Write-Host "Converting: $($inputFile.Name)" -ForegroundColor Cyan
     
     $originalSizeMB = [math]::Round($inputFile.Length / 1MB, 2)
     Write-Host "   Original size: $originalSizeMB MB" -ForegroundColor Gray
     
     # Backup original
-    Copy-Item $InputPath "$backupDir\$($inputFile.Name)"
+    if (-not (Test-Path "$backupDir\$($inputFile.Name)")) {
+        Copy-Item $InputPath "$backupDir\$($inputFile.Name)"
+    }
     
     # Convert to WebP
     cwebp -q $Quality "$InputPath" -o "$outputPath"
@@ -82,23 +86,23 @@ function Convert-ToWebP-Cwebp {
         $newSizeMB = [math]::Round($newFile.Length / 1MB, 2)
         $reduction = [math]::Round((1 - ($newFile.Length / $inputFile.Length)) * 100, 1)
         
-        Write-Host "   ✅ WebP size: $newSizeMB MB ($reduction% reduction)" -ForegroundColor Green
+        Write-Host "   SUCCESS: WebP size: $newSizeMB MB ($reduction% reduction)" -ForegroundColor Green
         Write-Host ""
     } else {
-        Write-Host "   ❌ Conversion failed!" -ForegroundColor Red
+        Write-Host "   ERROR: Conversion failed!" -ForegroundColor Red
         Write-Host ""
     }
 }
 
 # Get all PNG and JPG files
-$imageFiles = Get-ChildItem -Path "public" -Include *.png,*.jpg,*.jpeg -File
+$imageFiles = Get-ChildItem -Path "public" -File | Where-Object {$_.Extension -match '\.(png|jpg|jpeg)$'}
 
 if ($imageFiles.Count -eq 0) {
-    Write-Host "⚠️  No PNG or JPG images found in public folder" -ForegroundColor Yellow
+    Write-Host "WARNING: No PNG or JPG images found in public folder" -ForegroundColor Yellow
     exit 0
 }
 
-Write-Host "📸 Found $($imageFiles.Count) images to convert" -ForegroundColor Cyan
+Write-Host "Found $($imageFiles.Count) images to convert" -ForegroundColor Cyan
 Write-Host ""
 
 # Convert images
@@ -111,6 +115,6 @@ foreach ($image in $imageFiles) {
 }
 
 Write-Host ""
-Write-Host "✅ Image optimization complete!" -ForegroundColor Green
-Write-Host "📝 Review the WebP files and update HTML to use them." -ForegroundColor Yellow
-Write-Host "💾 Backups saved in: $backupDir" -ForegroundColor Cyan
+Write-Host "Image optimization complete!" -ForegroundColor Green
+Write-Host "WebP files created. HTML will use them automatically with PNG/JPG fallback." -ForegroundColor Yellow
+Write-Host "Backups saved in: $backupDir" -ForegroundColor Cyan
