@@ -112,6 +112,7 @@ export function Calendar({ events }: CalendarProps) {
           {days.map((day, index) => {
             const dayEvents = day ? getEventsForDate(day) : []
             const hasEvents = dayEvents.length > 0
+            const hasCorridgirlEvent = dayEvents.some(event => event.for_girls === true)
             const isSelected = selectedDate && day && (
               day.getDate() === selectedDate.getDate() &&
               day.getMonth() === selectedDate.getMonth() &&
@@ -137,7 +138,9 @@ export function Calendar({ events }: CalendarProps) {
                     : isToday
                     ? 'bg-pink-100 text-gray-800'
                     : hasEvents
-                    ? 'bg-purple-100 text-gray-800 hover:bg-purple-200'
+                    ? hasCorridgirlEvent
+                      ? 'bg-pink-100 text-gray-800 hover:bg-pink-200'
+                      : 'bg-purple-100 text-gray-800 hover:bg-purple-200'
                     : 'bg-white/40 text-gray-800 hover:bg-white/60'
                 }`}
               >
