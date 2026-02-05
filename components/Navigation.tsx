@@ -63,7 +63,7 @@ export function Navigation() {
       {/* Hamburger Button */}
       <button
         onClick={toggleSidebar}
-        className="hamburger-btn fixed top-6 left-6 z-[10001] w-12 h-12 bg-gray-600/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-gray-500/80 hover:scale-110 shadow-lg transition-all cursor-pointer"
+        className="hamburger-btn fixed top-6 left-6 z-[10001] w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 hover:bg-white hover:scale-110 shadow-lg transition-all cursor-pointer"
         aria-label="Menu"
         type="button"
       >
@@ -85,7 +85,7 @@ export function Navigation() {
           <div className="sidebar-header">
             <div className="flex items-center space-x-3 mb-6">
               <Image
-                src="/LogoCorridor-removebg-preview.png"
+                src="/LogoCorridor-removebg-preview.webp"
                 alt="Corridor Logo"
                 width={40}
                 height={40}

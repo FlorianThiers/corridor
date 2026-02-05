@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/https%3A/vercel.com/docs/errors/(.*)",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

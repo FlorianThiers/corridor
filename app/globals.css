@@ -167,6 +167,12 @@ section[class*="section-gradient"] + section[class*="section-gradient"] {
     transition: all 0.3s ease;
     margin-left: -120px;
     margin-top: -40px;
+    overflow: hidden;
+}
+
+.floating-gif video,
+.floating-gif img {
+    border-radius: 20px;
 }
 
 .floating-gif:hover {

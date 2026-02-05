@@ -56,7 +56,7 @@ export function LazyVideo({
   }, [shouldLoad])
 
   return (
-    <div ref={containerRef} className={className}>
+    <div ref={containerRef} className={`${className} overflow-hidden`}>
       {shouldLoad ? (
         supabaseBucket ? (
           <SupabaseVideo
