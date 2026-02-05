@@ -4,17 +4,6 @@
       "source": "/https%3A/vercel.com/docs/errors/(.*)",
       "destination": "/",
       "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.corridor.gent"
-        }
-      ],
-      "destination": "https://corridor.gent/:path*",
-      "permanent": true
     }
   ],
   "headers": [
