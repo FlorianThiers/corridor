@@ -91,8 +91,7 @@ export function HeroSection() {
         {/* Video Background - Lazy loaded on user interaction from Supabase Storage */}
         {shouldLoadVideo && (
           <SupabaseVideo
-            bucket="videos"
-            fileName="VideoGuillaume.mp4"
+            bucket="animations"
             className="absolute inset-0 w-full h-full object-cover z-0"
             muted
             loop
@@ -100,6 +99,7 @@ export function HeroSection() {
             autoPlay
             preload="metadata"
             poster="/FlyerVoorkant.webp"
+            fallbackUrl="/FlyerVoorkant.webp"
             onLoad={() => {
               console.log('Hero video loaded')
             }}
