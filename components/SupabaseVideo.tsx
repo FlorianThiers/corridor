@@ -51,11 +51,9 @@ export function SupabaseVideo({
           if (error) {
             console.error('Error getting public URL:', error)
             if (fallbackUrl) {
-              console.log('Using fallback URL:', fallbackUrl)
               setVideoUrl(fallbackUrl)
             }
           } else {
-            console.log('Supabase video URL:', publicUrl)
             setVideoUrl(publicUrl)
           }
           setIsLoading(false)
@@ -73,7 +71,6 @@ export function SupabaseVideo({
         if (error) {
           console.error('Error listing files:', error)
           if (fallbackUrl) {
-            console.log('Using fallback URL:', fallbackUrl)
             setVideoUrl(fallbackUrl)
           }
           setIsLoading(false)
@@ -86,16 +83,13 @@ export function SupabaseVideo({
             .from(bucket)
             .getPublicUrl(file.name)
           
-          console.log('Supabase video URL:', publicUrl)
           setVideoUrl(publicUrl)
         } else if (fallbackUrl) {
-          console.log('No files found, using fallback URL:', fallbackUrl)
           setVideoUrl(fallbackUrl)
         }
       } catch (error) {
         console.error('Error loading video:', error)
         if (fallbackUrl) {
-          console.log('Using fallback URL due to error:', fallbackUrl)
           setVideoUrl(fallbackUrl)
         }
       } finally {
@@ -111,10 +105,7 @@ export function SupabaseVideo({
     const video = videoRef.current
     if (!video || !videoUrl) return
 
-    console.log('Loading video:', videoUrl)
-
     const handleLoadedData = () => {
-      console.log('Video loaded successfully')
       if (autoPlay) {
         video.play().catch((err) => {
           console.warn('Autoplay failed:', err)
@@ -125,13 +116,12 @@ export function SupabaseVideo({
     }
 
     const handleCanPlay = () => {
-      console.log('Video can play')
+      // Video is ready to play
     }
 
     const handleError = (e: Event) => {
       console.error('Video failed to load:', videoUrl, e)
       if (fallbackUrl && videoUrl !== fallbackUrl) {
-        console.log('Trying fallback URL:', fallbackUrl)
         setVideoUrl(fallbackUrl)
       }
       onError?.()

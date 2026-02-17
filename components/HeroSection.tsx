@@ -114,9 +114,6 @@ export function HeroSection() {
             preload="metadata"
             poster="/FlyerVoorkant.webp"
             fallbackUrl="/FlyerVoorkant.webp"
-            onLoad={() => {
-              console.log('Hero video loaded')
-            }}
             onError={() => {
               console.error('Hero video failed to load')
             }}

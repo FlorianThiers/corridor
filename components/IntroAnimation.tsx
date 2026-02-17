@@ -12,7 +12,7 @@ export function IntroAnimation() {
   useEffect(() => {
     const loadAnimation = async () => {
       try {
-        console.log('Loading intro animation from Supabase Storage...')
+        const isDev = process.env.NODE_ENV === 'development'
         
         // Check if Supabase client is available
         if (!supabase) {
@@ -39,13 +39,15 @@ export function IntroAnimation() {
             if (!error && data && data.length > 0) {
               files = data
               bucketName = bucket
-              console.log(`✅ Found video in bucket: ${bucket}`, data[0].name)
+              if (isDev) {
+                console.log(`✅ Found video in bucket: ${bucket}`, data[0].name)
+              }
               break
             } else if (error) {
-              console.log(`❌ Bucket ${bucket} error:`, error.message, error)
+              if (isDev) {
+                console.log(`❌ Bucket ${bucket} error:`, error.message)
+              }
               listError = error
-            } else {
-              console.log(`⚠️ Bucket ${bucket} is empty`)
             }
           } catch (err) {
             console.error(`❌ Exception accessing bucket ${bucket}:`, err)
@@ -75,8 +77,6 @@ export function IntroAnimation() {
           return
         }
 
-        console.log('✅ Intro animation URL:', publicUrl)
-        console.log('✅ Video file name:', files[0].name)
         setVideoUrl(publicUrl)
         setShowContainer(true)
       } catch (error) {
@@ -94,10 +94,7 @@ export function IntroAnimation() {
     const video = videoRef.current
     if (!video || !videoUrl) return
 
-    console.log('Setting up video:', videoUrl)
-
     const handleLoadedData = () => {
-      console.log('Intro video loaded')
       video.play().catch((err) => {
         console.warn('Autoplay failed:', err)
       })
