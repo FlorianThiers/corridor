@@ -39,7 +39,7 @@ export function IntroAnimation() {
             if (!error && data && data.length > 0) {
               files = data
               bucketName = bucket
-              console.log(`✅ Found video in bucket: ${bucket}`, files[0].name)
+              console.log(`✅ Found video in bucket: ${bucket}`, data[0].name)
               break
             } else if (error) {
               console.log(`❌ Bucket ${bucket} error:`, error.message, error)
