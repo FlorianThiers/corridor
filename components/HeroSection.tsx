@@ -6,16 +6,28 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Image from 'next/image'
 import { SupabaseVideo } from '@/components/SupabaseVideo'
 
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
-
 export function HeroSection() {
   const parallaxRef = useRef<HTMLDivElement>(null)
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
 
   useEffect(() => {
-    if (!parallaxRef.current) return
+    // Register ScrollTrigger plugin inside useEffect to ensure it's loaded
+    if (typeof window !== 'undefined' && typeof gsap !== 'undefined') {
+      gsap.registerPlugin(ScrollTrigger)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!parallaxRef.current || typeof window === 'undefined') return
+    
+    // Ensure ScrollTrigger is registered before using it
+    if (typeof gsap === 'undefined' || !ScrollTrigger) {
+      console.warn('GSAP ScrollTrigger not available')
+      return
+    }
+
+    // Register plugin again to be safe
+    gsap.registerPlugin(ScrollTrigger)
 
     const layers = parallaxRef.current.querySelectorAll('.parallax-layer')
     
@@ -34,7 +46,9 @@ export function HeroSection() {
     })
 
     return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+      if (ScrollTrigger) {
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+      }
     }
   }, [])
 

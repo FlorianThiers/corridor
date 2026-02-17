@@ -20,8 +20,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" type="image/webp" href="/LogoCorridor.webp" />
         <link rel="apple-touch-icon" href="/LogoCorridor.webp" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" async />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" async />
+        {/* GSAP is loaded via npm package, no need for CDN scripts */}
       </head>
       <body className="overflow-x-hidden">
         <Navigation />

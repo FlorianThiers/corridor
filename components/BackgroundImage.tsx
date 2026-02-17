@@ -4,15 +4,27 @@ import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
-
 export function BackgroundImage() {
   const parallaxRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!parallaxRef.current) return
+    // Register ScrollTrigger plugin inside useEffect to ensure it's loaded
+    if (typeof window !== 'undefined' && typeof gsap !== 'undefined') {
+      gsap.registerPlugin(ScrollTrigger)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!parallaxRef.current || typeof window === 'undefined') return
+    
+    // Ensure ScrollTrigger is registered before using it
+    if (typeof gsap === 'undefined' || !ScrollTrigger) {
+      console.warn('GSAP ScrollTrigger not available')
+      return
+    }
+
+    // Register plugin again to be safe
+    gsap.registerPlugin(ScrollTrigger)
 
     const layers = parallaxRef.current.querySelectorAll('.parallax-layer')
     
@@ -31,7 +43,9 @@ export function BackgroundImage() {
     })
 
     return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+      if (ScrollTrigger) {
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+      }
     }
   }, [])
 

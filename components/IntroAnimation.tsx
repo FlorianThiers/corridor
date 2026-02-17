@@ -14,6 +14,13 @@ export function IntroAnimation() {
       try {
         console.log('Loading intro animation from Supabase Storage...')
         
+        // Check if Supabase client is available
+        if (!supabase) {
+          console.error('Supabase client not available')
+          setShowContainer(false)
+          return
+        }
+
         // Try both bucket name variations
         const bucketNames = ['intro-animation', 'intro-animations']
         let files: any[] | null = null
@@ -21,27 +28,36 @@ export function IntroAnimation() {
         let listError: any = null
 
         for (const bucket of bucketNames) {
-          const { data, error } = await supabase.storage
-            .from(bucket)
-            .list('', {
-              sortBy: { column: 'created_at', order: 'desc' },
-              limit: 1
-            })
+          try {
+            const { data, error } = await supabase.storage
+              .from(bucket)
+              .list('', {
+                sortBy: { column: 'created_at', order: 'desc' },
+                limit: 1
+              })
 
-          if (!error && data && data.length > 0) {
-            files = data
-            bucketName = bucket
-            console.log(`Found video in bucket: ${bucket}`)
-            break
-          } else if (error) {
-            console.log(`Bucket ${bucket} error:`, error.message)
-            listError = error
+            if (!error && data && data.length > 0) {
+              files = data
+              bucketName = bucket
+              console.log(`✅ Found video in bucket: ${bucket}`, files[0].name)
+              break
+            } else if (error) {
+              console.log(`❌ Bucket ${bucket} error:`, error.message, error)
+              listError = error
+            } else {
+              console.log(`⚠️ Bucket ${bucket} is empty`)
+            }
+          } catch (err) {
+            console.error(`❌ Exception accessing bucket ${bucket}:`, err)
+            listError = err
           }
         }
 
         if (!files || files.length === 0 || !bucketName) {
-          console.error('No intro animation found in storage. Tried buckets:', bucketNames)
-          console.error('Last error:', listError)
+          console.error('❌ No intro animation found in storage. Tried buckets:', bucketNames)
+          if (listError) {
+            console.error('Last error details:', listError)
+          }
           // Video not available, don't show container
           setShowContainer(false)
           return
@@ -53,18 +69,18 @@ export function IntroAnimation() {
           .getPublicUrl(files[0].name)
 
         if (urlError) {
-          console.error('Error getting public URL:', urlError)
+          console.error('❌ Error getting public URL:', urlError)
           // Video not available, don't show container
           setShowContainer(false)
           return
         }
 
-        console.log('Intro animation URL:', publicUrl)
-        console.log('Video file name:', files[0].name)
+        console.log('✅ Intro animation URL:', publicUrl)
+        console.log('✅ Video file name:', files[0].name)
         setVideoUrl(publicUrl)
         setShowContainer(true)
       } catch (error) {
-        console.error('Error loading animation:', error)
+        console.error('❌ Error loading animation:', error)
         // Video not available, don't show container
         setShowContainer(false)
       }
