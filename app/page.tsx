@@ -138,20 +138,34 @@ export default async function HomePage() {
       </PageSection>
 
       {/* Evenementen Section */}
-      {evenementen.length > 0 && (
-        <PageSection id="evenementen" className="section-gradient-2">
-          <PageContainer>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
-              Komende Evenementen
-            </h2>
-            <div className="space-y-4">
-              {evenementen.slice(0, 5).map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-          </PageContainer>
-        </PageSection>
-      )}
+      {(() => {
+        const now = new Date()
+        const opkomendeEvenementen = evenementen
+          .filter(event => {
+            const eventDate = new Date(event.start_datetime)
+            return eventDate >= now
+          })
+          .sort((a, b) => {
+            // Sorteer chronologisch (oudste eerst - eerst volgende van boven)
+            return new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()
+          })
+          .slice(0, 5)
+
+        return opkomendeEvenementen.length > 0 && (
+          <PageSection id="evenementen" className="section-gradient-2">
+            <PageContainer>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
+                Komende Evenementen
+              </h2>
+              <div className="space-y-4">
+                {opkomendeEvenementen.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            </PageContainer>
+          </PageSection>
+        )
+      })()}
 
       {/* Contact Section */}
       <PageSection id="contact" className="section-gradient-2">

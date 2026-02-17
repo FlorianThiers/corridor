@@ -151,17 +151,22 @@ export function SupabaseVideo({
     }
   }, [videoUrl, autoPlay, onLoad, onError, fallbackUrl])
 
+  // Show poster while loading or if no video URL is available
   if (isLoading || !videoUrl) {
-    return poster ? (
-      <div className={className}>
-        <img
-          src={poster}
-          alt="Video poster"
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-      </div>
-    ) : null
+    if (poster) {
+      return (
+        <div className={className}>
+          <img
+            src={poster}
+            alt="Video poster"
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      )
+    }
+    // If no poster and no video, show nothing (or could show a placeholder)
+    return null
   }
 
   return (

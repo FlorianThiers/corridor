@@ -89,7 +89,7 @@ export function HeroSection() {
         />
 
         {/* Video Background - Lazy loaded on user interaction from Supabase Storage */}
-        {shouldLoadVideo && (
+        {shouldLoadVideo ? (
           <SupabaseVideo
             bucket="animations"
             className="absolute inset-0 w-full h-full object-cover z-0"
@@ -105,6 +105,14 @@ export function HeroSection() {
             }}
             onError={() => {
               console.error('Hero video failed to load')
+            }}
+          />
+        ) : (
+          // Show poster image before user interaction
+          <div
+            className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0"
+            style={{
+              backgroundImage: 'url(/FlyerVoorkant.webp)',
             }}
           />
         )}

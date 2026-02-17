@@ -104,23 +104,31 @@ export function IntroAnimation() {
     }
   }, [videoUrl])
 
-  if (!showContainer || !videoUrl) return null
-
+  // Always show container, even if video is not loaded yet
+  // This ensures the layout doesn't shift when video loads
   return (
     <div className="flex justify-center">
       <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
-        <video
-          ref={videoRef}
-          src={videoUrl}
-          className="w-full h-auto rounded-2xl shadow-lg"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-        >
-          Je browser ondersteunt geen video.
-        </video>
+        {videoUrl ? (
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            className="w-full h-auto rounded-2xl shadow-lg"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+          >
+            Je browser ondersteunt geen video.
+          </video>
+        ) : (
+          <div className="w-full h-auto rounded-2xl shadow-lg bg-gray-200 flex items-center justify-center min-h-[200px]">
+            <p className="text-gray-500 text-center p-4">
+              Video wordt geladen...
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
