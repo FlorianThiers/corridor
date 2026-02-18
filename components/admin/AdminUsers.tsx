@@ -51,24 +51,45 @@ export function AdminUsers() {
       console.log('User updated successfully:', updatedUser)
       
       // Immediately update the local state with the returned user data
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
+      console.log('Updating local state with:', updatedUser)
+      setUsers(prevUsers => {
+        const updated = prevUsers.map(user => 
           user.id === editingUser.id 
             ? { ...user, ...updatedUser }
             : user
         )
-      )
+        console.log('Updated users array:', updated)
+        return updated
+      })
       
       setIsModalOpen(false)
       setEditingUser(null)
       
-      // Reload data from database to ensure consistency (with small delay for DB propagation)
+      // Reload data from database to ensure consistency (with longer delay for DB propagation)
+      // But keep the immediate state update above so UI updates instantly
       setTimeout(async () => {
         console.log('Reloading users list from database...')
-        const freshUsers = await getUsers(supabase)
-        console.log('Fresh users data:', freshUsers)
-        setUsers(freshUsers)
-      }, 100)
+        try {
+          const freshUsers = await getUsers(supabase)
+          console.log('Fresh users data:', freshUsers)
+          
+          // Check if Dries' role is correct in fresh data
+          const driesUser = freshUsers.find(u => u.id === editingUser.id)
+          if (driesUser) {
+            console.log('Dries user in fresh data:', driesUser)
+            if (driesUser.role !== userData.role) {
+              console.warn(`Role mismatch! Expected ${userData.role}, got ${driesUser.role}. Using updated state.`)
+              // Don't update if the fresh data is wrong - keep our immediate update
+              return
+            }
+          }
+          
+          setUsers(freshUsers)
+        } catch (err) {
+          console.error('Error reloading users:', err)
+          // Keep the immediate state update if reload fails
+        }
+      }, 500)
       
       // Always dispatch event so any logged-in user (including the updated user) can refresh
       window.dispatchEvent(new CustomEvent('userProfileUpdated', { 
