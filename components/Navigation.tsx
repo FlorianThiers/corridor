@@ -127,7 +127,8 @@ export function Navigation() {
           </div>
 
           {/* Admin Links */}
-          {isAdmin && isAuthenticated && (
+          {/* Only show admin dropdown if userProfile is loaded and user is admin */}
+          {isAdmin && isAuthenticated && userProfile && (
             <div className="mb-4">
               <button
                 onClick={toggleAdminNav}

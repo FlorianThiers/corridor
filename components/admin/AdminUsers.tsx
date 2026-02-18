@@ -47,6 +47,10 @@ export function AdminUsers() {
       setIsModalOpen(false)
       setEditingUser(null)
       await loadData()
+      
+      // Dispatch event to refresh user profile if the updated user is the current user
+      // This will update the admin dropdown visibility if needed
+      window.dispatchEvent(new CustomEvent('userProfileUpdated'))
     } catch (err: any) {
       setError(err.message || 'Fout bij opslaan')
     }

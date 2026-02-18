@@ -13,6 +13,30 @@ export function useAuth() {
   // Memoize supabase client to avoid recreating on every render
   const supabase = useMemo(() => createClient(), [])
 
+  async function loadUserProfile(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (error) {
+        // If user profile doesn't exist, it might be because email is not confirmed
+        // or user record hasn't been created yet
+        console.warn('User profile not found:', error.message)
+        setUserProfile(null)
+        return
+      }
+      setUserProfile(data)
+    } catch (error) {
+      console.error('Error loading user profile:', error)
+      setUserProfile(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     let mounted = true
 
@@ -41,27 +65,28 @@ export function useAuth() {
       }
     )
 
+    // Listen for custom user profile update events
+    const handleUserProfileUpdate = () => {
+      // Get current user from state
+      supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
+        if (currentUser && mounted) {
+          loadUserProfile(currentUser.id)
+        }
+      })
+    }
+
+    window.addEventListener('userProfileUpdated', handleUserProfileUpdate)
+
     return () => {
       mounted = false
       subscription.unsubscribe()
+      window.removeEventListener('userProfileUpdated', handleUserProfileUpdate)
     }
   }, [supabase])
 
-  async function loadUserProfile(userId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error) throw error
-      setUserProfile(data)
-    } catch (error) {
-      console.error('Error loading user profile:', error)
-      setUserProfile(null)
-    } finally {
-      setLoading(false)
+  const refreshUserProfile = async () => {
+    if (user) {
+      await loadUserProfile(user.id)
     }
   }
 
@@ -80,5 +105,6 @@ export function useAuth() {
     isAdmin: isAdmin(),
     hasRole,
     isAuthenticated: !!user,
+    refreshUserProfile,
   }
 }
