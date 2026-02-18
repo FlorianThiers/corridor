@@ -50,9 +50,25 @@ export function AdminUsers() {
       const updatedUser = await updateUser(supabase, editingUser.id, userData)
       console.log('User updated successfully:', updatedUser)
       
+      // Immediately update the local state with the returned user data
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === editingUser.id 
+            ? { ...user, ...updatedUser }
+            : user
+        )
+      )
+      
       setIsModalOpen(false)
       setEditingUser(null)
-      await loadData()
+      
+      // Reload data from database to ensure consistency (with small delay for DB propagation)
+      setTimeout(async () => {
+        console.log('Reloading users list from database...')
+        const freshUsers = await getUsers(supabase)
+        console.log('Fresh users data:', freshUsers)
+        setUsers(freshUsers)
+      }, 100)
       
       // Always dispatch event so any logged-in user (including the updated user) can refresh
       window.dispatchEvent(new CustomEvent('userProfileUpdated', { 
@@ -82,7 +98,7 @@ export function AdminUsers() {
         const newRoleName = roleNames[userData.role] || userData.role
         
         if (oldRole !== userData.role) {
-          alert(`Rol van gebruiker succesvol bijgewerkt van "${oldRoleName}" naar "${newRoleName}".\n\nAls deze gebruiker momenteel ingelogd is, moet hij/zij de pagina refreshen of opnieuw inloggen om de nieuwe rechten te zien.`)
+          console.log(`Role updated from ${oldRole} to ${userData.role}`)
         }
       }
     } catch (err: any) {

@@ -234,6 +234,9 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
     throw new Error(`Fout bij bijwerken gebruiker: ${updateError.message}`)
   }
   
+  // Wait a tiny bit to ensure database consistency
+  await new Promise(resolve => setTimeout(resolve, 50))
+  
   const { data: updatedUser, error: fetchError } = await supabase
     .from('users')
     .select('*')
@@ -241,10 +244,12 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
     .maybeSingle()
   
   if (updatedUser && !fetchError) {
+    console.log('Successfully fetched updated user from database:', updatedUser)
     return updatedUser
   }
   
   if (fetchError && (fetchError.code === '42501' || fetchError.message.includes('row-level security'))) {
+    console.warn('RLS error fetching updated user, returning constructed user:', fetchError)
     return {
       id: userId,
       ...updates
@@ -252,10 +257,13 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
   }
   
   console.warn('Update succeeded but could not fetch updated user:', fetchError)
-  return {
+  // Return constructed user with updates
+  const constructedUser = {
     id: userId,
     ...updates
   } as User
+  console.log('Returning constructed user:', constructedUser)
+  return constructedUser
 }
 
 export async function deleteUser(supabase: SupabaseClient, userId: string): Promise<void> {
