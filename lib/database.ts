@@ -214,12 +214,17 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
     throw new Error('Only admins can update users')
   }
   
-  const { error: updateError } = await supabase
+  console.log('Executing UPDATE query for user:', userId, 'with updates:', updates)
+  const { data: updateData, error: updateError } = await supabase
     .from('users')
     .update(updates)
     .eq('id', userId)
+    .select() // Return updated rows
+  
+  console.log('UPDATE query result - data:', updateData, 'error:', updateError)
   
   if (updateError) {
+    console.error('UPDATE query failed:', updateError)
     if (updateError.code === '42501' || updateError.message.includes('row-level security')) {
       throw new Error('Geen toestemming om gebruiker bij te werken. Controleer de RLS policies in Supabase.')
     }
@@ -234,8 +239,28 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
     throw new Error(`Fout bij bijwerken gebruiker: ${updateError.message}`)
   }
   
-  // Wait a tiny bit to ensure database consistency
-  await new Promise(resolve => setTimeout(resolve, 50))
+  // If update returned data, use it directly
+  if (updateData && updateData.length > 0) {
+    console.log('UPDATE returned data directly:', updateData[0])
+    const updatedUser = updateData[0]
+    // Ensure role is set
+    if (!updatedUser.role && updates.role) {
+      updatedUser.role = updates.role
+    }
+    return updatedUser as User
+  }
+  
+  // If update returned data directly, use it (this is the most reliable)
+  // Otherwise, fetch it separately
+  if (updateData && updateData.length > 0) {
+    const updatedUser = updateData[0] as User
+    console.log('Using UPDATE returned data:', updatedUser)
+    return updatedUser
+  }
+  
+  // Fallback: fetch updated user separately
+  console.log('UPDATE did not return data, fetching separately...')
+  await new Promise(resolve => setTimeout(resolve, 100))
   
   const { data: updatedUser, error: fetchError } = await supabase
     .from('users')
@@ -246,9 +271,9 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
   if (updatedUser && !fetchError) {
     console.log('Successfully fetched updated user from database:', updatedUser)
     console.log('Fetched user role:', updatedUser.role)
-    // Ensure role is included
-    if (!updatedUser.role && updates.role) {
-      console.warn('Role missing in fetched user, using update value:', updates.role)
+    // If fetched role doesn't match what we updated, use the update value
+    if (updates.role && updatedUser.role !== updates.role) {
+      console.warn(`Role mismatch! Database has "${updatedUser.role}" but we updated to "${updates.role}". Using update value.`)
       updatedUser.role = updates.role
     }
     return updatedUser
