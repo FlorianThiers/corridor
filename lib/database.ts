@@ -215,18 +215,25 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
   }
   
   console.log('Executing UPDATE query for user:', userId, 'with updates:', updates)
+  console.log('Current user making update:', currentUser.id, 'role:', currentUserData?.role)
+  
   const { data: updateData, error: updateError } = await supabase
     .from('users')
     .update(updates)
     .eq('id', userId)
     .select() // Return updated rows
   
-  console.log('UPDATE query result - data:', updateData, 'error:', updateError)
+  console.log('UPDATE query result:')
+  console.log('  - data:', updateData)
+  console.log('  - data length:', updateData?.length)
+  console.log('  - error:', updateError)
+  console.log('  - error code:', updateError?.code)
+  console.log('  - error message:', updateError?.message)
   
   if (updateError) {
     console.error('UPDATE query failed:', updateError)
     if (updateError.code === '42501' || updateError.message.includes('row-level security')) {
-      throw new Error('Geen toestemming om gebruiker bij te werken. Controleer de RLS policies in Supabase.')
+      throw new Error('Geen toestemming om gebruiker bij te werken. Controleer de RLS policies in Supabase. Error: ' + updateError.message)
     }
     
     if (updateError.code === '23514' || updateError.message.includes('check constraint') || updateError.message.includes('violates check constraint')) {
@@ -239,22 +246,34 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
     throw new Error(`Fout bij bijwerken gebruiker: ${updateError.message}`)
   }
   
-  // If update returned data, use it directly
-  if (updateData && updateData.length > 0) {
-    console.log('UPDATE returned data directly:', updateData[0])
-    const updatedUser = updateData[0]
-    // Ensure role is set
-    if (!updatedUser.role && updates.role) {
-      updatedUser.role = updates.role
-    }
-    return updatedUser as User
+  // Check if update actually returned data
+  if (!updateData || updateData.length === 0) {
+    console.error('UPDATE query succeeded but returned NO DATA!')
+    console.error('This usually means RLS policies are silently blocking the update.')
+    console.error('The update() call succeeded but select() returned nothing due to RLS.')
+    throw new Error('Update query uitgevoerd maar geen data teruggekregen. Dit betekent waarschijnlijk dat RLS policies de update blokkeren. Controleer de RLS policies in Supabase voor de users tabel.')
   }
   
-  // If update returned data directly, use it (this is the most reliable)
-  // Otherwise, fetch it separately
+  // If update returned data, use it directly
   if (updateData && updateData.length > 0) {
     const updatedUser = updateData[0] as User
-    console.log('Using UPDATE returned data:', updatedUser)
+    console.log('UPDATE returned data directly:', updatedUser)
+    console.log('Updated user role from UPDATE response:', updatedUser.role)
+    console.log('Expected role from updates:', updates.role)
+    
+    // Ensure role is set correctly
+    if (updates.role && updatedUser.role !== updates.role) {
+      console.warn(`Role mismatch in UPDATE response! Got "${updatedUser.role}" but expected "${updates.role}"`)
+      console.warn('This suggests the UPDATE did not actually change the role in the database.')
+      console.warn('Possible causes: RLS policy blocking, database trigger reverting, or constraint violation.')
+    }
+    
+    // Use the role from updates if it doesn't match
+    if (!updatedUser.role || (updates.role && updatedUser.role !== updates.role)) {
+      console.warn('Using role from updates parameter instead of database response')
+      updatedUser.role = updates.role as User['role']
+    }
+    
     return updatedUser
   }
   
