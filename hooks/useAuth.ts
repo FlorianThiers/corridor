@@ -66,11 +66,17 @@ export function useAuth() {
     )
 
     // Listen for custom user profile update events
-    const handleUserProfileUpdate = () => {
+    const handleUserProfileUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ userId?: string; newRole?: string }>
       // Get current user from state
       supabase.auth.getUser().then(({ data: { user: currentUser } }: { data: { user: User | null } }) => {
         if (currentUser && mounted) {
-          loadUserProfile(currentUser.id)
+          // If event specifies a userId and it matches current user, refresh
+          // Otherwise refresh anyway to be safe
+          if (!customEvent.detail?.userId || customEvent.detail.userId === currentUser.id) {
+            console.log('Refreshing user profile due to update event')
+            loadUserProfile(currentUser.id)
+          }
         }
       })
     }
@@ -85,8 +91,10 @@ export function useAuth() {
   }, [supabase])
 
   const refreshUserProfile = async () => {
-    if (user) {
-      await loadUserProfile(user.id)
+    // Get fresh user from auth instead of relying on state
+    const { data: { user: currentUser } } = await supabase.auth.getUser()
+    if (currentUser) {
+      await loadUserProfile(currentUser.id)
     }
   }
 

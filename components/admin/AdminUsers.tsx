@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getUsers, updateUser, deleteUser } from '@/lib/database'
+import { useAuth } from '@/hooks/useAuth'
 import type { User } from '@/types'
 
 export function AdminUsers() {
@@ -12,6 +13,7 @@ export function AdminUsers() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [error, setError] = useState('')
   const supabase = createClient()
+  const { user: currentUser, refreshUserProfile } = useAuth()
 
   useEffect(() => {
     loadData()
@@ -43,15 +45,48 @@ export function AdminUsers() {
     }
 
     try {
-      await updateUser(supabase, editingUser.id, userData)
+      console.log('Updating user:', editingUser.id, 'with data:', userData)
+      const oldRole = editingUser.role
+      const updatedUser = await updateUser(supabase, editingUser.id, userData)
+      console.log('User updated successfully:', updatedUser)
+      
       setIsModalOpen(false)
       setEditingUser(null)
       await loadData()
       
-      // Dispatch event to refresh user profile if the updated user is the current user
-      // This will update the admin dropdown visibility if needed
-      window.dispatchEvent(new CustomEvent('userProfileUpdated'))
+      // Always dispatch event so any logged-in user (including the updated user) can refresh
+      window.dispatchEvent(new CustomEvent('userProfileUpdated', { 
+        detail: { userId: editingUser.id, newRole: userData.role }
+      }))
+      
+      // If updating the current logged-in user's own role, refresh immediately
+      if (currentUser && editingUser.id === currentUser.id) {
+        console.log('Updating current user role, refreshing profile...')
+        await refreshUserProfile()
+        
+        // Small delay to ensure state updates
+        setTimeout(() => {
+          if (userData.role === 'admin' || userData.role === 'programmer') {
+            alert('Je rol is bijgewerkt naar admin. De admin dropdown zou nu zichtbaar moeten zijn. Als je de dropdown niet ziet, refresh de pagina.')
+          }
+        }, 500)
+      } else {
+        // If updating another user's role, show success message
+        const roleNames: Record<string, string> = {
+          'user': 'gebruiker',
+          'admin': 'admin',
+          'programmer': 'programmer',
+          'bestuurder': 'bestuurder'
+        }
+        const oldRoleName = roleNames[oldRole] || oldRole
+        const newRoleName = roleNames[userData.role] || userData.role
+        
+        if (oldRole !== userData.role) {
+          alert(`Rol van gebruiker succesvol bijgewerkt van "${oldRoleName}" naar "${newRoleName}".\n\nAls deze gebruiker momenteel ingelogd is, moet hij/zij de pagina refreshen of opnieuw inloggen om de nieuwe rechten te zien.`)
+        }
+      }
     } catch (err: any) {
+      console.error('Error updating user:', err)
       setError(err.message || 'Fout bij opslaan')
     }
   }
