@@ -52,13 +52,30 @@ export function AdminUsers() {
       
       // Immediately update the local state with the returned user data
       console.log('Updating local state with:', updatedUser)
+      console.log('Updated user role from updateUser:', updatedUser.role)
+      console.log('Expected role from form:', userData.role)
+      
+      // Ensure we use the role from userData if updatedUser doesn't have it
+      const finalUserData = {
+        ...updatedUser,
+        role: updatedUser.role || userData.role
+      }
+      console.log('Final user data to merge:', finalUserData)
+      
       setUsers(prevUsers => {
-        const updated = prevUsers.map(user => 
-          user.id === editingUser.id 
-            ? { ...user, ...updatedUser }
-            : user
-        )
-        console.log('Updated users array:', updated)
+        const updated = prevUsers.map(user => {
+          if (user.id === editingUser.id) {
+            const merged = { ...user, ...finalUserData }
+            console.log(`Merged user ${user.id}: old role=${user.role}, new role=${merged.role}`)
+            return merged
+          }
+          return user
+        })
+        // Verify Dries' role in updated array
+        const driesInUpdated = updated.find(u => u.id === editingUser.id)
+        if (driesInUpdated) {
+          console.log('Dries role in updated array:', driesInUpdated.role)
+        }
         return updated
       })
       

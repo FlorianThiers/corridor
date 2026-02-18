@@ -245,6 +245,12 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
   
   if (updatedUser && !fetchError) {
     console.log('Successfully fetched updated user from database:', updatedUser)
+    console.log('Fetched user role:', updatedUser.role)
+    // Ensure role is included
+    if (!updatedUser.role && updates.role) {
+      console.warn('Role missing in fetched user, using update value:', updates.role)
+      updatedUser.role = updates.role
+    }
     return updatedUser
   }
   
