@@ -68,7 +68,7 @@ export function useAuth() {
     // Listen for custom user profile update events
     const handleUserProfileUpdate = () => {
       // Get current user from state
-      supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
+      supabase.auth.getUser().then(({ data: { user: currentUser } }: { data: { user: User | null } }) => {
         if (currentUser && mounted) {
           loadUserProfile(currentUser.id)
         }
