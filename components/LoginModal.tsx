@@ -20,6 +20,25 @@ export function LoginModal() {
   const { user } = useAuth()
 
   useEffect(() => {
+    // Check for URL parameters (from email confirmation callback)
+    const urlParams = new URLSearchParams(window.location.search)
+    const errorParam = urlParams.get('error')
+    const successParam = urlParams.get('success')
+
+    if (errorParam || successParam) {
+      setIsOpen(true)
+      setActiveTab('login')
+      if (errorParam) {
+        setError(decodeURIComponent(errorParam))
+      }
+      if (successParam) {
+        setSuccess(decodeURIComponent(successParam))
+      }
+      // Clean up URL parameters
+      const newUrl = window.location.pathname
+      window.history.replaceState({}, '', newUrl)
+    }
+
     // Listen for modal open events
     const handleOpenModal = () => {
       setIsOpen(true)
@@ -41,8 +60,8 @@ export function LoginModal() {
     window.addEventListener('openLoginModal', handleOpenModal)
     document.addEventListener('click', handleLoginClick)
 
-    // Close modal if user is logged in
-    if (user) {
+    // Close modal if user is logged in (unless showing success/error from email confirmation)
+    if (user && !errorParam && !successParam) {
       setIsOpen(false)
     }
 
@@ -104,6 +123,7 @@ export function LoginModal() {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             full_name: fullName,
           },

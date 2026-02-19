@@ -2,9 +2,24 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export async function getUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
+  try {
+    const supabase = await createClient()
+    const { data: { user }, error } = await supabase.auth.getUser()
+    
+    // Ignore refresh token errors - they're expected when tokens are invalid/expired
+    if (error && (error.message?.includes('refresh_token') || error.message?.includes('token'))) {
+      return null
+    }
+    
+    return user
+  } catch (error: any) {
+    // Silently handle auth errors (user might not be logged in)
+    if (error?.message?.includes('refresh_token') || error?.message?.includes('token')) {
+      return null
+    }
+    console.error('Unexpected error getting user:', error)
+    return null
+  }
 }
 
 export async function getUserProfile() {
