@@ -119,11 +119,18 @@ export function LoginModal() {
     const fullName = formData.get('name') as string
 
     try {
+      // Determine the correct redirect URL
+      // Use environment variable if available (for production), otherwise use current origin
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      const redirectUrl = `${baseUrl}/auth/callback`
+      
+      console.log('Signup redirect URL:', redirectUrl) // Debug log
+      
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
           },
@@ -150,8 +157,10 @@ export function LoginModal() {
     const email = formData.get('email') as string
 
     try {
+      // Use same logic for password reset
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${baseUrl}/reset-password`,
       })
 
       if (resetError) throw resetError
