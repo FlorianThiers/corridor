@@ -41,7 +41,7 @@ export function useAuth() {
     let mounted = true
 
     // Get initial user
-    supabase.auth.getUser().then(({ data: { user }, error }) => {
+    supabase.auth.getUser().then(({ data: { user }, error }: { data: { user: User | null }, error: any }) => {
       if (!mounted) return
       
       // Ignore refresh token errors - they're expected when tokens are invalid/expired
@@ -58,10 +58,10 @@ export function useAuth() {
       } else {
         setLoading(false)
       }
-    }).catch((error) => {
+    }).catch((error: any) => {
       // Silently handle auth errors (user might not be logged in)
       if (!mounted) return
-      if (error.message?.includes('refresh_token') || error.message?.includes('token')) {
+      if (error?.message?.includes('refresh_token') || error?.message?.includes('token')) {
         console.warn('Auth token error (expected if not logged in):', error.message)
       } else {
         console.error('Unexpected auth error:', error)
