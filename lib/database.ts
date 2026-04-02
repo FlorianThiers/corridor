@@ -90,6 +90,12 @@ export async function createEvenement(supabase: SupabaseClient, evenement: Parti
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+
   const { data, error } = await supabase
     .from('evenementen')
     .insert([{
@@ -99,11 +105,26 @@ export async function createEvenement(supabase: SupabaseClient, evenement: Parti
     .select()
     .single()
   
-  if (error) throw error
+  if (error) {
+    if (error.code === '42501' || error.message?.includes('row-level security')) {
+      const roleHint = profile?.role ? ` Huidige rol: ${profile.role}.` : ' Geen gebruikersprofiel gevonden voor deze auth user.'
+      throw new Error(`Geen toestemming om evenement toe te voegen.${roleHint} Controleer RLS policies voor INSERT op tabel evenementen.`)
+    }
+    throw error
+  }
   return data
 }
 
 export async function updateEvenement(supabase: SupabaseClient, id: string, updates: Partial<Evenement>): Promise<Evenement> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+
   const { data, error } = await supabase
     .from('evenementen')
     .update(updates)
@@ -111,17 +132,38 @@ export async function updateEvenement(supabase: SupabaseClient, id: string, upda
     .select()
     .single()
   
-  if (error) throw error
+  if (error) {
+    if (error.code === '42501' || error.message?.includes('row-level security')) {
+      const roleHint = profile?.role ? ` Huidige rol: ${profile.role}.` : ' Geen gebruikersprofiel gevonden voor deze auth user.'
+      throw new Error(`Geen toestemming om evenement te bewerken.${roleHint} Controleer RLS policies voor UPDATE op tabel evenementen.`)
+    }
+    throw error
+  }
   return data
 }
 
 export async function deleteEvenement(supabase: SupabaseClient, id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+
   const { error } = await supabase
     .from('evenementen')
     .delete()
     .eq('id', id)
   
-  if (error) throw error
+  if (error) {
+    if (error.code === '42501' || error.message?.includes('row-level security')) {
+      const roleHint = profile?.role ? ` Huidige rol: ${profile.role}.` : ' Geen gebruikersprofiel gevonden voor deze auth user.'
+      throw new Error(`Geen toestemming om evenement te verwijderen.${roleHint} Controleer RLS policies voor DELETE op tabel evenementen.`)
+    }
+    throw error
+  }
 }
 
 // Legacy method names for backwards compatibility

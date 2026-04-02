@@ -26,6 +26,42 @@ export async function GET(request: Request) {
         return NextResponse.redirect(new URL(`/?error=${errorMessage}`, requestUrl.origin))
       }
 
+      // Ensure there is always a profile row in `users` for role checks.
+      // Without this row, admin routes can reject valid authenticated users.
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (user) {
+        const { data: existingProfile, error: profileError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        if (profileError) {
+          console.error('Error checking user profile in callback:', profileError)
+        } else if (!existingProfile) {
+          const fullName =
+            (user.user_metadata?.full_name as string | undefined) ||
+            (user.user_metadata?.name as string | undefined) ||
+            (user.email?.split('@')[0] ?? 'Gebruiker')
+
+          const { error: insertProfileError } = await supabase.from('users').insert([
+            {
+              id: user.id,
+              email: user.email ?? '',
+              full_name: fullName,
+              role: 'user',
+            },
+          ])
+
+          if (insertProfileError) {
+            console.error('Error creating missing user profile in callback:', insertProfileError)
+          }
+        }
+      }
+
       // Email confirmation successful, redirect to home or specified page with success message
       const successMessage = encodeURIComponent('Je email is succesvol bevestigd! Je kunt nu inloggen.')
       return NextResponse.redirect(new URL(`${next}?success=${successMessage}`, requestUrl.origin))
