@@ -4,6 +4,29 @@ interface EventCardProps {
   event: Evenement
 }
 
+function renderDescriptionWithLinks(text: string) {
+  const splitRegex = /(https?:\/\/[^\s]+)/g
+  const parts = text.split(splitRegex)
+
+  return parts.map((part, index) => {
+    if (/^https?:\/\/[^\s]+$/.test(part)) {
+      return (
+        <a
+          key={`${part}-${index}`}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-700 underline break-all hover:text-blue-900"
+        >
+          {part}
+        </a>
+      )
+    }
+
+    return <span key={`text-${index}`}>{part}</span>
+  })
+}
+
 export function EventCard({ event }: EventCardProps) {
   const startDate = new Date(event.start_datetime)
   const endDate = event.end_datetime ? new Date(event.end_datetime) : null
@@ -25,7 +48,7 @@ export function EventCard({ event }: EventCardProps) {
         </div>
       </div>
       {event.description && (
-        <p className="text-gray-700 text-sm mb-2">{event.description}</p>
+        <p className="text-gray-700 text-sm mb-2">{renderDescriptionWithLinks(event.description)}</p>
       )}
       <div className="flex items-center gap-4 text-xs text-gray-600">
         <span>📅 {startDate.toLocaleDateString('nl-NL')}</span>
