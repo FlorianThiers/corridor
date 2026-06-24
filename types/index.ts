@@ -18,6 +18,8 @@ export interface Evenement {
   zone_id?: string
   for_girls?: boolean
   kind?: EvenementKind
+  sport_slug?: string | null
+  is_highlight?: boolean
   created_by?: string
   created_at?: string
   updated_at?: string

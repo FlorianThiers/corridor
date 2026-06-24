@@ -37,8 +37,12 @@ export default async function EvenementenPage() {
   const { evenementen: opkomendeEvenementen, activiteiten: opkomendeActiviteiten } = splitByKind(upcoming)
   const { evenementen: afgelopenEvenementen } = splitByKind(past)
 
-  const festOpkomend = opkomendeEvenementen.filter((event) => isFestEvent(event.title))
-  const overigeOpkomend = opkomendeEvenementen.filter((event) => !isFestEvent(event.title))
+  const festOpkomend = opkomendeEvenementen.filter(
+    (event) => event.is_highlight || isFestEvent(event.title)
+  )
+  const overigeOpkomend = opkomendeEvenementen.filter(
+    (event) => !event.is_highlight && !isFestEvent(event.title)
+  )
   const showPromoFloatings = hasActivePromoFloatings()
 
   return (

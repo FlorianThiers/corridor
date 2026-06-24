@@ -224,6 +224,14 @@ section[class*="section-gradient"] + section[class*="section-gradient"] {
     }
 }
 
+.calendar-sport-dot {
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+}
+
 /* Organic logo shapes */
 .organic-shape {
     border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;

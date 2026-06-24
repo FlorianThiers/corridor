@@ -1,6 +1,6 @@
 import type { Evenement } from '@/types'
 import { EVENEMENT_KIND_LABELS, isEvenementKind } from '@/lib/agenda-helpers'
-import { isFestEvent } from '@/lib/site-promos'
+import { getSportDefinition } from '@/lib/sports'
 
 interface EventCardProps {
   event: Evenement
@@ -33,18 +33,35 @@ export function EventCard({ event }: EventCardProps) {
   const startDate = new Date(event.start_datetime)
   const endDate = event.end_datetime ? new Date(event.end_datetime) : null
   const isCorrigirls = event.for_girls
-  const isFest = isFestEvent(event.title)
+  const isHighlight = Boolean(event.is_highlight)
   const kindLabel = EVENEMENT_KIND_LABELS[event.kind ?? 'evenement']
+  const sport = getSportDefinition(event.sport_slug, event.title)
 
   return (
     <div
       className={`bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover ${
-        isCorrigirls ? 'border-l-4 border-pink-500' : isFest ? 'border-l-4 border-yellow-400 ring-1 ring-yellow-200/80' : ''
+        isHighlight
+          ? 'border-2 border-amber-500 shadow-[0_0_0_1px_rgba(245,158,11,0.35)]'
+          : isCorrigirls
+          ? 'border-l-4 border-pink-500'
+          : sport
+          ? `border-2 ${sport.borderClass}`
+          : ''
       }`}
     >
       <div className="flex items-start justify-between mb-2">
         <h3 className="text-xl font-bold text-gray-800">{event.title}</h3>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-end">
+          {isHighlight && (
+            <span className="px-2 py-1 bg-amber-100 text-amber-900 border border-amber-500 rounded-full text-xs font-semibold whitespace-nowrap">
+              Highlight
+            </span>
+          )}
+          {sport && (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${sport.badgeClass}`}>
+              {sport.label}
+            </span>
+          )}
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
               isEvenementKind(event.kind)

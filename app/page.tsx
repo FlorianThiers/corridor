@@ -150,8 +150,8 @@ export default async function HomePage() {
           .filter(event => new Date(event.start_datetime) >= now)
           .sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime())
 
-        const fest = opkomendeEvenementen.filter((event) => isFestEvent(event.title))
-        const rest = opkomendeEvenementen.filter((event) => !isFestEvent(event.title))
+        const fest = opkomendeEvenementen.filter((event) => event.is_highlight || isFestEvent(event.title))
+        const rest = opkomendeEvenementen.filter((event) => !event.is_highlight && !isFestEvent(event.title))
         const highlight = [...fest, ...rest].slice(0, 5)
 
         return highlight.length > 0 && (

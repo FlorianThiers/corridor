@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getEvenementen, getZones, createEvenement, updateEvenement, deleteEvenement } from '@/lib/database'
 import { EventCard } from '@/components/EventCard'
 import type { Evenement, Zone, EvenementKind } from '@/types'
+import { SPORT_OPTIONS } from '@/lib/sports'
 
 export function AdminEvents() {
   const [events, setEvents] = useState<Evenement[]>([])
@@ -49,6 +50,8 @@ export function AdminEvents() {
       zone_id: formData.get('zone_id') as string || undefined,
       for_girls: formData.get('for_girls') === 'on',
       kind: formData.get('kind') as EvenementKind,
+      sport_slug: (formData.get('sport_slug') as string) || undefined,
+      is_highlight: formData.get('is_highlight') === 'on',
     }
 
     try {
@@ -222,6 +225,32 @@ export function AdminEvents() {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sport</label>
+                  <select
+                    name="sport_slug"
+                    defaultValue={editingEvent?.sport_slug || ''}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  >
+                    <option value="">Geen sport / niet van toepassing</option>
+                    {SPORT_OPTIONS.map((sport) => (
+                      <option key={sport.slug} value={sport.slug}>
+                        {sport.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="is_highlight"
+                      defaultChecked={editingEvent?.is_highlight || false}
+                      className="w-5 h-5 text-amber-500 rounded focus:ring-amber-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Highlight (felle rand op site)</span>
+                  </label>
                 </div>
                 <div className="flex items-end">
                   <label className="flex items-center space-x-2 cursor-pointer">

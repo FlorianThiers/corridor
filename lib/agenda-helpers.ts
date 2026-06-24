@@ -1,4 +1,5 @@
 import type { Evenement, EvenementKind } from '@/types'
+import { resolveSportSlug, type SportSlug } from '@/lib/sports'
 
 export const EVENEMENT_KIND_LABELS: Record<EvenementKind, string> = {
   evenement: 'Evenement',
@@ -33,6 +34,7 @@ export interface GroupedActiviteit {
   title: string
   description?: string
   zoneName?: string
+  sportSlug?: SportSlug
   nextOccurrence?: Evenement
   upcomingCount: number
 }
@@ -46,7 +48,8 @@ export function groupActiviteiten(items: Evenement[], now = new Date()): Grouped
   const groups = new Map<string, GroupedActiviteit>()
 
   for (const item of upcoming) {
-    const key = `${item.title}::${item.description ?? ''}`
+    const sportSlug = resolveSportSlug(item.sport_slug, item.title)
+    const key = `${sportSlug ?? item.title}::${item.description ?? ''}`
     const existing = groups.get(key)
 
     if (!existing) {
@@ -55,6 +58,7 @@ export function groupActiviteiten(items: Evenement[], now = new Date()): Grouped
         title: item.title,
         description: item.description,
         zoneName: item.zones?.name,
+        sportSlug,
         nextOccurrence: item,
         upcomingCount: 1,
       })
