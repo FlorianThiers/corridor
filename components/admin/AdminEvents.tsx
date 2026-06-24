@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getEvenementen, getZones, createEvenement, updateEvenement, deleteEvenement } from '@/lib/database'
 import { EventCard } from '@/components/EventCard'
-import type { Evenement, Zone } from '@/types'
+import type { Evenement, Zone, EvenementKind } from '@/types'
 
 export function AdminEvents() {
   const [events, setEvents] = useState<Evenement[]>([])
@@ -48,6 +48,7 @@ export function AdminEvents() {
       end_datetime: formData.get('end_datetime') as string || undefined,
       zone_id: formData.get('zone_id') as string || undefined,
       for_girls: formData.get('for_girls') === 'on',
+      kind: formData.get('kind') as EvenementKind,
     }
 
     try {
@@ -98,7 +99,7 @@ export function AdminEvents() {
           onClick={() => openModal()}
           className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium"
         >
-          + Nieuw Evenement
+          + Nieuw item
         </button>
       </div>
 
@@ -145,7 +146,7 @@ export function AdminEvents() {
           <div className="modal-content max-w-2xl">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">
-                {editingEvent ? 'Evenement Bewerken' : 'Nieuw Evenement'}
+                {editingEvent ? 'Item bewerken' : 'Nieuw item'}
               </h2>
               <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,6 +196,18 @@ export function AdminEvents() {
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+                  <select
+                    name="kind"
+                    defaultValue={editingEvent?.kind ?? 'evenement'}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  >
+                    <option value="evenement">Evenement (eenmalig / hoogtepunt)</option>
+                    <option value="activiteit">Activiteit (terugkerend aanbod)</option>
+                  </select>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Zone</label>
                   <select

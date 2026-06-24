@@ -1,4 +1,6 @@
 import type { Evenement } from '@/types'
+import { EVENEMENT_KIND_LABELS, isEvenementKind } from '@/lib/agenda-helpers'
+import { isFestEvent } from '@/lib/site-promos'
 
 interface EventCardProps {
   event: Evenement
@@ -31,14 +33,26 @@ export function EventCard({ event }: EventCardProps) {
   const startDate = new Date(event.start_datetime)
   const endDate = event.end_datetime ? new Date(event.end_datetime) : null
   const isCorrigirls = event.for_girls
+  const isFest = isFestEvent(event.title)
+  const kindLabel = EVENEMENT_KIND_LABELS[event.kind ?? 'evenement']
 
   return (
-    <div className={`bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover ${isCorrigirls ? 'border-l-4 border-pink-500' : ''}`}>
+    <div
+      className={`bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover ${
+        isCorrigirls ? 'border-l-4 border-pink-500' : isFest ? 'border-l-4 border-yellow-400 ring-1 ring-yellow-200/80' : ''
+      }`}
+    >
       <div className="flex items-start justify-between mb-2">
         <h3 className="text-xl font-bold text-gray-800">{event.title}</h3>
         <div className="flex gap-2">
-          <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium whitespace-nowrap">
-            Evenement
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+              isEvenementKind(event.kind)
+                ? 'bg-purple-100 text-purple-700'
+                : 'bg-teal-100 text-teal-800'
+            }`}
+          >
+            {kindLabel}
           </span>
           {isCorrigirls && (
             <span className="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium whitespace-nowrap">

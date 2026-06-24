@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { EventCard } from './EventCard'
 import type { Evenement } from '@/types'
+import { isActiviteitKind } from '@/lib/agenda-helpers'
 
 interface CalendarProps {
   events: Evenement[]
@@ -112,6 +113,8 @@ export function Calendar({ events }: CalendarProps) {
           {days.map((day, index) => {
             const dayEvents = day ? getEventsForDate(day) : []
             const hasEvents = dayEvents.length > 0
+            const hasEvenement = dayEvents.some((event) => !isActiviteitKind(event.kind))
+            const hasActiviteit = dayEvents.some((event) => isActiviteitKind(event.kind))
             const hasCorridgirlEvent = dayEvents.some(event => event.for_girls === true)
             const isSelected = selectedDate && day && (
               day.getDate() === selectedDate.getDate() &&
@@ -140,7 +143,9 @@ export function Calendar({ events }: CalendarProps) {
                     : hasEvents
                     ? hasCorridgirlEvent
                       ? 'bg-pink-100 text-gray-800 hover:bg-pink-200'
-                      : 'bg-purple-100 text-gray-800 hover:bg-purple-200'
+                      : hasEvenement
+                      ? 'bg-purple-100 text-gray-800 hover:bg-purple-200'
+                      : 'bg-teal-100 text-gray-800 hover:bg-teal-200'
                     : 'bg-white/40 text-gray-800 hover:bg-white/60'
                 }`}
               >
@@ -148,7 +153,9 @@ export function Calendar({ events }: CalendarProps) {
                   <span className="text-sm font-medium">{day.getDate()}</span>
                   {hasEvents && (
                     <span className="text-xs mt-0.5">
-                      {dayEvents.length} {dayEvents.length === 1 ? 'event' : 'events'}
+                      {hasEvenement && hasActiviteit
+                        ? `${dayEvents.length} items`
+                        : `${dayEvents.length} ${dayEvents.length === 1 ? (hasActiviteit ? 'activiteit' : 'event') : 'items'}`}
                     </span>
                   )}
                 </div>

@@ -7,6 +7,8 @@ export interface Zone {
   updated_at?: string
 }
 
+export type EvenementKind = 'evenement' | 'activiteit'
+
 export interface Evenement {
   id: string
   title: string
@@ -15,6 +17,7 @@ export interface Evenement {
   end_datetime?: string
   zone_id?: string
   for_girls?: boolean
+  kind?: EvenementKind
   created_by?: string
   created_at?: string
   updated_at?: string

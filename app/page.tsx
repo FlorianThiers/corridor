@@ -8,6 +8,8 @@ import { PageContainer } from '@/components/PageContainer'
 import { LazyVideo } from '@/components/LazyVideo'
 import { createClient } from '@/lib/supabase/server'
 import { getEvenementen, getZones, getCorristories } from '@/lib/database'
+import { splitByKind } from '@/lib/agenda-helpers'
+import { isFestEvent } from '@/lib/site-promos'
 import type { Evenement, Zone, Corristory } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -143,25 +145,23 @@ export default async function HomePage() {
       {/* Evenementen Section */}
       {(() => {
         const now = new Date()
-        const opkomendeEvenementen = evenementen
-          .filter(event => {
-            const eventDate = new Date(event.start_datetime)
-            return eventDate >= now
-          })
-          .sort((a, b) => {
-            // Sorteer chronologisch (oudste eerst - eerst volgende van boven)
-            return new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()
-          })
-          .slice(0, 5)
+        const { evenementen: alleEvenementen } = splitByKind(evenementen)
+        const opkomendeEvenementen = alleEvenementen
+          .filter(event => new Date(event.start_datetime) >= now)
+          .sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime())
 
-        return opkomendeEvenementen.length > 0 && (
+        const fest = opkomendeEvenementen.filter((event) => isFestEvent(event.title))
+        const rest = opkomendeEvenementen.filter((event) => !isFestEvent(event.title))
+        const highlight = [...fest, ...rest].slice(0, 5)
+
+        return highlight.length > 0 && (
           <PageSection id="evenementen" className="section-gradient-2">
             <PageContainer>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
                 Komende Evenementen
               </h2>
               <div className="space-y-4">
-                {opkomendeEvenementen.map((event) => (
+                {highlight.map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
               </div>

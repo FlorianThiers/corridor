@@ -34,7 +34,7 @@ export default async function AgendaPage() {
           <PageTitle>Agenda</PageTitle>
           <PromoGate
             variant="floatings"
-            anchorOverrides={{ summer: '/evenementen#zomervakantie' }}
+            anchorOverrides={{ summer: '/activiteiten#zomer-activiteiten' }}
           />
           <Calendar events={evenementen} />
         </PageContainer>

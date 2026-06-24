@@ -27,7 +27,7 @@ export const SUMMER_PROMO: SitePromo = {
   tagline: 'Elke week sport en animatie — de plek blijft ook buiten het aanbod open om te sporten.',
   dates: '28 juni – 30 augustus 2026',
   location: 'Driebeekstraat, Gentbrugge',
-  ctaHref: '/evenementen',
+  ctaHref: '/activiteiten',
   ctaLabel: 'Bekijk het zomerprogramma',
   activeUntil: '2026-08-31T00:00:00+02:00',
   imageBg: '#7ec8c8',
@@ -72,10 +72,6 @@ export function getActivePromos(now = new Date()): SitePromo[] {
 
 export function isFestEvent(title: string): boolean {
   return title.startsWith(FEST_PROMO.title) || title.startsWith("Corri D'Or Fest")
-}
-
-export function isSummerEvent(description?: string): boolean {
-  return Boolean(description?.toLowerCase().includes('zomervakantie'))
 }
 
 export function posterHref(promo: SitePromo): string {
