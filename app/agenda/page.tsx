@@ -6,6 +6,7 @@ import { PageContainer } from '@/components/PageContainer'
 import { PageTitle } from '@/components/PageTitle'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
+import { PromoGate, hasActivePromoFloatings } from '@/components/PromoGate'
 
 import type { Evenement } from '@/types'
 
@@ -23,12 +24,18 @@ export default async function AgendaPage() {
     console.error('Error loading evenementen:', error)
   }
 
+  const showPromoFloatings = hasActivePromoFloatings()
+
   return (
     <div className="page-background">
       <BackgroundImage />
       <PageSection className="min-h-screen">
-        <PageContainer maxWidth="7xl">
+        <PageContainer maxWidth="7xl" className={showPromoFloatings ? 'lg:px-56' : undefined}>
           <PageTitle>Agenda</PageTitle>
+          <PromoGate
+            variant="floatings"
+            anchorOverrides={{ summer: '/evenementen#zomervakantie' }}
+          />
           <Calendar events={evenementen} />
         </PageContainer>
       </PageSection>

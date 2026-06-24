@@ -1,4 +1,5 @@
 import { HeroSection } from '@/components/HeroSection'
+import { PromoGate } from '@/components/PromoGate'
 import { IntroAnimation } from '@/components/IntroAnimation'
 import { Footer } from '@/components/Footer'
 import { EventCard } from '@/components/EventCard'
@@ -51,6 +52,8 @@ export default async function HomePage() {
   return (
     <div className="page-background">
       <HeroSection />
+
+      <PromoGate variant="banners" />
 
       {/* Intro Section */}
       <PageSection id="intro" className="section-gradient-1">

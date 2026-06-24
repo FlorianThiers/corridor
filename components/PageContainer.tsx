@@ -3,6 +3,7 @@ import { ReactNode } from 'react'
 interface PageContainerProps {
   children: ReactNode
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '6xl' | '7xl'
+  className?: string
 }
 
 const maxWidthClasses = {
@@ -16,9 +17,9 @@ const maxWidthClasses = {
   '7xl': 'max-w-7xl',
 }
 
-export function PageContainer({ children, maxWidth = '6xl' }: PageContainerProps) {
+export function PageContainer({ children, maxWidth = '6xl', className = '' }: PageContainerProps) {
   return (
-    <div className={`${maxWidthClasses[maxWidth]} mx-auto`}>
+    <div className={`${maxWidthClasses[maxWidth]} mx-auto ${className}`.trim()}>
       {children}
     </div>
   )

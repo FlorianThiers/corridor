@@ -189,6 +189,41 @@ section[class*="section-gradient"] + section[class*="section-gradient"] {
     }
 }
 
+/* Site promos (zomer + fest) */
+@keyframes fest-promo-bob {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.site-promo-floating {
+    position: fixed;
+    bottom: 1.25rem;
+    z-index: 40;
+    pointer-events: auto;
+}
+
+.site-promo-floating-left {
+    left: 1.25rem;
+}
+
+.site-promo-floating-right {
+    right: 1.25rem;
+}
+
+.site-promo-float {
+    animation: fest-promo-bob 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-promo-float {
+        animation: none;
+    }
+}
+
 /* Organic logo shapes */
 .organic-shape {
     border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
