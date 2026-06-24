@@ -9,7 +9,8 @@ import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { PromoGate, hasActivePromoFloatings } from '@/components/PromoGate'
 import { isFestEvent } from '@/lib/site-promos'
-import { splitByKind } from '@/lib/agenda-helpers'
+import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
+import { ActivityCard } from '@/components/ActivityCard'
 import Link from 'next/link'
 
 export const revalidate = 60
@@ -35,7 +36,7 @@ export default async function EvenementenPage() {
     .sort((a, b) => new Date(b.start_datetime).getTime() - new Date(a.start_datetime).getTime())
 
   const { evenementen: opkomendeEvenementen, activiteiten: opkomendeActiviteiten } = splitByKind(upcoming)
-  const { evenementen: afgelopenEvenementen } = splitByKind(past)
+  const { evenementen: afgelopenEvenementen, activiteiten: afgelopenActiviteiten } = splitByKind(past)
 
   const festOpkomend = opkomendeEvenementen.filter(
     (event) => event.is_highlight || isFestEvent(event.title)
@@ -43,6 +44,17 @@ export default async function EvenementenPage() {
   const overigeOpkomend = opkomendeEvenementen.filter(
     (event) => !event.is_highlight && !isFestEvent(event.title)
   )
+
+  const festAfgelopen = afgelopenEvenementen.filter(
+    (event) => event.is_highlight || isFestEvent(event.title)
+  )
+  const overigeAfgelopenEvenementen = afgelopenEvenementen.filter(
+    (event) => !event.is_highlight && !isFestEvent(event.title)
+  )
+  const afgelopenActiviteitenGrouped = groupActiviteiten(afgelopenActiviteiten, {
+    now,
+    direction: 'past',
+  })
   const showPromoFloatings = hasActivePromoFloatings()
 
   return (
@@ -98,7 +110,7 @@ export default async function EvenementenPage() {
             </div>
           )}
 
-          <div>
+          <div className="mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Afgelopen evenementen</h2>
             {afgelopenEvenementen.length === 0 ? (
               <p className="text-gray-600 text-center bg-white/60 backdrop-blur-sm rounded-3xl p-6">
@@ -106,12 +118,42 @@ export default async function EvenementenPage() {
               </p>
             ) : (
               <div className="space-y-6">
-                {afgelopenEvenementen.map((event) => (
+                {festAfgelopen.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-2xl font-bold text-gray-800">Corri D&apos;Or Fest</h3>
+                    {festAfgelopen.map((event) => (
+                      <EventCard key={event.id} event={event} />
+                    ))}
+                  </div>
+                )}
+                {overigeAfgelopenEvenementen.map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
               </div>
             )}
           </div>
+
+          {afgelopenActiviteitenGrouped.length > 0 && (
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">Afgelopen activiteiten</h2>
+              <p className="text-gray-600 mb-6">
+                Terugkerend zomeraanbod, gegroepeerd per sport.
+              </p>
+              <div className="space-y-4">
+                {afgelopenActiviteitenGrouped.map((activity) => (
+                  <ActivityCard key={activity.key} activity={activity} variant="past" />
+                ))}
+              </div>
+              <div className="mt-6 text-center">
+                <Link
+                  href="/activiteiten"
+                  className="inline-flex items-center text-teal-800 font-medium hover:underline"
+                >
+                  Alle activiteiten bekijken
+                </Link>
+              </div>
+            </div>
+          )}
         </PageContainer>
       </PageSection>
       <Footer />

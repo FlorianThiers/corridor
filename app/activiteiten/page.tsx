@@ -43,10 +43,10 @@ export default async function ActiviteitenPage({ searchParams }: ActiviteitenPag
     items.filter((item) => new Date(item.start_datetime) < now)
   )
 
-  const opkomende = groupActiviteiten(opkomendeRaw, now).filter(
+  const opkomende = groupActiviteiten(opkomendeRaw, { now, direction: 'upcoming' }).filter(
     (activity) => !activeSport || activity.sportSlug === activeSport
   )
-  const afgelopen = groupActiviteiten(afgelopenRaw, now).filter(
+  const afgelopen = groupActiviteiten(afgelopenRaw, { now, direction: 'past' }).filter(
     (activity) => !activeSport || activity.sportSlug === activeSport
   )
   const showPromoFloatings = hasActivePromoFloatings()
@@ -94,7 +94,7 @@ export default async function ActiviteitenPage({ searchParams }: ActiviteitenPag
             ) : (
               <div className="space-y-4">
                 {afgelopen.map((activity) => (
-                  <ActivityCard key={activity.key} activity={activity} />
+                  <ActivityCard key={activity.key} activity={activity} variant="past" />
                 ))}
               </div>
             )}

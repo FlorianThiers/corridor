@@ -3,19 +3,21 @@ import type { GroupedActiviteit } from '@/lib/agenda-helpers'
 
 interface ActivityCardProps {
   activity: GroupedActiviteit
+  variant?: 'upcoming' | 'past'
 }
 
-export function ActivityCard({ activity }: ActivityCardProps) {
-  const next = activity.nextOccurrence
-  const nextDate = next ? new Date(next.start_datetime) : null
-  const nextEnd = next?.end_datetime ? new Date(next.end_datetime) : null
+export function ActivityCard({ activity, variant = 'upcoming' }: ActivityCardProps) {
+  const slot = activity.nextOccurrence
+  const slotDate = slot ? new Date(slot.start_datetime) : null
+  const slotEnd = slot?.end_datetime ? new Date(slot.end_datetime) : null
   const sport = getSportDefinition(activity.sportSlug, activity.title)
+  const isPast = variant === 'past'
 
   return (
     <div
       className={`bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover border-2 ${
         sport ? sport.borderClass : 'border-teal-300'
-      }`}
+      } ${isPast ? 'opacity-90' : ''}`}
     >
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-xl font-bold text-gray-800">{activity.title}</h3>
@@ -34,18 +36,22 @@ export function ActivityCard({ activity }: ActivityCardProps) {
         <p className="text-gray-700 text-sm mb-3">{activity.description}</p>
       )}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
-        {nextDate && (
+        {slotDate && (
           <span>
-            Volgende: {nextDate.toLocaleDateString('nl-NL')} ·{' '}
-            {nextDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
-            {nextEnd
-              ? ` – ${nextEnd.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`
+            {isPast ? 'Laatste' : 'Volgende'}: {slotDate.toLocaleDateString('nl-NL')} ·{' '}
+            {slotDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+            {slotEnd
+              ? ` – ${slotEnd.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`
               : ''}
           </span>
         )}
         {activity.zoneName && <span>📍 {activity.zoneName}</span>}
-        {activity.upcomingCount > 1 && (
-          <span className="text-gray-500">+{activity.upcomingCount - 1} extra momenten gepland</span>
+        {activity.occurrenceCount > 1 && (
+          <span className="text-gray-500">
+            {isPast
+              ? `${activity.occurrenceCount} keer georganiseerd`
+              : `+${activity.occurrenceCount - 1} extra momenten gepland`}
+          </span>
         )}
       </div>
     </div>

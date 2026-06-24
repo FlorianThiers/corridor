@@ -35,19 +35,35 @@ export interface GroupedActiviteit {
   description?: string
   zoneName?: string
   sportSlug?: SportSlug
+  /** Meest recente (komend) of laatste (afgelopen) slot in de groep */
   nextOccurrence?: Evenement
-  upcomingCount: number
+  occurrenceCount: number
 }
 
+export type GroupActiviteitenDirection = 'upcoming' | 'past'
+
 /** Eén kaart per activiteitstype i.p.v. tientallen identieke week-slots */
-export function groupActiviteiten(items: Evenement[], now = new Date()): GroupedActiviteit[] {
-  const upcoming = items
-    .filter((item) => new Date(item.start_datetime) >= now)
-    .sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime())
+export function groupActiviteiten(
+  items: Evenement[],
+  options: { now?: Date; direction?: GroupActiviteitenDirection } = {}
+): GroupedActiviteit[] {
+  const now = options.now ?? new Date()
+  const direction = options.direction ?? 'upcoming'
+  const nowMs = now.getTime()
+
+  const filtered = items
+    .filter((item) => {
+      const t = new Date(item.start_datetime).getTime()
+      return direction === 'upcoming' ? t >= nowMs : t < nowMs
+    })
+    .sort((a, b) => {
+      const diff = new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()
+      return direction === 'upcoming' ? diff : -diff
+    })
 
   const groups = new Map<string, GroupedActiviteit>()
 
-  for (const item of upcoming) {
+  for (const item of filtered) {
     const sportSlug = resolveSportSlug(item.sport_slug, item.title)
     const key = `${sportSlug ?? item.title}::${item.description ?? ''}`
     const existing = groups.get(key)
@@ -60,12 +76,12 @@ export function groupActiviteiten(items: Evenement[], now = new Date()): Grouped
         zoneName: item.zones?.name,
         sportSlug,
         nextOccurrence: item,
-        upcomingCount: 1,
+        occurrenceCount: 1,
       })
       continue
     }
 
-    existing.upcomingCount += 1
+    existing.occurrenceCount += 1
     if (!existing.zoneName && item.zones?.name) {
       existing.zoneName = item.zones.name
     }
@@ -73,6 +89,9 @@ export function groupActiviteiten(items: Evenement[], now = new Date()): Grouped
 
   return Array.from(groups.values()).sort((a, b) => {
     if (!a.nextOccurrence || !b.nextOccurrence) return 0
-    return new Date(a.nextOccurrence.start_datetime).getTime() - new Date(b.nextOccurrence.start_datetime).getTime()
+    const diff =
+      new Date(a.nextOccurrence.start_datetime).getTime() -
+      new Date(b.nextOccurrence.start_datetime).getTime()
+    return direction === 'upcoming' ? diff : -diff
   })
 }
