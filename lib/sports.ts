@@ -5,6 +5,7 @@ export const SPORT_SLUGS = [
   'sportkar',
   'skate',
   'corrihop',
+  'dans',
 ] as const
 
 export type SportSlug = (typeof SPORT_SLUGS)[number]
@@ -61,6 +62,13 @@ export const SPORT_DEFINITIONS: Record<SportSlug, SportDefinition> = {
     badgeClass: 'bg-pink-100 text-pink-800',
     borderClass: 'border-pink-500',
   },
+  dans: {
+    slug: 'dans',
+    label: 'Dans',
+    dotClass: 'bg-fuchsia-500',
+    badgeClass: 'bg-fuchsia-100 text-fuchsia-800',
+    borderClass: 'border-fuchsia-500',
+  },
 }
 
 const TITLE_TO_SLUG: Record<string, SportSlug> = {
@@ -70,6 +78,8 @@ const TITLE_TO_SLUG: Record<string, SportSlug> = {
   sportkar: 'sportkar',
   skate: 'skate',
   corrihop: 'corrihop',
+  dans: 'dans',
+  danslessen: 'dans',
 }
 
 export function isSportSlug(value: string | null | undefined): value is SportSlug {
