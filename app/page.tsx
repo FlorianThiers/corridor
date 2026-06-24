@@ -3,12 +3,13 @@ import { PromoGate } from '@/components/PromoGate'
 import { IntroAnimation } from '@/components/IntroAnimation'
 import { Footer } from '@/components/Footer'
 import { EventCard } from '@/components/EventCard'
+import { ActivityCard } from '@/components/ActivityCard'
 import { PageSection } from '@/components/PageSection'
 import { PageContainer } from '@/components/PageContainer'
 import { LazyVideo } from '@/components/LazyVideo'
 import { createClient } from '@/lib/supabase/server'
 import { getEvenementen, getZones, getCorristories } from '@/lib/database'
-import { splitByKind } from '@/lib/agenda-helpers'
+import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
 import { isFestEvent } from '@/lib/site-promos'
 import type { Evenement, Zone, Corristory } from '@/types'
 import Image from 'next/image'
@@ -50,6 +51,20 @@ export default async function HomePage() {
     // In production, we want to show the page even if Supabase fails
     // The page will just show empty states
   }
+
+  const now = new Date()
+  const { evenementen: alleEvenementen, activiteiten: alleActiviteiten } = splitByKind(evenementen)
+  const opkomendeEvenementen = alleEvenementen
+    .filter((event) => new Date(event.start_datetime) >= now)
+    .sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime())
+  const fest = opkomendeEvenementen.filter((event) => event.is_highlight || isFestEvent(event.title))
+  const rest = opkomendeEvenementen.filter((event) => !event.is_highlight && !isFestEvent(event.title))
+  const highlightEvenementen = [...fest, ...rest].slice(0, 5)
+  const highlightActiviteiten = groupActiviteiten(
+    alleActiviteiten.filter((item) => new Date(item.start_datetime) >= now),
+    { now, direction: 'upcoming' }
+  ).slice(0, 6)
+  const toonAgendaOverzicht = highlightEvenementen.length > 0 || highlightActiviteiten.length > 0
 
   return (
     <div className="page-background">
@@ -142,33 +157,50 @@ export default async function HomePage() {
         </PageContainer>
       </PageSection>
 
-      {/* Evenementen Section */}
-      {(() => {
-        const now = new Date()
-        const { evenementen: alleEvenementen } = splitByKind(evenementen)
-        const opkomendeEvenementen = alleEvenementen
-          .filter(event => new Date(event.start_datetime) >= now)
-          .sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime())
-
-        const fest = opkomendeEvenementen.filter((event) => event.is_highlight || isFestEvent(event.title))
-        const rest = opkomendeEvenementen.filter((event) => !event.is_highlight && !isFestEvent(event.title))
-        const highlight = [...fest, ...rest].slice(0, 5)
-
-        return highlight.length > 0 && (
-          <PageSection id="evenementen" className="section-gradient-2">
-            <PageContainer>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
-                Komende Evenementen
-              </h2>
-              <div className="space-y-4">
-                {highlight.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
+      {/* Evenementen & activiteiten */}
+      {toonAgendaOverzicht && (
+        <PageSection id="evenementen" className="section-gradient-2">
+          <PageContainer>
+            {highlightEvenementen.length > 0 && (
+              <div className="mb-16">
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
+                  Komende evenementen
+                </h2>
+                <div className="space-y-4">
+                  {highlightEvenementen.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+                <SectionLinks
+                  primaryHref="/evenementen"
+                  primaryLabel="Alle evenementen"
+                  secondaryHref="/agenda"
+                  secondaryLabel="Bekijk agenda"
+                />
               </div>
-            </PageContainer>
-          </PageSection>
-        )
-      })()}
+            )}
+
+            {highlightActiviteiten.length > 0 && (
+              <div id="activiteiten">
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-800 graffiti-text text-center mb-12">
+                  Komende activiteiten
+                </h2>
+                <div className="space-y-4">
+                  {highlightActiviteiten.map((activity) => (
+                    <ActivityCard key={activity.key} activity={activity} />
+                  ))}
+                </div>
+                <SectionLinks
+                  primaryHref="/activiteiten"
+                  primaryLabel="Alle activiteiten"
+                  secondaryHref="/agenda"
+                  secondaryLabel="Bekijk agenda"
+                />
+              </div>
+            )}
+          </PageContainer>
+        </PageSection>
+      )}
 
       {/* Contact Section */}
       <PageSection id="contact" className="section-gradient-2">
@@ -224,6 +256,41 @@ export default async function HomePage() {
       </PageSection>
 
       <Footer />
+    </div>
+  )
+}
+
+function SectionLinks({
+  primaryHref,
+  primaryLabel,
+  secondaryHref,
+  secondaryLabel,
+}: {
+  primaryHref: string
+  primaryLabel: string
+  secondaryHref: string
+  secondaryLabel: string
+}) {
+  return (
+    <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+      <Link
+        href={primaryHref}
+        className="inline-flex items-center justify-center px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-medium transition-all hover:scale-105 shadow-lg"
+      >
+        {primaryLabel}
+        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </Link>
+      <Link
+        href={secondaryHref}
+        className="inline-flex items-center justify-center px-6 py-3 bg-white/70 hover:bg-white text-gray-900 rounded-full font-medium transition-all hover:scale-105 border border-gray-200"
+      >
+        {secondaryLabel}
+        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </Link>
     </div>
   )
 }
