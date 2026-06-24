@@ -20,44 +20,44 @@ export const SUMMER_WEEKLY_SCHEDULE: WeeklyScheduleDay[] = [
     key: 'di',
     label: 'Dinsdag',
     shortLabel: 'Di',
-    slots: [{ slug: 'wandelvoetbal', time: '10:00 – 11:00' }],
+    slots: [{ slug: 'wandelvoetbal', time: '10u – 11u' }],
   },
   {
     key: 'wo',
     label: 'Woensdag',
     shortLabel: 'Wo',
     slots: [
-      { slug: 'corribar', time: '14:00 – 17:00' },
-      { slug: 'basketbal', time: '15:00 – 18:00' },
+      { slug: 'corribar', time: '14u – 17u' },
+      { slug: 'basketbal', time: '15u – 18u' },
     ],
   },
   {
     key: 'do',
     label: 'Donderdag',
     shortLabel: 'Do',
-    slots: [{ slug: 'sportkar', time: '16:00 – 18:00' }],
+    slots: [{ slug: 'sportkar', time: '16u – 18u' }],
   },
   {
     key: 'vr',
     label: 'Vrijdag',
     shortLabel: 'Vr',
-    slots: [{ slug: 'basketbal', time: '16:00 – 19:00' }],
+    slots: [{ slug: 'basketbal', time: '16u – 19u' }],
   },
   {
     key: 'za',
     label: 'Zaterdag',
     shortLabel: 'Za',
     slots: [
-      { slug: 'corribar', time: '14:00 – 17:00' },
-      { slug: 'skate', time: '14:00 – 16:00' },
+      { slug: 'corribar', time: '14u – 17u' },
+      { slug: 'skate', time: '14u – 16u' },
     ],
   },
   {
     key: 'zo',
     label: 'Zondag',
     shortLabel: 'Zo',
-    slots: [{ slug: 'corrihop', time: '14:00 – 17:00' }],
-    note: 'Enkel op 28/06, 9/08 en 30/08 — zie kalender',
+    slots: [{ slug: 'corrihop', time: '14u – 17u' }],
+    note: 'Enkel 28/06, 9/08 en 30/08',
   },
 ]
 

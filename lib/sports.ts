@@ -13,7 +13,8 @@ export type SportSlug = (typeof SPORT_SLUGS)[number]
 export interface SportDefinition {
   slug: SportSlug
   label: string
-  /** Tailwind classes voor kalender-dots en badges */
+  /** Kortere weergave in het weekrooster */
+  scheduleLabel?: string
   dotClass: string
   badgeClass: string
   borderClass: string
@@ -23,6 +24,7 @@ export const SPORT_DEFINITIONS: Record<SportSlug, SportDefinition> = {
   wandelvoetbal: {
     slug: 'wandelvoetbal',
     label: 'Wandelvoetbal',
+    scheduleLabel: 'Wandel voetbal',
     dotClass: 'bg-emerald-500',
     badgeClass: 'bg-emerald-100 text-emerald-800',
     borderClass: 'border-emerald-500',
@@ -109,6 +111,15 @@ export function getSportDefinition(
 ): SportDefinition | undefined {
   const slug = resolveSportSlug(sportSlug, title)
   return slug ? SPORT_DEFINITIONS[slug] : undefined
+}
+
+export function getScheduleLabel(
+  sportSlug?: string | null,
+  title?: string
+): string {
+  const def = getSportDefinition(sportSlug, title)
+  if (!def) return title ?? ''
+  return def.scheduleLabel ?? def.label
 }
 
 export const SPORT_OPTIONS = SPORT_SLUGS.map((slug) => SPORT_DEFINITIONS[slug])

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { SUMMER_WEEKLY_SCHEDULE, SUMMER_SCHEDULE_PERIOD } from '@/lib/weekly-schedule'
-import { getSportDefinition, type SportSlug } from '@/lib/sports'
+import { getScheduleLabel, getSportDefinition, type SportSlug } from '@/lib/sports'
 
 interface WeeklyActivityScheduleProps {
   activeSport?: SportSlug
@@ -17,9 +17,21 @@ export function WeeklyActivitySchedule({ activeSport }: WeeklyActivitySchedulePr
       </div>
 
       <div className="bg-[#7ec8c8]/30 backdrop-blur-sm rounded-3xl p-4 md:p-6 border border-teal-200/60 shadow-lg">
-        <div className="hidden md:grid md:grid-cols-7 gap-3">
+        {/* Tablet: horizontaal scrollen i.p.v. gepropte 7 kolommen */}
+        <div className="hidden md:block xl:hidden -mx-1 overflow-x-auto pb-1">
+          <div className="flex gap-2 px-1 min-w-max">
+            {SUMMER_WEEKLY_SCHEDULE.map((day) => (
+              <div key={day.key} className="w-[8.75rem] flex-shrink-0">
+                <DayColumn day={day} activeSport={activeSport} compact />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Breed scherm: 7 kolommen met min-w-0 tegen overflow */}
+        <div className="hidden xl:grid xl:grid-cols-7 gap-2">
           {SUMMER_WEEKLY_SCHEDULE.map((day) => (
-            <DayColumn key={day.key} day={day} activeSport={activeSport} />
+            <DayColumn key={day.key} day={day} activeSport={activeSport} compact />
           ))}
         </div>
 
@@ -42,10 +54,12 @@ function DayColumn({
   day,
   activeSport,
   mobile = false,
+  compact = false,
 }: {
   day: (typeof SUMMER_WEEKLY_SCHEDULE)[number]
   activeSport?: SportSlug
   mobile?: boolean
+  compact?: boolean
 }) {
   const visibleSlots = activeSport
     ? day.slots.filter((slot) => slot.slug === activeSport)
@@ -58,31 +72,42 @@ function DayColumn({
 
   return (
     <div
-      className={`rounded-2xl bg-white/70 p-3 min-h-[120px] flex flex-col ${
-        mobile ? 'border border-teal-100' : ''
+      className={`rounded-2xl bg-white/70 flex flex-col min-w-0 ${
+        compact ? 'p-2 min-h-[7.5rem]' : mobile ? 'p-3 border border-teal-100' : 'p-3 min-h-[120px]'
       }`}
     >
-      <p className={`font-bold text-gray-800 mb-2 ${mobile ? 'text-base' : 'text-sm text-center'}`}>
+      <p
+        className={`font-bold text-gray-800 mb-2 shrink-0 ${
+          mobile ? 'text-base' : 'text-xs text-center'
+        }`}
+      >
         {mobile ? day.label : day.shortLabel}
       </p>
 
       {isEmptyDay ? (
         <p className="text-xs text-gray-400 flex-1 flex items-center justify-center text-center">—</p>
       ) : (
-        <ul className="space-y-2 flex-1">
+        <ul className="space-y-1.5 flex-1 min-w-0">
           {visibleSlots.map((slot) => {
             const sport = getSportDefinition(slot.slug)
             const href = `/activiteiten?sport=${slot.slug}`
+            const label = getScheduleLabel(slot.slug)
+
             return (
-              <li key={`${day.key}-${slot.slug}`}>
+              <li key={`${day.key}-${slot.slug}`} className="min-w-0">
                 <Link
                   href={href}
-                  className={`block rounded-xl px-2 py-2 text-center transition-transform hover:scale-[1.02] border-2 ${
+                  title={`${sport?.label ?? slot.slug} · ${slot.time}`}
+                  className={`block rounded-lg px-1.5 py-1.5 min-w-0 transition-transform hover:scale-[1.02] border-2 ${
                     sport?.borderClass ?? 'border-gray-200'
                   } ${sport?.badgeClass ?? 'bg-white'}`}
                 >
-                  <span className="block text-xs font-bold leading-tight">{sport?.label ?? slot.slug}</span>
-                  <span className="block text-[11px] mt-0.5 opacity-80">{slot.time}</span>
+                  <span className="block text-[10px] font-bold leading-snug break-words [overflow-wrap:anywhere]">
+                    {label}
+                  </span>
+                  <span className="block text-[9px] mt-0.5 leading-tight opacity-90 break-words">
+                    {slot.time}
+                  </span>
                 </Link>
               </li>
             )
@@ -91,7 +116,9 @@ function DayColumn({
       )}
 
       {day.note && (!activeSport || day.slots.some((s) => s.slug === activeSport)) && (
-        <p className="text-[10px] text-gray-500 mt-2 leading-snug">{day.note}</p>
+        <p className="text-[9px] text-gray-500 mt-1.5 leading-snug break-words [overflow-wrap:anywhere]">
+          {day.note}
+        </p>
       )}
     </div>
   )
