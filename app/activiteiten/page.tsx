@@ -11,7 +11,9 @@ import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { PromoGate, hasActivePromoFloatings } from '@/components/PromoGate'
 import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
+import { WeeklyActivitySchedule } from '@/components/WeeklyActivitySchedule'
 import { isSportSlug } from '@/lib/sports'
+import { isPromoActive, SUMMER_PROMO } from '@/lib/site-promos'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
@@ -48,6 +50,7 @@ export default async function ActiviteitenPage({ searchParams }: ActiviteitenPag
     (activity) => !activeSport || activity.sportSlug === activeSport
   )
   const showPromoFloatings = hasActivePromoFloatings()
+  const showWeekSchedule = isPromoActive(SUMMER_PROMO) && opkomendeRaw.length > 0
 
   return (
     <div className="page-background">
@@ -64,6 +67,8 @@ export default async function ActiviteitenPage({ searchParams }: ActiviteitenPag
           </Suspense>
 
           <PromoGate variant="floatings" anchorOverrides={{ summer: '#zomer-activiteiten' }} />
+
+          {showWeekSchedule && <WeeklyActivitySchedule activeSport={activeSport} />}
 
           <div className="mb-12" id="zomer-activiteiten">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Komende activiteiten</h2>
