@@ -433,6 +433,8 @@ export async function getPartners(supabase: SupabaseClient): Promise<Partner[]> 
   const { data, error } = await supabase
     .from('partners')
     .select('*')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true })
     .order('name', { ascending: true })
   
   if (error) throw error
