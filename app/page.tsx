@@ -8,10 +8,10 @@ import { PageSection } from '@/components/PageSection'
 import { PageContainer } from '@/components/PageContainer'
 import { LazyVideo } from '@/components/LazyVideo'
 import { createClient } from '@/lib/supabase/server'
-import { getEvenementen, getZones, getCorristories } from '@/lib/database'
+import { getEvenementen, getZones } from '@/lib/database'
 import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
 import { isFestEvent } from '@/lib/site-promos'
-import type { Evenement, Zone, Corristory } from '@/types'
+import type { Evenement, Zone } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -23,12 +23,10 @@ export default async function HomePage() {
   // Server-side data fetching with parallel requests
   let evenementen: Evenement[] = []
   let zones: Zone[] = []
-  let corristories: Corristory[] = []
-  
   try {
     const supabase = await createClient()
     // Fetch all data in parallel to reduce total request time
-    const [evenementenData, zonesData, corristoriesData] = await Promise.all([
+    const [evenementenData, zonesData] = await Promise.all([
       getEvenementen(supabase).catch(err => {
         console.error('Error loading evenementen:', err)
         return []
@@ -37,14 +35,9 @@ export default async function HomePage() {
         console.error('Error loading zones:', err)
         return []
       }),
-      getCorristories(supabase).catch(err => {
-        console.error('Error loading corristories:', err)
-        return []
-      })
     ])
     evenementen = evenementenData
     zones = zonesData
-    corristories = corristoriesData
   } catch (error) {
     // Log error but don't crash the page
     console.error('Error initializing Supabase client:', error)

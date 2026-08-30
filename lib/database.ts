@@ -172,6 +172,32 @@ export const createAgendaItem = createEvenement
 export const updateAgendaItem = updateEvenement
 export const deleteAgendaItem = deleteEvenement
 
+function dedupeCorristories(stories: Corristory[]): Corristory[] {
+  const byKey = new Map<string, Corristory>()
+
+  for (const story of stories) {
+    const title = (story.title || '').trim().toLowerCase()
+    const author = (story.author_name || 'anoniem').trim().toLowerCase()
+    const key = `${title}|${author}`
+    const existing = byKey.get(key)
+    if (!existing) {
+      byKey.set(key, story)
+      continue
+    }
+    const storyTime = story.created_at ? new Date(story.created_at).getTime() : 0
+    const existingTime = existing.created_at ? new Date(existing.created_at).getTime() : 0
+    if (storyTime >= existingTime) {
+      byKey.set(key, story)
+    }
+  }
+
+  return Array.from(byKey.values()).sort((a, b) => {
+    const aTime = a.created_at ? new Date(a.created_at).getTime() : 0
+    const bTime = b.created_at ? new Date(b.created_at).getTime() : 0
+    return bTime - aTime
+  })
+}
+
 export async function getCorristories(supabase: SupabaseClient): Promise<Corristory[]> {
   const { data, error } = await supabase
     .from('corristories')
@@ -180,7 +206,7 @@ export async function getCorristories(supabase: SupabaseClient): Promise<Corrist
     .order('created_at', { ascending: false })
   
   if (error) throw error
-  return data || []
+  return dedupeCorristories(data || [])
 }
 
 export async function createCorristory(supabase: SupabaseClient, story: Partial<Corristory>): Promise<Corristory> {
