@@ -65,14 +65,11 @@ export function IntroAnimation() {
           return
         }
 
-        // Get public URL for the most recent file
-        const { data: { publicUrl }, error: urlError } = supabase.storage
+        const { data: { publicUrl } } = supabase.storage
           .from(bucketName)
           .getPublicUrl(files[0].name)
 
-        if (urlError) {
-          console.error('❌ Error getting public URL:', urlError)
-          // Video not available, don't show container
+        if (!publicUrl) {
           setShowContainer(false)
           return
         }

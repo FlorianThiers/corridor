@@ -1,12 +1,23 @@
 import { createBrowserClient } from '@supabase/ssr'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-// Singleton pattern to prevent multiple client instances
-let browserClient: ReturnType<typeof createBrowserClient> | null = null
+/** Survives Next.js HMR — module-level `let` resets but the old client keeps the auth lock. */
+const GLOBAL_KEY = '__corridor_supabase_browser_client__'
 
-export function createClient() {
-  // Return existing client if available (singleton pattern)
-  if (browserClient) {
-    return browserClient
+type BrowserClient = SupabaseClient
+
+function getGlobalClient(): BrowserClient | undefined {
+  return (globalThis as typeof globalThis & { [GLOBAL_KEY]?: BrowserClient })[GLOBAL_KEY]
+}
+
+function setGlobalClient(client: BrowserClient) {
+  ;(globalThis as typeof globalThis & { [GLOBAL_KEY]?: BrowserClient })[GLOBAL_KEY] = client
+}
+
+export function createClient(): BrowserClient {
+  const existing = getGlobalClient()
+  if (existing) {
+    return existing
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -18,6 +29,7 @@ export function createClient() {
     )
   }
 
-  browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey)
-  return browserClient
+  const client = createBrowserClient(supabaseUrl, supabaseAnonKey)
+  setGlobalClient(client)
+  return client
 }

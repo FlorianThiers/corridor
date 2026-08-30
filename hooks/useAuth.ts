@@ -1,17 +1,27 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import type { User as UserProfile } from '@/types'
+
+const supabase = createClient()
+
+function isBenignAuthError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const message = 'message' in error ? String(error.message) : ''
+  const name = 'name' in error ? String(error.name) : ''
+  return (
+    name.includes('LockAcquireTimeout') ||
+    message.includes('LockManager lock') ||
+    message.includes('refresh_token')
+  )
+}
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
-  
-  // Memoize supabase client to avoid recreating on every render
-  const supabase = useMemo(() => createClient(), [])
 
   async function loadUserProfile(userId: string) {
     try {
@@ -22,8 +32,6 @@ export function useAuth() {
         .single()
 
       if (error) {
-        // If user profile doesn't exist, it might be because email is not confirmed
-        // or user record hasn't been created yet
         console.warn('User profile not found:', error.message)
         setUserProfile(null)
         return
@@ -40,61 +48,59 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true
 
-    // Get initial user
-    supabase.auth.getUser().then(({ data: { user }, error }: { data: { user: User | null }, error: any }) => {
-      if (!mounted) return
-      
-      // Ignore refresh token errors - they're expected when tokens are invalid/expired
-      if (error && error.message?.includes('refresh_token')) {
-        console.warn('Refresh token error (expected if not logged in):', error.message)
-        setUser(null)
-        setLoading(false)
-        return
-      }
-      
-      setUser(user)
-      if (user) {
-        loadUserProfile(user.id)
-      } else {
-        setLoading(false)
-      }
-    }).catch((error: any) => {
-      // Silently handle auth errors (user might not be logged in)
-      if (!mounted) return
-      if (error?.message?.includes('refresh_token') || error?.message?.includes('token')) {
-        console.warn('Auth token error (expected if not logged in):', error.message)
-      } else {
-        console.error('Unexpected auth error:', error)
-      }
-      setUser(null)
-      setLoading(false)
-    })
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: string, session: { user: User | null } | null) => {
+    supabase.auth
+      .getUser()
+      .then(({ data: { user }, error }) => {
         if (!mounted) return
-        setUser(session?.user ?? null)
-        if (session?.user) {
-          await loadUserProfile(session.user.id)
+
+        if (error && isBenignAuthError(error)) {
+          setUser(null)
+          setLoading(false)
+          return
+        }
+
+        if (error) {
+          console.error('Unexpected auth error:', error)
+          setUser(null)
+          setLoading(false)
+          return
+        }
+
+        setUser(user)
+        if (user) {
+          void loadUserProfile(user.id)
         } else {
-          setUserProfile(null)
           setLoading(false)
         }
-      }
-    )
+      })
+      .catch((error: unknown) => {
+        if (!mounted) return
+        if (!isBenignAuthError(error)) {
+          console.error('Unexpected auth error:', error)
+        }
+        setUser(null)
+        setLoading(false)
+      })
 
-    // Listen for custom user profile update events
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        await loadUserProfile(session.user.id)
+      } else {
+        setUserProfile(null)
+        setLoading(false)
+      }
+    })
+
     const handleUserProfileUpdate = (event: Event) => {
       const customEvent = event as CustomEvent<{ userId?: string; newRole?: string }>
-      // Get current user from state
-      supabase.auth.getUser().then(({ data: { user: currentUser } }: { data: { user: User | null } }) => {
+      supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
         if (currentUser && mounted) {
-          // If event specifies a userId and it matches current user, refresh
-          // Otherwise refresh anyway to be safe
           if (!customEvent.detail?.userId || customEvent.detail.userId === currentUser.id) {
-            console.log('Refreshing user profile due to update event')
-            loadUserProfile(currentUser.id)
+            void loadUserProfile(currentUser.id)
           }
         }
       })
@@ -107,11 +113,12 @@ export function useAuth() {
       subscription.unsubscribe()
       window.removeEventListener('userProfileUpdated', handleUserProfileUpdate)
     }
-  }, [supabase])
+  }, [])
 
   const refreshUserProfile = async () => {
-    // Get fresh user from auth instead of relying on state
-    const { data: { user: currentUser } } = await supabase.auth.getUser()
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser()
     if (currentUser) {
       await loadUserProfile(currentUser.id)
     }

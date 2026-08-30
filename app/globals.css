@@ -496,3 +496,66 @@ section[class*="section-gradient"] + section[class*="section-gradient"] {
     position: absolute !important;
     z-index: 10004 !important;
 }
+
+/* History page — continuous photo marquee */
+.history-marquee {
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.history-marquee-track {
+    width: max-content;
+    animation: history-marquee-left linear infinite;
+}
+
+.history-marquee-item:hover {
+    z-index: 20;
+}
+
+.history-marquee:hover .history-marquee-track {
+    animation-play-state: paused;
+}
+
+.history-marquee-track-reverse {
+    animation-name: history-marquee-right;
+}
+
+@keyframes history-marquee-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+@keyframes history-marquee-right {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .history-marquee-track {
+        animation: none;
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Home hero — scroll hint */
+@keyframes hero-scroll-hint-bounce {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.85;
+    }
+    50% {
+        transform: translateY(6px);
+        opacity: 1;
+    }
+}
+
+.hero-scroll-hint {
+    animation: hero-scroll-hint-bounce 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-scroll-hint {
+        animation: none;
+    }
+}

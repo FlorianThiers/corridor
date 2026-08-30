@@ -197,6 +197,39 @@ export function HeroSection() {
 
         {/* Bridge visual elements */}
         <div id="bridge-silhouette" className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-800/30 to-transparent" />
+
+        <div className="absolute bottom-8 left-1/2 z-30 -translate-x-1/2">
+          <button
+            type="button"
+            onClick={() => {
+              const target =
+                document.querySelector<HTMLElement>('[id$="-promo"]') ??
+                document.getElementById('intro')
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                return
+              }
+              window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' })
+            }}
+            className="hero-scroll-hint flex flex-col items-center gap-1 rounded-full border border-white/30 bg-black/25 px-3 py-2 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/40 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+            aria-label="Scroll naar beneden"
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]">Meer</span>
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M12 5v14" />
+              <path d="m6 13 6 6 6-6" />
+            </svg>
+          </button>
+        </div>
       </section>
     </>
   )
