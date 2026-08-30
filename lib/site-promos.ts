@@ -10,6 +10,8 @@ export interface SitePromo {
   ctaLabel: string
   signupHref?: string
   signupLabel?: string
+  secondarySignupHref?: string
+  secondarySignupLabel?: string
   activeUntil: string
   imageBg: string
   borderClass: string
@@ -50,6 +52,8 @@ export const FEST_PROMO: SitePromo = {
   ctaLabel: 'Bekijk het programma',
   signupHref: 'https://forms.gle/VFoer92h8heLphWA8',
   signupLabel: 'Schrijf je in',
+  secondarySignupHref: 'https://shop.stamhoofd.be/track-tracks-x-corri-d-or',
+  secondarySignupLabel: 'Silent disco run — tickets (€12)',
   activeUntil: '2026-09-27T00:00:00+02:00',
   imageBg: '#f5e642',
   borderClass: 'border-yellow-200/60',
@@ -58,6 +62,9 @@ export const FEST_PROMO: SitePromo = {
   floatingPosition: 'right',
   anchorId: 'corri-dor-fest',
 }
+
+export const TRACK_TRACKS_TICKET_URL =
+  'https://shop.stamhoofd.be/track-tracks-x-corri-d-or'
 
 /** Homepage-volgorde: eerst wat het dichtst bij ligt in de tijd */
 export const HOMEPAGE_PROMOS = [SUMMER_PROMO, FEST_PROMO] as const

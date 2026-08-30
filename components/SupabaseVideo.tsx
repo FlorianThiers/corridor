@@ -43,18 +43,14 @@ export function SupabaseVideo({
         setIsLoading(true)
         
         if (fileName) {
-          // Use specific file name
-          const { data: { publicUrl }, error } = supabase.storage
+          const { data: { publicUrl } } = supabase.storage
             .from(bucket)
             .getPublicUrl(fileName)
-          
-          if (error) {
-            console.error('Error getting public URL:', error)
-            if (fallbackUrl) {
-              setVideoUrl(fallbackUrl)
-            }
-          } else {
+
+          if (publicUrl) {
             setVideoUrl(publicUrl)
+          } else if (fallbackUrl) {
+            setVideoUrl(fallbackUrl)
           }
           setIsLoading(false)
           return
