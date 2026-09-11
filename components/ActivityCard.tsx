@@ -1,5 +1,6 @@
 import { getSportDefinition } from '@/lib/sports'
 import type { GroupedActiviteit } from '@/lib/agenda-helpers'
+import { formatEventDate, formatEventTime } from '@/lib/format-event-time'
 
 interface ActivityCardProps {
   activity: GroupedActiviteit
@@ -8,8 +9,6 @@ interface ActivityCardProps {
 
 export function ActivityCard({ activity, variant = 'upcoming' }: ActivityCardProps) {
   const slot = activity.nextOccurrence
-  const slotDate = slot ? new Date(slot.start_datetime) : null
-  const slotEnd = slot?.end_datetime ? new Date(slot.end_datetime) : null
   const sport = getSportDefinition(activity.sportSlug, activity.title)
   const isPast = variant === 'past'
 
@@ -36,13 +35,11 @@ export function ActivityCard({ activity, variant = 'upcoming' }: ActivityCardPro
         <p className="text-gray-700 text-sm mb-3">{activity.description}</p>
       )}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
-        {slotDate && (
+        {slot && (
           <span>
-            {isPast ? 'Laatste' : 'Volgende'}: {slotDate.toLocaleDateString('nl-NL')} ·{' '}
-            {slotDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
-            {slotEnd
-              ? ` – ${slotEnd.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`
-              : ''}
+            {isPast ? 'Laatste' : 'Volgende'}: {formatEventDate(slot.start_datetime)} ·{' '}
+            {formatEventTime(slot.start_datetime)}
+            {slot.end_datetime ? ` – ${formatEventTime(slot.end_datetime)}` : ''}
           </span>
         )}
         {activity.zoneName && <span>📍 {activity.zoneName}</span>}

@@ -1,5 +1,6 @@
 import type { Evenement } from '@/types'
 import { EVENEMENT_KIND_LABELS, isEvenementKind } from '@/lib/agenda-helpers'
+import { formatEventDate, formatEventTime } from '@/lib/format-event-time'
 import { getSportDefinition } from '@/lib/sports'
 
 interface EventCardProps {
@@ -35,8 +36,6 @@ function renderDescriptionWithLinks(text: string) {
 }
 
 export function EventCard({ event }: EventCardProps) {
-  const startDate = new Date(event.start_datetime)
-  const endDate = event.end_datetime ? new Date(event.end_datetime) : null
   const isCorrigirls = event.for_girls
   const isHighlight = Boolean(event.is_highlight)
   const kindLabel = EVENEMENT_KIND_LABELS[event.kind ?? 'evenement']
@@ -101,10 +100,10 @@ export function EventCard({ event }: EventCardProps) {
         </a>
       )}
       <div className="flex items-center gap-4 text-xs text-gray-600">
-        <span>📅 {startDate.toLocaleDateString('nl-NL')}</span>
+        <span>📅 {formatEventDate(event.start_datetime)}</span>
         <span>
-          🕐 {startDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
-          {endDate ? ` - ${endDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}` : ''}
+          🕐 {formatEventTime(event.start_datetime)}
+          {event.end_datetime ? ` - ${formatEventTime(event.end_datetime)}` : ''}
         </span>
         {event.zones && <span>📍 {event.zones.name}</span>}
       </div>
