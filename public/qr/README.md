@@ -1,16 +1,10 @@
-# Zone QR codes
+# Corridor zone QR-codes
 
-Generated for print / stickers (Corridor pink SVG + dark PNG).
+Gegenereerd met `npm run generate:qr` (`scripts/generate-zone-qrs.mjs`).
 
-| File | URL |
-|------|-----|
-| `zones.png` / `.svg` | https://corridor.gent/zones |
-| `zone-1.png` … `zone-12.png` | https://corridor.gent/zones/1 … /12 |
+| Bestand | URL | Kleur |
+|---------|-----|-------|
+| `zones.png` / `.svg` | https://corridor.gent/zones | pastel-regenboog |
+| `zone-1` … `zone-12` | https://corridor.gent/zones/1 … /12 | zone-omslag accent (zie `zone-colors.json`) |
 
-Admin print sheet: `/beheer/qr`
-
-Regenerate:
-
-```bash
-node --input-type=module -e "/* see git history / scripts */"
-```
+Print-sheet: `/beheer/qr` op de live site.
