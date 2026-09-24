@@ -3,7 +3,6 @@ import { getZones } from '@/lib/database'
 import type { Zone } from '@/types'
 import { PageSection } from '@/components/PageSection'
 import { PageContainer } from '@/components/PageContainer'
-import { PageTitle } from '@/components/PageTitle'
 import { ZoneCard } from '@/components/ZoneCard'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
@@ -27,11 +26,11 @@ export default async function ZonesPage() {
       <BackgroundImage />
       <PageSection className="min-h-screen">
         <PageContainer>
-          <PageTitle>Zones</PageTitle>
-          <p className="mx-auto mb-10 max-w-2xl text-center text-gray-700">
-            Klik op een zone voor foto&apos;s en details. Via QR kom je hier of rechtstreeks op een zone terecht.
+          <h1 className="mb-2 text-center text-2xl font-bold text-gray-800 md:text-3xl">Zones</h1>
+          <p className="mx-auto mb-8 max-w-xl text-center text-sm text-gray-600">
+            Klik op een zone voor details en foto&apos;s.
           </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {zones.length === 0 ? (
               <p className="text-gray-600 text-center col-span-full">Geen zones gevonden.</p>
             ) : (
