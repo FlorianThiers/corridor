@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="nl">
       <head>
         <link rel="icon" type="image/webp" href="/LogoCorridor.webp" />
-        <link rel="apple-touch-icon" href="/LogoCorridor.webp" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* GSAP is loaded via npm package, no need for CDN scripts */}
       </head>
       <body className="overflow-x-hidden">
