@@ -200,6 +200,25 @@ export async function reviewZonePhoto(
   return data
 }
 
+export async function updateZonePhoto(
+  supabase: SupabaseClient,
+  id: string,
+  updates: Partial<Pick<ZonePhoto, 'caption' | 'status' | 'public_url' | 'storage_path'>>
+): Promise<ZonePhoto> {
+  const { data, error } = await supabase
+    .from('zone_photos')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export async function deleteZonePhoto(supabase: SupabaseClient, id: string): Promise<void> {
   const { error } = await supabase
     .from('zone_photos')

@@ -14,6 +14,10 @@ export function AdminEvents() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Evenement | null>(null)
   const [error, setError] = useState('')
+  const [timeFilter, setTimeFilter] = useState<'upcoming' | 'past' | 'all'>('upcoming')
+  const [kindFilter, setKindFilter] = useState<'all' | EvenementKind>('all')
+  const [zoneFilter, setZoneFilter] = useState<string>('all')
+  const [search, setSearch] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
@@ -95,15 +99,94 @@ export function AdminEvents() {
     return <p className="text-gray-600 text-center">Evenementen worden geladen...</p>
   }
 
+  const now = Date.now()
+  const filtered = events.filter((event) => {
+    const start = new Date(event.start_datetime).getTime()
+    if (timeFilter === 'upcoming' && start < now) return false
+    if (timeFilter === 'past' && start >= now) return false
+    if (kindFilter !== 'all' && (event.kind || 'evenement') !== kindFilter) return false
+    if (zoneFilter !== 'all') {
+      if (zoneFilter === 'none' && event.zone_id) return false
+      if (zoneFilter !== 'none' && event.zone_id !== zoneFilter) return false
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase()
+      const hay = `${event.title} ${event.description || ''}`.toLowerCase()
+      if (!hay.includes(q)) return false
+    }
+    return true
+  })
+
+  const sorted = [...filtered].sort((a, b) => {
+    const da = new Date(a.start_datetime).getTime()
+    const db = new Date(b.start_datetime).getTime()
+    return timeFilter === 'past' ? db - da : da - db
+  })
+
+  const filterBtn = (active: boolean) =>
+    `px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+      active ? 'bg-pink-500 text-white' : 'bg-white/70 text-gray-700 hover:bg-white'
+    }`
+
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <button
           onClick={() => openModal()}
           className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium"
         >
           + Nieuw item
         </button>
+      </div>
+
+      <div className="mb-6 space-y-3 rounded-3xl bg-white/50 p-4 backdrop-blur-sm">
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={filterBtn(timeFilter === 'upcoming')} onClick={() => setTimeFilter('upcoming')}>
+            Toekomst
+          </button>
+          <button type="button" className={filterBtn(timeFilter === 'past')} onClick={() => setTimeFilter('past')}>
+            Verleden
+          </button>
+          <button type="button" className={filterBtn(timeFilter === 'all')} onClick={() => setTimeFilter('all')}>
+            Alles
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={filterBtn(kindFilter === 'all')} onClick={() => setKindFilter('all')}>
+            Alle types
+          </button>
+          <button type="button" className={filterBtn(kindFilter === 'evenement')} onClick={() => setKindFilter('evenement')}>
+            Evenementen
+          </button>
+          <button type="button" className={filterBtn(kindFilter === 'activiteit')} onClick={() => setKindFilter('activiteit')}>
+            Activiteiten
+          </button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Zoek op titel…"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          />
+          <select
+            value={zoneFilter}
+            onChange={(e) => setZoneFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="all">Alle zones</option>
+            <option value="none">Zonder zone</option>
+            {zones.map((zone) => (
+              <option key={zone.id} value={zone.id}>
+                Zone {zone.zone_number}: {zone.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="text-xs text-gray-600">
+          {sorted.length} van {events.length} items
+        </p>
       </div>
 
       {error && (
@@ -113,10 +196,10 @@ export function AdminEvents() {
       )}
 
       <div className="space-y-4">
-        {events.length === 0 ? (
-          <p className="text-gray-600 text-center">Geen evenementen gevonden.</p>
+        {sorted.length === 0 ? (
+          <p className="text-gray-600 text-center">Geen items voor deze filters.</p>
         ) : (
-          events.map(event => (
+          sorted.map(event => (
             <div key={event.id} className="relative">
               <EventCard event={event} />
               <div className="mt-2 flex gap-2">

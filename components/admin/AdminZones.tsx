@@ -11,6 +11,7 @@ import {
   reviewZonePhoto,
   deleteZonePhoto,
   createZonePhoto,
+  updateZonePhoto,
 } from '@/lib/database'
 import { ZoneCard } from '@/components/ZoneCard'
 import type { Zone, ZonePhoto } from '@/types'
@@ -26,12 +27,14 @@ function parseFieldLabels(raw: string): string[] {
 
 export function AdminZones() {
   const [zones, setZones] = useState<Zone[]>([])
-  const [pendingPhotos, setPendingPhotos] = useState<ZonePhoto[]>([])
+  const [allPhotos, setAllPhotos] = useState<ZonePhoto[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingZone, setEditingZone] = useState<Zone | null>(null)
+  const [photosZone, setPhotosZone] = useState<Zone | null>(null)
   const [error, setError] = useState('')
   const [photoMsg, setPhotoMsg] = useState('')
+  const [editingCaptionId, setEditingCaptionId] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -44,10 +47,10 @@ export function AdminZones() {
       const zonesData = await getZones(supabase)
       setZones(zonesData)
       try {
-        const pending = await getZonePhotosForAdmin(supabase, { status: 'pending' })
-        setPendingPhotos(pending)
+        const photos = await getZonePhotosForAdmin(supabase, { status: 'all' })
+        setAllPhotos(photos)
       } catch {
-        setPendingPhotos([])
+        setAllPhotos([])
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Fout bij laden van data')
@@ -162,6 +165,11 @@ export function AdminZones() {
     return <p className="text-gray-600 text-center">Zones worden geladen...</p>
   }
 
+  const pendingPhotos = allPhotos.filter((p) => p.status === 'pending')
+  const photosForOpenZone = photosZone
+    ? allPhotos.filter((p) => p.zone_id === photosZone.id)
+    : []
+
   return (
     <div>
       <div className="mb-6">
@@ -242,15 +250,25 @@ export function AdminZones() {
         {zones.length === 0 ? (
           <p className="text-gray-600 text-center col-span-full">Geen zones gevonden.</p>
         ) : (
-          zones.map((zone) => (
+          zones.map((zone) => {
+            const count = allPhotos.filter((p) => p.zone_id === zone.id).length
+            return (
             <div key={zone.id} className="relative">
               <ZoneCard zone={zone} asLink={false} />
+              <p className="mt-1 text-center text-xs text-gray-600">{count} foto&apos;s in galerij</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={() => openModal(zone)}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
                 >
                   Bewerken
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPhotosZone(zone)}
+                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm"
+                >
+                  Foto&apos;s ({count})
                 </button>
                 <label className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-sm cursor-pointer">
                   Omslag
@@ -301,9 +319,138 @@ export function AdminZones() {
                 </button>
               </div>
             </div>
-          ))
+            )
+          })
         )}
       </div>
+
+      {photosZone && (
+        <div
+          className="modal active"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setPhotosZone(null)
+          }}
+        >
+          <div className="modal-content max-w-4xl">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h2 className="text-2xl font-bold text-gray-800">
+                Foto&apos;s · Zone {photosZone.zone_number}: {photosZone.name}
+              </h2>
+              <button type="button" onClick={() => setPhotosZone(null)} className="text-gray-500 hover:text-gray-700">
+                Sluiten
+              </button>
+            </div>
+            <label className="mb-4 inline-flex cursor-pointer rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white hover:bg-pink-600">
+              + Foto toevoegen
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) void handleAdminGalleryUpload(photosZone, f)
+                  e.target.value = ''
+                }}
+              />
+            </label>
+            {photosForOpenZone.length === 0 ? (
+              <p className="text-sm text-gray-600">Nog geen foto&apos;s voor deze zone.</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {photosForOpenZone.map((photo) => (
+                  <div key={photo.id} className="rounded-2xl border bg-white p-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photo.public_url} alt="" className="mb-2 aspect-video w-full rounded-lg object-cover" />
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">
+                      {photo.status}
+                      {photosZone.cover_url === photo.public_url ? ' · omslag' : ''}
+                    </p>
+                    {editingCaptionId === photo.id ? (
+                      <form
+                        className="mb-2 flex gap-2"
+                        onSubmit={async (e) => {
+                          e.preventDefault()
+                          const fd = new FormData(e.currentTarget)
+                          await updateZonePhoto(supabase, photo.id, {
+                            caption: (fd.get('caption') as string) || null,
+                          })
+                          setEditingCaptionId(null)
+                          await loadData()
+                        }}
+                      >
+                        <input
+                          name="caption"
+                          defaultValue={photo.caption || ''}
+                          className="flex-1 rounded border px-2 py-1 text-sm"
+                          placeholder="Bijschrift"
+                        />
+                        <button type="submit" className="rounded bg-blue-500 px-2 py-1 text-xs text-white">OK</button>
+                      </form>
+                    ) : (
+                      <p className="mb-2 text-sm text-gray-700">{photo.caption || 'Geen bijschrift'}</p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="rounded bg-blue-500 px-2 py-1 text-xs text-white"
+                        onClick={() => setEditingCaptionId(photo.id)}
+                      >
+                        Bijschrift
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded bg-violet-500 px-2 py-1 text-xs text-white"
+                        onClick={async () => {
+                          await updateZone(supabase, photosZone.id, { cover_url: photo.public_url })
+                          setPhotoMsg(`Omslag gezet voor zone ${photosZone.zone_number}`)
+                          await loadData()
+                        }}
+                      >
+                        Als omslag
+                      </button>
+                      {photo.status === 'pending' && (
+                        <button
+                          type="button"
+                          className="rounded bg-green-500 px-2 py-1 text-xs text-white"
+                          onClick={async () => {
+                            await reviewZonePhoto(supabase, photo.id, 'approved')
+                            await loadData()
+                          }}
+                        >
+                          Goedkeuren
+                        </button>
+                      )}
+                      {photo.status === 'approved' && (
+                        <button
+                          type="button"
+                          className="rounded bg-amber-500 px-2 py-1 text-xs text-white"
+                          onClick={async () => {
+                            await reviewZonePhoto(supabase, photo.id, 'rejected')
+                            await loadData()
+                          }}
+                        >
+                          Verbergen
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="rounded bg-red-500 px-2 py-1 text-xs text-white"
+                        onClick={async () => {
+                          if (!confirm('Foto wissen?')) return
+                          await deleteZonePhoto(supabase, photo.id)
+                          await loadData()
+                        }}
+                      >
+                        Wis
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {isModalOpen && (
         <div
