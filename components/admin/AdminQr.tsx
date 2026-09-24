@@ -90,13 +90,19 @@ export function AdminQr() {
       <p className="mb-6 text-center text-gray-600">
         Printklare QR-codes: algemeen zwart, zones in omslagkleur, Corri Arts in pastel-regenboog.
       </p>
-      <div className="mb-8 rounded-3xl bg-white/60 p-4 text-center print:hidden">
+      <div className="mb-8 flex flex-wrap items-center justify-center gap-3 rounded-3xl bg-white/60 p-4 print:hidden">
+        <a
+          href="/beheer/qr/poster"
+          className="rounded-lg bg-pink-500 px-6 py-3 font-medium text-white hover:bg-pink-600"
+        >
+          A4 poster · foto&apos;s uploaden (PDF)
+        </a>
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded-lg bg-pink-500 px-6 py-3 font-medium text-white hover:bg-pink-600"
+          className="rounded-lg bg-violet-500 px-6 py-3 font-medium text-white hover:bg-violet-600"
         >
-          Printblad openen
+          Alle QR&apos;s printen
         </button>
       </div>
 
