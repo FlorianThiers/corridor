@@ -151,7 +151,7 @@ export function Navigation() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    <span>Evenementen</span>
+                    <span>Agenda</span>
                   </Link>
                   <Link href="/beheer/corristories" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/beheer/corristories') ? 'active' : ''}`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,6 +164,12 @@ export function Navigation() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     <span>Zones</span>
+                  </Link>
+                  <Link href="/beheer/geschiedenis" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/beheer/geschiedenis') ? 'active' : ''}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Geschiedenis</span>
                   </Link>
                   <Link href="/beheer/gebruikers" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/beheer/gebruikers') ? 'active' : ''}`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

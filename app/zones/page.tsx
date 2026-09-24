@@ -28,6 +28,9 @@ export default async function ZonesPage() {
       <PageSection className="min-h-screen">
         <PageContainer>
           <PageTitle>Zones</PageTitle>
+          <p className="mx-auto mb-10 max-w-2xl text-center text-gray-700">
+            Klik op een zone voor foto&apos;s en details. Via QR kom je hier of rechtstreeks op een zone terecht.
+          </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {zones.length === 0 ? (
               <p className="text-gray-600 text-center col-span-full">Geen zones gevonden.</p>
