@@ -20,9 +20,39 @@ export async function getZones(supabase: SupabaseClient): Promise<Zone[]> {
     .from('zones')
     .select('*')
     .order('zone_number', { ascending: true })
-  
+
   if (error) throw error
-  return data || []
+  const zones = data || []
+
+  // Enrich missing covers with newest approved zone photo
+  try {
+    const missing = zones.filter((z) => !z.cover_url).map((z) => z.id)
+    if (missing.length === 0) return zones
+
+    const { data: photos } = await supabase
+      .from('zone_photos')
+      .select('zone_id, public_url, created_at')
+      .in('zone_id', missing)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+
+    if (!photos?.length) return zones
+
+    const firstByZone = new Map<string, string>()
+    for (const p of photos) {
+      if (!firstByZone.has(p.zone_id)) {
+        firstByZone.set(p.zone_id, p.public_url)
+      }
+    }
+
+    return zones.map((z) =>
+      z.cover_url || !firstByZone.has(z.id)
+        ? z
+        : { ...z, cover_url: firstByZone.get(z.id) }
+    )
+  } catch {
+    return zones
+  }
 }
 
 export async function getZone(supabase: SupabaseClient, zoneId: string | number): Promise<Zone> {

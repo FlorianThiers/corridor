@@ -125,6 +125,9 @@ export function AdminZones() {
       if (justUploaded) {
         await reviewZonePhoto(supabase, justUploaded.id, 'approved')
       }
+      if (!zone.cover_url) {
+        await updateZone(supabase, zone.id, { cover_url: publicUrl })
+      }
       setPhotoMsg(`Foto toegevoegd aan zone ${zone.zone_number}`)
       await loadData()
     } catch (err: unknown) {
@@ -197,6 +200,11 @@ export function AdminZones() {
                     className="flex-1 rounded-lg bg-green-500 px-2 py-1 text-sm text-white"
                     onClick={async () => {
                       await reviewZonePhoto(supabase, photo.id, 'approved')
+                      const zoneId = photo.zone_id
+                      const zoneRow = zones.find((z) => z.id === zoneId)
+                      if (zoneRow && !zoneRow.cover_url) {
+                        await updateZone(supabase, zoneId, { cover_url: photo.public_url })
+                      }
                       await loadData()
                     }}
                   >
@@ -236,7 +244,7 @@ export function AdminZones() {
         ) : (
           zones.map((zone) => (
             <div key={zone.id} className="relative">
-              <ZoneCard zone={zone} />
+              <ZoneCard zone={zone} asLink={false} />
               <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={() => openModal(zone)}
