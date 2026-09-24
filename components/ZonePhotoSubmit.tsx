@@ -22,6 +22,10 @@ export function ZonePhotoSubmit({ zoneId, zoneNumber }: ZonePhotoSubmitProps) {
 
   const emailVerified = Boolean(user?.email_confirmed_at)
 
+  const openLogin = () => {
+    window.dispatchEvent(new CustomEvent('openLoginModal'))
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
@@ -29,6 +33,7 @@ export function ZonePhotoSubmit({ zoneId, zoneNumber }: ZonePhotoSubmitProps) {
 
     if (!user) {
       setError('Log eerst in om een foto te uploaden.')
+      openLogin()
       return
     }
     if (!emailVerified) {
@@ -95,10 +100,18 @@ export function ZonePhotoSubmit({ zoneId, zoneNumber }: ZonePhotoSubmitProps) {
 
   if (!user) {
     return (
-      <p className="text-sm text-gray-700">
-        Open het login-menu rechtsboven om een account te maken of in te loggen.
-        Zone {zoneNumber} · verplicht geverifieerd e-mailadres.
-      </p>
+      <div className="space-y-4">
+        <p className="text-sm text-gray-700">
+          Maak of open een account met geverifieerd e-mailadres om een foto voor zone {zoneNumber} in te dienen.
+        </p>
+        <button
+          type="button"
+          onClick={openLogin}
+          className="w-full rounded-lg bg-pink-500 px-4 py-3 font-medium text-white hover:bg-pink-600"
+        >
+          Inloggen / registreren
+        </button>
+      </div>
     )
   }
 

@@ -99,6 +99,17 @@ export default async function ZoneDetailPage({ params }: PageProps) {
             </ul>
           )}
 
+          <div
+            id="foto-toevoegen"
+            className="mx-auto mb-8 max-w-xl rounded-3xl border-2 border-pink-300 bg-white/80 p-6 shadow-sm backdrop-blur-sm"
+          >
+            <h2 className="mb-2 text-xl font-bold text-gray-800">Foto toevoegen</h2>
+            <p className="mb-4 text-sm text-gray-600">
+              Log in met een geverifieerd account. Je foto verschijnt pas na goedkeuring door het Corridor-team.
+            </p>
+            <ZonePhotoSubmit zoneId={zone.id} zoneNumber={zone.zone_number} />
+          </div>
+
           {gallery.length === 0 ? (
             <p className="mb-12 text-center text-gray-600">Nog geen foto&apos;s voor deze zone.</p>
           ) : (
@@ -121,14 +132,6 @@ export default async function ZoneDetailPage({ params }: PageProps) {
               ))}
             </div>
           )}
-
-          <div className="mx-auto max-w-xl rounded-3xl bg-white/60 p-6 backdrop-blur-sm">
-            <h2 className="mb-2 text-xl font-bold text-gray-800">Foto toevoegen</h2>
-            <p className="mb-4 text-sm text-gray-600">
-              Log in met een geverifieerd account. Je foto verschijnt pas na goedkeuring door het Corridor-team.
-            </p>
-            <ZonePhotoSubmit zoneId={zone.id} zoneNumber={zone.zone_number} />
-          </div>
         </PageContainer>
       </PageSection>
       <Footer />

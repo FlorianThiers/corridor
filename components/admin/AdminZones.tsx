@@ -252,6 +252,34 @@ export function AdminZones() {
                 >
                   Bewerken
                 </button>
+                <label className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-sm cursor-pointer">
+                  Omslag
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0]
+                      if (!f) return
+                      setPhotoMsg('')
+                      try {
+                        const ext = f.name.split('.').pop() || 'jpg'
+                        const path = `zone/${zone.id}/cover-${Date.now()}.${ext}`
+                        const { error: uploadError } = await supabase.storage
+                          .from(BUCKET)
+                          .upload(path, f, { upsert: true, contentType: f.type })
+                        if (uploadError) throw uploadError
+                        const publicUrl = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
+                        await updateZone(supabase, zone.id, { cover_url: publicUrl })
+                        setPhotoMsg(`Omslag bijgewerkt voor zone ${zone.zone_number}`)
+                        await loadData()
+                      } catch (err: unknown) {
+                        setPhotoMsg(err instanceof Error ? err.message : 'Omslag upload mislukt')
+                      }
+                      e.target.value = ''
+                    }}
+                  />
+                </label>
                 <label className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors text-sm cursor-pointer">
                   + Foto
                   <input
@@ -350,19 +378,30 @@ export function AdminZones() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Cover URL</label>
-                <input
-                  type="url"
-                  name="cover_url"
-                  defaultValue={editingZone?.cover_url || ''}
-                  placeholder="https://..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Of cover uploaden</label>
-                <input type="file" name="cover_file" accept="image/*" className="w-full text-sm" />
+              <div className="rounded-2xl border border-pink-200 bg-pink-50/50 p-4 space-y-3">
+                <p className="text-sm font-semibold text-gray-800">Omslag (zones-overzicht)</p>
+                {editingZone?.cover_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={editingZone.cover_url}
+                    alt="Huidige omslag"
+                    className="max-h-40 w-full rounded-xl object-cover"
+                  />
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cover URL</label>
+                  <input
+                    type="url"
+                    name="cover_url"
+                    defaultValue={editingZone?.cover_url || ''}
+                    placeholder="https://..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Of nieuw bestand uploaden</label>
+                  <input type="file" name="cover_file" accept="image/*" className="w-full text-sm" />
+                </div>
               </div>
               <div className="flex gap-4">
                 <button
