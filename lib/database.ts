@@ -1,5 +1,18 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Zone, Evenement, Corristory, User, Partner, Page, Section, NavigationLink } from '@/types'
+import type {
+  Zone,
+  ZonePhoto,
+  ZonePhotoStatus,
+  HistoryMilestoneRow,
+  HistoryPhotoRow,
+  Evenement,
+  Corristory,
+  User,
+  Partner,
+  Page,
+  Section,
+  NavigationLink,
+} from '@/types'
 
 // Server-side database operations
 export async function getZones(supabase: SupabaseClient): Promise<Zone[]> {
@@ -59,6 +72,224 @@ export async function deleteZone(supabase: SupabaseClient, id: string): Promise<
     .delete()
     .eq('id', id)
   
+  if (error) throw error
+}
+
+export async function getZoneByNumber(supabase: SupabaseClient, zoneNumber: number): Promise<Zone | null> {
+  const { data, error } = await supabase
+    .from('zones')
+    .select('*')
+    .eq('zone_number', zoneNumber)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+export async function getApprovedZonePhotos(
+  supabase: SupabaseClient,
+  zoneId: string
+): Promise<ZonePhoto[]> {
+  const { data, error } = await supabase
+    .from('zone_photos')
+    .select('*')
+    .eq('zone_id', zoneId)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function getZonePhotosForAdmin(
+  supabase: SupabaseClient,
+  options?: { zoneId?: string; status?: ZonePhotoStatus | 'all' }
+): Promise<ZonePhoto[]> {
+  let query = supabase
+    .from('zone_photos')
+    .select('*, zones(*)')
+    .order('created_at', { ascending: false })
+
+  if (options?.zoneId) {
+    query = query.eq('zone_id', options.zoneId)
+  }
+  if (options?.status && options.status !== 'all') {
+    query = query.eq('status', options.status)
+  }
+
+  const { data, error } = await query
+  if (error) throw error
+  return data || []
+}
+
+export async function createZonePhoto(
+  supabase: SupabaseClient,
+  photo: Partial<ZonePhoto>
+): Promise<ZonePhoto> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  if (!user.email_confirmed_at) {
+    throw new Error('E-mailadres moet geverifieerd zijn om foto\'s te uploaden')
+  }
+
+  const { data, error } = await supabase
+    .from('zone_photos')
+    .insert([{
+      ...photo,
+      submitted_by: user.id,
+      status: photo.status || 'pending',
+    }])
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function reviewZonePhoto(
+  supabase: SupabaseClient,
+  id: string,
+  status: 'approved' | 'rejected'
+): Promise<ZonePhoto> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data, error } = await supabase
+    .from('zone_photos')
+    .update({
+      status,
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function deleteZonePhoto(supabase: SupabaseClient, id: string): Promise<void> {
+  const { error } = await supabase
+    .from('zone_photos')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
+}
+
+export async function getHistoryMilestones(supabase: SupabaseClient): Promise<HistoryMilestoneRow[]> {
+  const { data, error } = await supabase
+    .from('history_milestones')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('year', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function upsertHistoryMilestone(
+  supabase: SupabaseClient,
+  row: Partial<HistoryMilestoneRow> & { year: string; title: string; description: string }
+): Promise<HistoryMilestoneRow> {
+  if (row.id) {
+    const { data, error } = await supabase
+      .from('history_milestones')
+      .update({
+        year: row.year,
+        title: row.title,
+        description: row.description,
+        sort_order: row.sort_order ?? 0,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', row.id)
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  }
+
+  const { data, error } = await supabase
+    .from('history_milestones')
+    .insert([{
+      year: row.year,
+      title: row.title,
+      description: row.description,
+      sort_order: row.sort_order ?? 0,
+    }])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteHistoryMilestone(supabase: SupabaseClient, id: string): Promise<void> {
+  const { error } = await supabase.from('history_milestones').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function getHistoryPhotosDb(supabase: SupabaseClient): Promise<HistoryPhotoRow[]> {
+  const { data, error } = await supabase
+    .from('history_photos')
+    .select('*')
+    .eq('is_published', true)
+    .order('sort_order', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function getHistoryPhotosAdmin(supabase: SupabaseClient): Promise<HistoryPhotoRow[]> {
+  const { data, error } = await supabase
+    .from('history_photos')
+    .select('*')
+    .order('sort_order', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function upsertHistoryPhoto(
+  supabase: SupabaseClient,
+  row: Partial<HistoryPhotoRow> & { src: string; alt: string }
+): Promise<HistoryPhotoRow> {
+  if (row.id) {
+    const { data, error } = await supabase
+      .from('history_photos')
+      .update({
+        src: row.src,
+        alt: row.alt,
+        caption: row.caption ?? null,
+        sort_order: row.sort_order ?? 0,
+        is_published: row.is_published ?? true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', row.id)
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  }
+
+  const { data, error } = await supabase
+    .from('history_photos')
+    .insert([{
+      src: row.src,
+      alt: row.alt,
+      caption: row.caption ?? null,
+      sort_order: row.sort_order ?? 0,
+      is_published: row.is_published ?? true,
+    }])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteHistoryPhoto(supabase: SupabaseClient, id: string): Promise<void> {
+  const { error } = await supabase.from('history_photos').delete().eq('id', id)
   if (error) throw error
 }
 

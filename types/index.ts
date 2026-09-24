@@ -3,6 +3,47 @@ export interface Zone {
   zone_number: number
   name: string
   description?: string
+  slug?: string | null
+  cover_url?: string | null
+  field_labels?: string[] | null
+  created_at?: string
+  updated_at?: string
+}
+
+export type ZonePhotoStatus = 'pending' | 'approved' | 'rejected'
+
+export interface ZonePhoto {
+  id: string
+  zone_id: string
+  storage_path: string
+  public_url: string
+  caption?: string | null
+  status: ZonePhotoStatus
+  submitted_by?: string | null
+  reviewed_by?: string | null
+  reviewed_at?: string | null
+  created_at?: string
+  updated_at?: string
+  zones?: Zone
+}
+
+export interface HistoryMilestoneRow {
+  id: string
+  year: string
+  title: string
+  description: string
+  sort_order: number
+  created_at?: string
+  updated_at?: string
+}
+
+export interface HistoryPhotoRow {
+  id: string
+  src: string
+  alt: string
+  caption?: string | null
+  sort_order: number
+  is_published: boolean
   created_at?: string
   updated_at?: string
 }

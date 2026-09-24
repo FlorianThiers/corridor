@@ -1,4 +1,12 @@
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { getHistoryMilestones, getHistoryPhotosDb } from '@/lib/database'
+import {
+  historyPhotos as staticPhotos,
+  historyMilestones as staticMilestones,
+  type HistoryPhoto,
+  type HistoryMilestone,
+} from '@/lib/geschiedenis'
 import { PageSection } from '@/components/PageSection'
 import { PageContainer } from '@/components/PageContainer'
 import { PageTitle } from '@/components/PageTitle'
@@ -6,14 +14,42 @@ import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { HistoryPhotoMarquee } from '@/components/HistoryPhotoMarquee'
 import { HistoryPhotoGrid } from '@/components/HistoryPhotoGrid'
-import { historyPhotos, historyMilestones } from '@/lib/geschiedenis'
 
 export const metadata = {
   title: 'Geschiedenis - Corridor Gentbrugge',
   description: 'Vijf jaar evolutie onder het viaduct: van braakliggend terrein tot urban hub. Foto\'s uit de Corridor-groep.',
 }
 
-export default function GeschiedenisPage() {
+export const dynamic = 'force-dynamic'
+
+export default async function GeschiedenisPage() {
+  let photos: HistoryPhoto[] = staticPhotos
+  let milestones: HistoryMilestone[] = staticMilestones
+
+  try {
+    const supabase = await createClient()
+    const [dbPhotos, dbMilestones] = await Promise.all([
+      getHistoryPhotosDb(supabase),
+      getHistoryMilestones(supabase),
+    ])
+    if (dbPhotos.length > 0) {
+      photos = dbPhotos.map((p) => ({
+        src: p.src,
+        alt: p.alt,
+        caption: p.caption || undefined,
+      }))
+    }
+    if (dbMilestones.length > 0) {
+      milestones = dbMilestones.map((m) => ({
+        year: m.year,
+        title: m.title,
+        description: m.description,
+      }))
+    }
+  } catch {
+    // Fallback to static until migration is applied / tables empty
+  }
+
   return (
     <div className="page-background">
       <BackgroundImage />
@@ -25,12 +61,12 @@ export default function GeschiedenisPage() {
             Zo is het begonnen, vijf jaar geleden — en geëvolueerd. Foto&apos;s uit de groep, onder de brug.
           </p>
 
-          <HistoryPhotoMarquee photos={historyPhotos} />
+          <HistoryPhotoMarquee photos={photos} />
 
           <div className="mt-16 space-y-8">
-            {historyMilestones.map((milestone) => (
+            {milestones.map((milestone) => (
               <article
-                key={milestone.year}
+                key={`${milestone.year}-${milestone.title}`}
                 className="grid gap-4 rounded-3xl bg-white/60 p-8 backdrop-blur-sm card-hover md:grid-cols-[120px_1fr]"
               >
                 <div className="text-3xl font-bold text-pink-500 graffiti-text md:text-4xl">
@@ -63,7 +99,7 @@ export default function GeschiedenisPage() {
             <h2 className="mb-8 text-center text-3xl font-bold text-gray-800 graffiti-text">
               Alle foto&apos;s
             </h2>
-            <HistoryPhotoGrid photos={historyPhotos} />
+            <HistoryPhotoGrid photos={photos} />
           </div>
 
           <div className="mt-12 text-center">
