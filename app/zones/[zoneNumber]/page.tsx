@@ -9,6 +9,7 @@ import { PageTitle } from '@/components/PageTitle'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { ZonePhotoSubmit } from '@/components/ZonePhotoSubmit'
+import { ZoomableLightbox } from '@/components/ZoomableLightbox'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
@@ -115,15 +116,11 @@ export default async function ZoneDetailPage({ params }: PageProps) {
           ) : (
             <div className="mb-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {gallery.map((item) => (
-                <figure
-                  key={item.id}
-                  className="overflow-hidden rounded-3xl bg-white/50 backdrop-blur-sm"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                <figure key={item.id} className="overflow-hidden rounded-3xl bg-white/50 backdrop-blur-sm">
+                  <ZoomableLightbox
                     src={item.public_url}
                     alt={item.caption || zone.name}
-                    className="aspect-[4/3] w-full object-cover"
+                    thumbClassName="aspect-[4/3] w-full object-cover"
                   />
                   {item.caption && (
                     <figcaption className="px-4 py-3 text-sm text-gray-700">{item.caption}</figcaption>
