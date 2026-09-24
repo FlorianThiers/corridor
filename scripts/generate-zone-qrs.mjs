@@ -1,7 +1,6 @@
 /**
- * Zone QR codes in zone-omslag-kleuren + algemene pastel-regenboog.
- * Accenten afgeleid van titel/puzzelstuk op public/zones/*-cover.webp
- * (licht genoeg → iets donkerder voor scancontrast).
+ * Zone QR codes: omslag-accent per zone, Corri Arts = pastel-regenboog,
+ * algemene /zones QR = zwart.
  *
  * Run: npm run generate:qr
  */
@@ -19,8 +18,10 @@ const base = 'https://corridor.gent'
 const SIZE = 1024
 const MARGIN_MODULES = 2
 const LIGHT = '#ffffff'
+const BLACK = '#1f2937'
+const CORRI_ARTS = 11
 
-/** Zone-nummer → brandkleur (omslag-accent, print-vriendelijk) */
+/** Zone-nummer → brandkleur (omslag-accent). 11 = regenboog (niet solid). */
 const ZONE_COLORS = {
   1: '#d62839', // De Vloer — rood
   2: '#4f9a3e', // Viadunk — groen
@@ -32,19 +33,19 @@ const ZONE_COLORS = {
   8: '#8b5e3c', // Hilles — bruin
   9: '#2622b8', // RC17 — navy
   10: '#9aaa00', // Logistiek — lime
-  11: '#5b2d8b', // Corri Arts — paars (regenboog-omslag)
-  12: '#4a4a4a', // Lege zone — grijs/zwart
+  11: 'pastel-rainbow', // Corri Arts
+  12: '#4a4a4a', // Lege zone — grijs
 }
 
-/** Pastel regenboog (iets dieper dan pure pastel → beter scanbaar op wit) */
+/** Pastel regenboog (iets dieper → beter scanbaar op wit) */
 const RAINBOW = [
-  '#e07088', // roze
-  '#e09060', // perzik
-  '#c9a820', // geel
-  '#5aab58', // mint/groen
-  '#4a9ec8', // blauw
-  '#7a68c8', // lila
-  '#c068b8', // lavender
+  '#e07088',
+  '#e09060',
+  '#c9a820',
+  '#5aab58',
+  '#4a9ec8',
+  '#7a68c8',
+  '#c068b8',
 ]
 
 function pastelAt(t) {
@@ -62,6 +63,10 @@ function pastelAt(t) {
   const [r2, g2, b2] = parse(RAINBOW[b])
   const mix = (u, v) => Math.round(u + (v - u) * f)
   return `#${[mix(r1, r2), mix(g1, g2), mix(b1, b2)].map((v) => v.toString(16).padStart(2, '0')).join('')}`
+}
+
+function rainbowFn(row, col, n) {
+  return pastelAt((row + col) / (2 * (n - 1)))
 }
 
 function buildMatrix(url) {
@@ -102,20 +107,16 @@ async function writeQr(fileBase, url, colorFn) {
   console.log('ok', fileBase)
 }
 
-// Algemene QR: pastelregenboog diagonaal over modules
-await writeQr('zones', `${base}/zones`, (row, col, n) => {
-  const t = (row + col) / (2 * (n - 1))
-  return pastelAt(t)
-})
+// Algemene QR: zwart
+await writeQr('zones', `${base}/zones`, () => BLACK)
 
 for (let i = 1; i <= 12; i++) {
-  const color = ZONE_COLORS[i]
-  await writeQr(`zone-${i}`, `${base}/zones/${i}`, () => color)
+  const colorFn = i === CORRI_ARTS ? rainbowFn : () => ZONE_COLORS[i]
+  await writeQr(`zone-${i}`, `${base}/zones/${i}`, colorFn)
 }
 
-// Kleurenlegende voor admin/docs
 fs.writeFileSync(
   path.join(outDir, 'zone-colors.json'),
-  JSON.stringify({ general: 'pastel-rainbow', zones: ZONE_COLORS }, null, 2) + '\n',
+  JSON.stringify({ general: BLACK, zones: ZONE_COLORS }, null, 2) + '\n',
 )
 console.log('wrote zone-colors.json')

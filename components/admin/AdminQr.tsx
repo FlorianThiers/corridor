@@ -6,8 +6,9 @@ import { getZones } from '@/lib/database'
 import type { Zone } from '@/types'
 
 const SITE = 'https://corridor.gent'
+const CORRI_ARTS = 11
 
-/** Zelfde map als scripts/generate-zone-qrs.mjs */
+/** Zelfde map als scripts/generate-zone-qrs.mjs (11 = regenboog) */
 const ZONE_COLORS: Record<number, string> = {
   1: '#d62839',
   2: '#4f9a3e',
@@ -19,7 +20,6 @@ const ZONE_COLORS: Record<number, string> = {
   8: '#8b5e3c',
   9: '#2622b8',
   10: '#9aaa00',
-  11: '#5b2d8b',
   12: '#4a4a4a',
 }
 
@@ -58,20 +58,24 @@ export function AdminQr() {
       url: `${SITE}/zones`,
       png: '/qr/zones.png',
       svg: '/qr/zones.svg',
-      colorLabel: 'pastel-regenboog',
-      rainbow: true,
+      colorLabel: '#1f2937',
+      swatch: '#1f2937',
     }
     const perZone = zones.map((z) => {
-      const swatch = ZONE_COLORS[z.zone_number]
+      const isRainbow = z.zone_number === CORRI_ARTS
+      const swatch = isRainbow ? undefined : ZONE_COLORS[z.zone_number]
       return {
         id: `zone-${z.zone_number}`,
         title: `Zone ${z.zone_number}: ${z.name}`,
-        subtitle: 'Zone-detailpagina · kleur = omslag-accent',
+        subtitle: isRainbow
+          ? 'Corri Arts · pastel-regenboog'
+          : 'Zone-detailpagina · kleur = omslag-accent',
         url: `${SITE}/zones/${z.zone_number}`,
         png: `/qr/zone-${z.zone_number}.png`,
         svg: `/qr/zone-${z.zone_number}.svg`,
-        colorLabel: swatch || '—',
+        colorLabel: isRainbow ? 'pastel-regenboog' : swatch || '—',
         swatch,
+        rainbow: isRainbow,
       }
     })
     return [general, ...perZone]
@@ -84,7 +88,7 @@ export function AdminQr() {
   return (
     <div>
       <p className="mb-6 text-center text-gray-600">
-        Printklare QR-codes: per zone in omslagkleur, algemeen in pastel-regenboog. PNG + SVG.
+        Printklare QR-codes: algemeen zwart, zones in omslagkleur, Corri Arts in pastel-regenboog.
       </p>
       <div className="mb-8 rounded-3xl bg-white/60 p-4 text-center print:hidden">
         <button
@@ -104,7 +108,7 @@ export function AdminQr() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`${item.svg}?v=color`}
+              src={`${item.svg}?v=corri-rainbow`}
               alt={`QR ${item.title}`}
               className="mb-4 h-48 w-48 rounded-2xl border border-pink-100 bg-white p-2"
             />
