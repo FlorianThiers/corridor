@@ -170,15 +170,15 @@ export function HeroSection() {
 
         {/* Hero Content */}
         <div className="flex flex-col items-center justify-center text-center z-20 relative">
-          {/* Logo */}
+          {/* Logo — zonder ovale ring, kleine d, transparant */}
           <div className="mb-2 mt-2">
-            <div className="w-32 h-32 md:w-40 md:h-40 mx-auto organic-shape shadow-lg opacity-95 bg-white/90 backdrop-blur-sm flex items-center justify-center">
+            <div className="mx-auto flex h-36 w-36 items-center justify-center md:h-44 md:w-44">
               <Image
-                src="/LogoCorridor-removebg-preview.webp"
-                alt="Corridor Logo"
-                width={144}
-                height={144}
-                className="w-28 h-28 md:w-36 md:h-36 object-contain"
+                src="/LogoCorridor-corri-dor-d-no-oval.webp"
+                alt="Corri d'Or"
+                width={176}
+                height={176}
+                className="h-32 w-32 object-contain drop-shadow-lg md:h-40 md:w-40"
                 priority
               />
             </div>
