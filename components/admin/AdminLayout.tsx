@@ -13,6 +13,7 @@ const ADMIN_LINKS = [
   { href: '/beheer/evenementen', label: 'Agenda' },
   { href: '/beheer/zones', label: 'Zones' },
   { href: '/beheer/geschiedenis', label: 'Geschiedenis' },
+  { href: '/beheer/qr', label: 'QR-codes' },
   { href: '/beheer/partners', label: 'Partners' },
   { href: '/beheer/corristories', label: 'Corristories' },
   { href: '/beheer/gebruikers', label: 'Gebruikers' },

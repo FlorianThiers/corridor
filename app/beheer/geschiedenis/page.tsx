@@ -11,7 +11,7 @@ export default function AdminGeschiedenisPage() {
         <p className="mb-6 text-center text-gray-600">
           Mijlpalen en foto&apos;s voor{' '}
           <a href="/geschiedenis" className="text-pink-600 hover:underline">/geschiedenis</a>.
-          Zolang de database leeg is, toont de publieke pagina de vaste content.
+          Data staat in de database — hier bewerken, toevoegen of wissen.
         </p>
         <AdminGeschiedenis />
       </AdminLayout>
