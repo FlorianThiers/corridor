@@ -170,15 +170,15 @@ export function HeroSection() {
 
         {/* Hero Content */}
         <div className="flex flex-col items-center justify-center text-center z-20 relative">
-          {/* Logo — zonder ovale ring, kleine d, transparant */}
+          {/* Logo — zonder ovale ring in artwork; lichte organic-shape blijft bewegen */}
           <div className="mb-2 mt-2">
-            <div className="mx-auto flex h-36 w-36 items-center justify-center md:h-44 md:w-44">
+            <div className="organic-shape mx-auto flex h-36 w-36 items-center justify-center bg-white/90 opacity-95 shadow-lg backdrop-blur-sm md:h-44 md:w-44">
               <Image
                 src="/LogoCorridor-corri-dor-d-no-oval.webp"
                 alt="Corri d'Or"
                 width={176}
                 height={176}
-                className="h-32 w-32 object-contain drop-shadow-lg md:h-40 md:w-40"
+                className="h-28 w-28 object-contain md:h-36 md:w-36"
                 priority
               />
             </div>
