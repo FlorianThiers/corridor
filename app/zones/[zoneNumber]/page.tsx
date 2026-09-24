@@ -9,6 +9,7 @@ import { PageTitle } from '@/components/PageTitle'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { ZonePhotoSubmit } from '@/components/ZonePhotoSubmit'
+import { ZonePhotoHowTo } from '@/components/ZonePhotoHowTo'
 import { ZoomableLightbox } from '@/components/ZoomableLightbox'
 
 export const revalidate = 60
@@ -51,7 +52,6 @@ export default async function ZoneDetailPage({ params }: PageProps) {
       try {
         photos = await getApprovedZonePhotos(supabase, zone.id)
       } catch {
-        // Table may not exist until migration is applied
         photos = []
       }
     }
@@ -75,7 +75,7 @@ export default async function ZoneDetailPage({ params }: PageProps) {
       <PageSection className="min-h-screen">
         <PageContainer>
           <p className="mb-4 text-center">
-            <Link href="/zones" className="text-pink-600 hover:text-pink-700 font-medium">
+            <Link href="/zones" className="font-medium text-pink-600 hover:text-pink-700">
               ← Alle zones
             </Link>
           </p>
@@ -83,7 +83,7 @@ export default async function ZoneDetailPage({ params }: PageProps) {
             Zone {zone.zone_number}: {zone.name}
           </PageTitle>
           {zone.description && (
-            <p className="mx-auto mb-8 max-w-2xl text-center text-lg text-gray-700 whitespace-pre-line">
+            <p className="mx-auto mb-8 max-w-2xl whitespace-pre-line text-center text-lg text-gray-700">
               {zone.description}
             </p>
           )}
@@ -100,15 +100,12 @@ export default async function ZoneDetailPage({ params }: PageProps) {
             </ul>
           )}
 
-          <div
-            id="foto-toevoegen"
-            className="mx-auto mb-8 max-w-xl rounded-3xl border-2 border-pink-300 bg-white/80 p-6 shadow-sm backdrop-blur-sm"
-          >
-            <h2 className="mb-2 text-xl font-bold text-gray-800">Foto toevoegen</h2>
-            <p className="mb-4 text-sm text-gray-600">
-              Log in met een geverifieerd account. Je foto verschijnt pas na goedkeuring door het Corridor-team.
-            </p>
-            <ZonePhotoSubmit zoneId={zone.id} zoneNumber={zone.zone_number} />
+          <div id="foto-toevoegen" className="mx-auto mb-8 max-w-2xl">
+            <ZonePhotoHowTo variant="detail" zoneName={zone.name} />
+            <div className="rounded-3xl border-2 border-pink-200 bg-white/80 p-6 shadow-sm backdrop-blur-sm">
+              <h3 className="mb-4 text-lg font-bold text-gray-800">Nu uploaden</h3>
+              <ZonePhotoSubmit zoneId={zone.id} zoneNumber={zone.zone_number} />
+            </div>
           </div>
 
           {gallery.length === 0 ? (
@@ -116,7 +113,10 @@ export default async function ZoneDetailPage({ params }: PageProps) {
           ) : (
             <div className="mb-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {gallery.map((item) => (
-                <figure key={item.id} className="overflow-hidden rounded-3xl bg-white/50 backdrop-blur-sm">
+                <figure
+                  key={item.id}
+                  className="overflow-hidden rounded-3xl bg-white/50 backdrop-blur-sm"
+                >
                   <ZoomableLightbox
                     src={item.public_url}
                     alt={item.caption || zone.name}
