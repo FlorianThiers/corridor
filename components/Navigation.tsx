@@ -171,6 +171,12 @@ export function Navigation() {
                     </svg>
                     <span>Geschiedenis</span>
                   </Link>
+                  <Link href="/beheer/qr" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/beheer/qr') ? 'active' : ''}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 3h3v3h-3v-3zm3-3h3v3h-3v-3z" />
+                    </svg>
+                    <span>QR-codes</span>
+                  </Link>
                   <Link href="/beheer/gebruikers" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/beheer/gebruikers') ? 'active' : ''}`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
