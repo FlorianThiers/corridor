@@ -42,8 +42,8 @@ export default async function PartnersPage() {
             </p>
             <div className="mt-8">
               <a
-                href="/LogoCorridor.webp"
-                download="LogoCorridor.webp"
+                href="/LogoCorridor.png"
+                download="Corridor-logo-corri-dor.png"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-white/40 backdrop-blur-sm rounded-3xl text-gray-800 hover:bg-white/60 hover:scale-105 transition-all shadow-lg card-hover font-medium"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>

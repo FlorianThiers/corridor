@@ -95,7 +95,7 @@ export function QrFotoPosterA4() {
           <header className="poster-header">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/LogoCorridor-removebg-preview.webp"
+              src="/LogoCorridor-corri-dor-d.webp"
               alt="Corridor"
               className="poster-logo"
               crossOrigin="anonymous"
