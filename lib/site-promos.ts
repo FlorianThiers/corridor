@@ -48,7 +48,7 @@ export const FEST_PROMO: SitePromo = {
   tagline: 'Een festival voor iedereen onder en rond het viaduct',
   dates: '25 & 26 september 2026',
   location: 'Driebeekstraat, Gentbrugge',
-  ctaHref: '/evenementen',
+  ctaHref: '/evenementen#fest-programma',
   ctaLabel: 'Bekijk het programma',
   signupHref: 'https://forms.gle/VFoer92h8heLphWA8',
   signupLabel: 'Schrijf je in',

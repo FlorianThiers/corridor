@@ -8,7 +8,8 @@ import { EventCard } from '@/components/EventCard'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { PromoGate, hasActivePromoFloatings } from '@/components/PromoGate'
-import { isFestEvent } from '@/lib/site-promos'
+import { FestProgramPosters } from '@/components/FestProgramPosters'
+import { FEST_PROMO, isFestEvent, isPromoActive } from '@/lib/site-promos'
 import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
 import { ActivityCard } from '@/components/ActivityCard'
 import Link from 'next/link'
@@ -56,6 +57,7 @@ export default async function EvenementenPage() {
     direction: 'past',
   })
   const showPromoFloatings = hasActivePromoFloatings()
+  const showFestPosters = isPromoActive(FEST_PROMO, now)
 
   return (
     <div className="page-background">
@@ -69,6 +71,13 @@ export default async function EvenementenPage() {
 
           <PromoGate variant="floatings" anchorOverrides={{ summer: '/activiteiten#zomer-activiteiten' }} />
 
+          {showFestPosters && (
+            <div id="corri-dor-fest" className="mb-12 scroll-mt-28 space-y-6">
+              <h2 className="text-3xl font-bold text-gray-800">Corri D&apos;Or Fest</h2>
+              <FestProgramPosters />
+            </div>
+          )}
+
           <div className="mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Opkomende evenementen</h2>
             {opkomendeEvenementen.length === 0 ? (
@@ -78,8 +87,10 @@ export default async function EvenementenPage() {
             ) : (
               <div className="space-y-6">
                 {festOpkomend.length > 0 && (
-                  <div id="corri-dor-fest" className="scroll-mt-28 space-y-4">
-                    <h3 className="text-2xl font-bold text-gray-800">Corri D&apos;Or Fest</h3>
+                  <div className="space-y-4">
+                    <h3 className="text-2xl font-bold text-gray-800">
+                      {showFestPosters ? 'Fest-highlights' : "Corri D'Or Fest"}
+                    </h3>
                     {festOpkomend.map((event) => (
                       <EventCard key={event.id} event={event} />
                     ))}
