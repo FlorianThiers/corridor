@@ -24,7 +24,7 @@ const STEPS = [
   {
     n: '4',
     title: 'Upload je foto',
-    text: 'Kies een foto (max 8 MB). Na goedkeuring verschijnt die op de zonepagina.',
+    text: 'Kies een of meer foto’s (max 8 MB). Tijdens het fest meteen live; daarna na goedkeuring.',
   },
 ] as const
 
