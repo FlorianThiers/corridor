@@ -13,11 +13,28 @@ export function LoginModal() {
   const [showPassword, setShowPassword] = useState(false)
   const [showSignupPassword, setShowSignupPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [signupDone, setSignupDone] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const supabase = createClient()
   const router = useRouter()
   const { user } = useAuth()
+
+  const siteOrigin = () => {
+    const raw = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    return raw.replace(/\/+$/, '')
+  }
+
+  const friendlyAuthError = (raw: string, fallback: string) => {
+    const msg = raw.toLowerCase()
+    if (msg.includes('rate limit') || msg.includes('over_email') || msg.includes('only request this after')) {
+      return 'Even geduld: te veel verificatiemails. Wacht even, of log in als je account al bestaat.'
+    }
+    if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
+      return 'Dit e-mailadres heeft al een account. Log in of gebruik "Wachtwoord vergeten".'
+    }
+    return raw || fallback
+  }
 
   useEffect(() => {
     // Check for URL parameters (from email confirmation callback)
@@ -45,6 +62,7 @@ export function LoginModal() {
       setActiveTab('login')
       setError('')
       setSuccess('')
+      setSignupDone(false)
     }
 
     // Listen for clicks on login buttons
@@ -119,13 +137,8 @@ export function LoginModal() {
     const fullName = formData.get('name') as string
 
     try {
-      // Determine the correct redirect URL
-      // Use environment variable if available (for production), otherwise use current origin
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-      const redirectUrl = `${baseUrl}/auth/callback`
-      
-      console.log('Signup redirect URL:', redirectUrl) // Debug log
-      
+      const redirectUrl = `${siteOrigin()}/auth/callback`
+
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -139,9 +152,10 @@ export function LoginModal() {
 
       if (signUpError) throw signUpError
 
-      setSuccess('Account aangemaakt! Check je email voor verificatie.')
+      setSignupDone(true)
+      setSuccess('Account aangemaakt! Check je email voor verificatie (ook spam). Daarna kun je inloggen.')
     } catch (err: any) {
-      setError(err.message || 'Registratie mislukt. Probeer opnieuw.')
+      setError(friendlyAuthError(err?.message || '', 'Registratie mislukt. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }
@@ -157,17 +171,15 @@ export function LoginModal() {
     const email = formData.get('email') as string
 
     try {
-      // Use same logic for password reset
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${baseUrl}/reset-password`,
+        redirectTo: `${siteOrigin()}/reset-password`,
       })
 
       if (resetError) throw resetError
 
       setSuccess('Reset link is verzonden naar je emailadres. Check je inbox (en spam folder).')
     } catch (err: any) {
-      setError(err.message || 'Fout bij verzenden van reset link. Probeer opnieuw.')
+      setError(friendlyAuthError(err?.message || '', 'Fout bij verzenden van reset link. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }
@@ -328,10 +340,10 @@ export function LoginModal() {
               </div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || signupDone}
                 className="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium disabled:opacity-50"
               >
-                {loading ? 'Bezig...' : 'Registreren'}
+                {loading ? 'Bezig...' : signupDone ? 'Check je email' : 'Registreren'}
               </button>
             </form>
             <div className="mt-4 text-center">
