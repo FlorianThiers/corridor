@@ -1,50 +1,7 @@
+'use client'
+
 import Link from 'next/link'
-
-const STEPS_OVERVIEW = [
-  {
-    n: '1',
-    title: 'Kies een zone',
-    text: 'Tik hieronder de zone waar je was (of open een zone via de QR op Corridor).',
-  },
-  {
-    n: '2',
-    title: 'Account + e-mail',
-    text: 'Log in of maak een account. Bevestig je e-mailadres via de link in je inbox.',
-  },
-  {
-    n: '3',
-    title: 'Upload je foto',
-    text: 'Op de zonepagina kies je een foto (max 8 MB) en dien je die in.',
-  },
-  {
-    n: '4',
-    title: 'Crew keurt goed',
-    text: 'Na goedkeuring verschijnt je foto op de zonepagina voor iedereen.',
-  },
-] as const
-
-const STEPS_DETAIL = [
-  {
-    n: '1',
-    title: 'Account',
-    text: 'Log in of registreer hieronder.',
-  },
-  {
-    n: '2',
-    title: 'E-mail bevestigen',
-    text: 'Check je inbox en bevestig je adres.',
-  },
-  {
-    n: '3',
-    title: 'Foto kiezen',
-    text: 'JPG, PNG of WebP · max 8 MB.',
-  },
-  {
-    n: '4',
-    title: 'Indienen',
-    text: 'De crew keurt goed vóór publicatie.',
-  },
-] as const
+import { isFestPhotoAutoApprove } from '@/lib/fest-photo-mode'
 
 interface ZonePhotoHowToProps {
   /** overview = /zones · detail = zone detail page */
@@ -53,15 +10,71 @@ interface ZonePhotoHowToProps {
 }
 
 export function ZonePhotoHowTo({ variant, zoneName }: ZonePhotoHowToProps) {
-  const steps = variant === 'overview' ? STEPS_OVERVIEW : STEPS_DETAIL
+  const liveNow = isFestPhotoAutoApprove()
+
+  const stepsOverview = [
+    {
+      n: '1',
+      title: 'Kies een zone',
+      text: 'Tik hieronder de zone waar je was (of open een zone via de QR op Corridor).',
+    },
+    {
+      n: '2',
+      title: 'Account + e-mail',
+      text: 'Log in of maak een account. Bevestig je e-mailadres via de link in je inbox.',
+    },
+    {
+      n: '3',
+      title: 'Upload je foto’s',
+      text: 'Op de zonepagina kies je één of meer foto’s (max 8 MB per stuk) — je ziet meteen een preview.',
+    },
+    {
+      n: '4',
+      title: liveNow ? 'Meteen live' : 'Crew keurt goed',
+      text: liveNow
+        ? 'Tijdens Corri d’Or Fest verschijnen je foto’s meteen op de zonepagina.'
+        : 'Na goedkeuring verschijnt je foto op de zonepagina voor iedereen.',
+    },
+  ] as const
+
+  const stepsDetail = [
+    {
+      n: '1',
+      title: 'Account',
+      text: 'Log in of registreer hieronder.',
+    },
+    {
+      n: '2',
+      title: 'E-mail bevestigen',
+      text: 'Check je inbox en bevestig je adres.',
+    },
+    {
+      n: '3',
+      title: 'Foto’s kiezen',
+      text: 'Meerdere tegelijk · JPG/PNG/WebP · max 8 MB · met preview.',
+    },
+    {
+      n: '4',
+      title: liveNow ? 'Publiceren' : 'Indienen',
+      text: liveNow
+        ? 'Tijdens het fest gaan ze meteen live.'
+        : 'De crew keurt goed vóór publicatie.',
+    },
+  ] as const
+
+  const steps = variant === 'overview' ? stepsOverview : stepsDetail
   const title =
     variant === 'overview'
       ? 'Zo deel je een foto'
       : `Foto toevoegen${zoneName ? ` · ${zoneName}` : ''}`
   const lead =
     variant === 'overview'
-      ? 'Je kwam hier via de QR of via de site. Volg deze stappen om een snapshot van Corridor te delen.'
-      : 'Je bent op de juiste zone. Volg de stappen hieronder om je foto in te dienen.'
+      ? liveNow
+        ? 'Fest-weekend: upload één of meer snapshots — ze verschijnen meteen op de zone.'
+        : 'Je kwam hier via de QR of via de site. Volg deze stappen om een snapshot van Corridor te delen.'
+      : liveNow
+        ? 'Fest-modus: meerdere foto’s tegelijk, meteen zichtbaar na upload.'
+        : 'Je bent op de juiste zone. Volg de stappen hieronder om je foto in te dienen.'
 
   return (
     <section
@@ -70,7 +83,7 @@ export function ZonePhotoHowTo({ variant, zoneName }: ZonePhotoHowToProps) {
     >
       <div className="mb-6 text-center">
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-pink-600">
-          Corri Culture
+          Corri Culture{liveNow ? ' · Fest live' : ''}
         </p>
         <h2 className="mb-2 text-2xl font-bold text-gray-800">{title}</h2>
         <p className="mx-auto max-w-2xl text-sm text-gray-600 md:text-base">{lead}</p>
