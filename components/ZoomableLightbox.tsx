@@ -12,7 +12,7 @@ interface ZoomableLightboxProps {
 
 const MIN_SCALE = 1
 const MAX_SCALE = 4
-const ZOOM_STEP = 0.2
+const ZOOM_STEP = 0.15
 
 export function ZoomableLightbox({
   src,
@@ -23,12 +23,19 @@ export function ZoomableLightbox({
   const [open, setOpen] = useState(false)
   const [scale, setScale] = useState(MIN_SCALE)
   const [pan, setPan] = useState({ x: 0, y: 0 })
-  const dragging = useRef(false)
-  const lastPointer = useRef({ x: 0, y: 0 })
+
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const scaleRef = useRef(MIN_SCALE)
+  const draggingRef = useRef(false)
+  const lastPointerRef = useRef({ x: 0, y: 0 })
+  const activePointerIdRef = useRef<number | null>(null)
+
+  scaleRef.current = scale
 
   const resetView = useCallback(() => {
     setScale(MIN_SCALE)
     setPan({ x: 0, y: 0 })
+    scaleRef.current = MIN_SCALE
   }, [])
 
   const close = useCallback(() => {
@@ -39,6 +46,7 @@ export function ZoomableLightbox({
   const zoomBy = useCallback((delta: number) => {
     setScale((s) => {
       const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, Number((s + delta).toFixed(2))))
+      scaleRef.current = next
       if (next <= MIN_SCALE) {
         setPan({ x: 0, y: 0 })
       }
@@ -48,39 +56,60 @@ export function ZoomableLightbox({
 
   useEffect(() => {
     if (!open) return
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
       if (e.key === '+' || e.key === '=') zoomBy(ZOOM_STEP)
       if (e.key === '-') zoomBy(-ZOOM_STEP)
     }
+
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
+
+    const viewport = viewportRef.current
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      zoomBy(e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP)
+    }
+    viewport?.addEventListener('wheel', onWheel, { passive: false })
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!draggingRef.current || activePointerIdRef.current !== e.pointerId) return
+      if (scaleRef.current <= MIN_SCALE) return
+
+      const dx = e.clientX - lastPointerRef.current.x
+      const dy = e.clientY - lastPointerRef.current.y
+      lastPointerRef.current = { x: e.clientX, y: e.clientY }
+      setPan((p) => ({ x: p.x + dx, y: p.y + dy }))
+    }
+
+    const endDrag = (e: PointerEvent) => {
+      if (activePointerIdRef.current !== e.pointerId) return
+      draggingRef.current = false
+      activePointerIdRef.current = null
+      viewport?.releasePointerCapture(e.pointerId)
+    }
+
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', endDrag)
+    window.addEventListener('pointercancel', endDrag)
+
     return () => {
       document.body.style.overflow = ''
       window.removeEventListener('keydown', onKey)
+      viewport?.removeEventListener('wheel', onWheel)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', endDrag)
+      window.removeEventListener('pointercancel', endDrag)
     }
   }, [open, close, zoomBy])
 
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const onViewportPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return
-    dragging.current = true
-    lastPointer.current = { x: e.clientX, y: e.clientY }
+    draggingRef.current = true
+    activePointerIdRef.current = e.pointerId
+    lastPointerRef.current = { x: e.clientX, y: e.clientY }
     e.currentTarget.setPointerCapture(e.pointerId)
-  }
-
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragging.current || scale <= MIN_SCALE) return
-    const dx = e.clientX - lastPointer.current.x
-    const dy = e.clientY - lastPointer.current.y
-    lastPointer.current = { x: e.clientX, y: e.clientY }
-    setPan((p) => ({ x: p.x + dx, y: p.y + dy }))
-  }
-
-  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    dragging.current = false
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    }
   }
 
   return (
@@ -106,7 +135,7 @@ export function ZoomableLightbox({
 
       {open && (
         <div
-          className="fixed inset-0 z-[100] flex flex-col bg-black"
+          className="fixed inset-0 z-[100] flex h-[100dvh] w-[100vw] flex-col bg-black"
           role="dialog"
           aria-modal="true"
           aria-label="Foto vergroten"
@@ -147,33 +176,25 @@ export function ZoomableLightbox({
           </div>
 
           <div
+            ref={viewportRef}
             className={`relative min-h-0 flex-1 touch-none select-none ${
-              scale > MIN_SCALE ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'
+              scale > MIN_SCALE ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
             }`}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={endDrag}
-            onPointerCancel={endDrag}
-            onWheel={(e) => {
-              e.preventDefault()
-              zoomBy(e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP)
-            }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) close()
-            }}
+            onPointerDown={onViewportPointerDown}
           >
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="absolute inset-0 will-change-transform"
+              style={{
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+                transformOrigin: 'center center',
+              }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={src}
                 alt={alt}
                 draggable={false}
-                style={{
-                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
-                  transformOrigin: 'center center',
-                }}
-                className="max-h-[calc(100dvh-7rem)] max-w-[100vw] object-contain will-change-transform"
-                onClick={(e) => e.stopPropagation()}
+                className="pointer-events-none h-full w-full object-contain"
               />
             </div>
           </div>
