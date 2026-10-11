@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { getCorristories, getZones, createCorristory, updateCorristory, deleteCorristory } from '@/lib/database'
+import { getZones, createCorristory, updateCorristory, deleteCorristory } from '@/lib/database'
 import { CorristoryCard } from '@/components/CorristoryCard'
 import type { Corristory, Zone } from '@/types'
+import { adminFilterButtonClass, formatAdminDateTime } from '@/lib/admin-ui'
 
 export function AdminCorristories() {
   const [stories, setStories] = useState<Corristory[]>([])
@@ -13,6 +14,10 @@ export function AdminCorristories() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingStory, setEditingStory] = useState<Corristory | null>(null)
   const [error, setError] = useState('')
+  const [search, setSearch] = useState('')
+  const [publishedFilter, setPublishedFilter] = useState<'all' | 'published' | 'draft'>('all')
+  const [zoneFilter, setZoneFilter] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<'created_desc' | 'created_asc' | 'title_asc'>('created_desc')
   const supabase = createClient()
 
   useEffect(() => {
@@ -88,19 +93,89 @@ export function AdminCorristories() {
     setError('')
   }
 
+  const visibleStories = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    let list = stories.filter((story) => {
+      if (publishedFilter === 'published' && !story.is_published) return false
+      if (publishedFilter === 'draft' && story.is_published) return false
+      if (zoneFilter !== 'all') {
+        if (zoneFilter === 'none' && story.zone_id) return false
+        if (zoneFilter !== 'none' && story.zone_id !== zoneFilter) return false
+      }
+      if (q) {
+        const hay = `${story.title} ${story.content} ${story.author_name || ''}`.toLowerCase()
+        if (!hay.includes(q)) return false
+      }
+      return true
+    })
+    list = [...list].sort((a, b) => {
+      if (sortBy === 'title_asc') return a.title.localeCompare(b.title, 'nl-BE')
+      const ta = a.created_at ? new Date(a.created_at).getTime() : 0
+      const tb = b.created_at ? new Date(b.created_at).getTime() : 0
+      return sortBy === 'created_asc' ? ta - tb : tb - ta
+    })
+    return list
+  }, [stories, search, publishedFilter, zoneFilter, sortBy])
+
   if (loading) {
     return <p className="text-gray-600 text-center">Corristories worden geladen...</p>
   }
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <button
           onClick={() => openModal()}
           className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium"
         >
           + Nieuw Verhaal
         </button>
+      </div>
+
+      <div className="mb-6 space-y-3 rounded-3xl bg-white/50 p-4 backdrop-blur-sm">
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={adminFilterButtonClass(publishedFilter === 'all')} onClick={() => setPublishedFilter('all')}>
+            Alles
+          </button>
+          <button type="button" className={adminFilterButtonClass(publishedFilter === 'published')} onClick={() => setPublishedFilter('published')}>
+            Gepubliceerd
+          </button>
+          <button type="button" className={adminFilterButtonClass(publishedFilter === 'draft')} onClick={() => setPublishedFilter('draft')}>
+            Concept
+          </button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Zoek op titel, inhoud, auteur…"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          />
+          <select
+            value={zoneFilter}
+            onChange={(e) => setZoneFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="all">Alle zones</option>
+            <option value="none">Zonder zone</option>
+            {zones.map((zone) => (
+              <option key={zone.id} value={zone.id}>
+                Zone {zone.zone_number}: {zone.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="created_desc">Nieuwste eerst</option>
+            <option value="created_asc">Oudste eerst</option>
+            <option value="title_asc">Titel A–Z</option>
+          </select>
+        </div>
+        <p className="text-xs text-gray-600">{visibleStories.length} van {stories.length} verhalen</p>
       </div>
 
       {error && (
@@ -110,12 +185,15 @@ export function AdminCorristories() {
       )}
 
       <div className="space-y-4">
-        {stories.length === 0 ? (
-          <p className="text-gray-600 text-center">Geen corristories gevonden.</p>
+        {visibleStories.length === 0 ? (
+          <p className="text-gray-600 text-center">Geen corristories voor deze filters.</p>
         ) : (
-          stories.map(story => (
+          visibleStories.map(story => (
             <div key={story.id} className="relative">
               <CorristoryCard story={story} />
+              <p className="mt-2 text-xs text-gray-500">
+                {story.is_published ? 'Gepubliceerd' : 'Concept'} · {formatAdminDateTime(story.created_at)}
+              </p>
               <div className="mt-2 flex gap-2">
                 <button
                   onClick={() => openModal(story)}

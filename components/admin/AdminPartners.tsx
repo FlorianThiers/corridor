@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getPartners, getZones, createPartner, updatePartner, deletePartner } from '@/lib/database'
 import { PartnerCard } from '@/components/PartnerCard'
 import type { Partner, Zone } from '@/types'
+import { adminFilterButtonClass, formatAdminDateTime } from '@/lib/admin-ui'
 
 export function AdminPartners() {
   const [partners, setPartners] = useState<Partner[]>([])
@@ -14,6 +15,10 @@ export function AdminPartners() {
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null)
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [search, setSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState<'all' | 'intern' | 'extern'>('all')
+  const [zoneFilter, setZoneFilter] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<'name_asc' | 'name_desc' | 'created_desc'>('name_asc')
   const supabase = createClient()
 
   useEffect(() => {
@@ -128,19 +133,91 @@ export function AdminPartners() {
     setError('')
   }
 
+  const visiblePartners = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    let list = partners.filter((partner) => {
+      if (typeFilter !== 'all' && (partner.type || 'extern') !== typeFilter) return false
+      if (zoneFilter !== 'all') {
+        if (zoneFilter === 'none' && partner.zone_id) return false
+        if (zoneFilter !== 'none' && partner.zone_id !== zoneFilter) return false
+      }
+      if (q) {
+        const hay = `${partner.name} ${partner.description || ''}`.toLowerCase()
+        if (!hay.includes(q)) return false
+      }
+      return true
+    })
+    list = [...list].sort((a, b) => {
+      if (sortBy === 'created_desc') {
+        const ta = a.created_at ? new Date(a.created_at).getTime() : 0
+        const tb = b.created_at ? new Date(b.created_at).getTime() : 0
+        return tb - ta
+      }
+      const cmp = a.name.localeCompare(b.name, 'nl-BE')
+      return sortBy === 'name_desc' ? -cmp : cmp
+    })
+    return list
+  }, [partners, search, typeFilter, zoneFilter, sortBy])
+
   if (loading) {
     return <p className="text-gray-600 text-center">Partners worden geladen...</p>
   }
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <button
           onClick={() => openModal()}
           className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium"
         >
           + Nieuwe Partner
         </button>
+      </div>
+
+      <div className="mb-6 space-y-3 rounded-3xl bg-white/50 p-4 backdrop-blur-sm">
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={adminFilterButtonClass(typeFilter === 'all')} onClick={() => setTypeFilter('all')}>
+            Alle types
+          </button>
+          <button type="button" className={adminFilterButtonClass(typeFilter === 'intern')} onClick={() => setTypeFilter('intern')}>
+            Intern
+          </button>
+          <button type="button" className={adminFilterButtonClass(typeFilter === 'extern')} onClick={() => setTypeFilter('extern')}>
+            Extern
+          </button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Zoek op naam…"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm md:col-span-1"
+          />
+          <select
+            value={zoneFilter}
+            onChange={(e) => setZoneFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="all">Alle zones</option>
+            <option value="none">Zonder zone</option>
+            {zones.map((zone) => (
+              <option key={zone.id} value={zone.id}>
+                Zone {zone.zone_number}: {zone.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="name_asc">Naam A–Z</option>
+            <option value="name_desc">Naam Z–A</option>
+            <option value="created_desc">Nieuwste eerst</option>
+          </select>
+        </div>
+        <p className="text-xs text-gray-600">{visiblePartners.length} van {partners.length} partners</p>
       </div>
 
       {error && (
@@ -150,12 +227,15 @@ export function AdminPartners() {
       )}
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {partners.length === 0 ? (
-          <p className="text-gray-600 text-center col-span-full">Geen partners gevonden.</p>
+        {visiblePartners.length === 0 ? (
+          <p className="text-gray-600 text-center col-span-full">Geen partners voor deze filters.</p>
         ) : (
-          partners.map(partner => (
+          visiblePartners.map(partner => (
             <div key={partner.id} className="relative">
               <PartnerCard partner={partner} />
+              {partner.created_at && (
+                <p className="mt-2 text-xs text-gray-500">Toegevoegd: {formatAdminDateTime(partner.created_at)}</p>
+              )}
               <div className="mt-2 flex gap-2">
                 <button
                   onClick={() => openModal(partner)}
