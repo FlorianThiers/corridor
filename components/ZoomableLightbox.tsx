@@ -48,7 +48,13 @@ export function ZoomableLightbox({
         aria-label="Vergroot foto"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className={`${thumbClassName} transition group-hover:scale-[1.02]`} />
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          className={`${thumbClassName} transition group-hover:scale-[1.02]`}
+        />
         <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white opacity-90">
           Vergroten
         </span>

@@ -5,6 +5,8 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Image from 'next/image'
 import { SupabaseVideo } from '@/components/SupabaseVideo'
+import Link from 'next/link'
+import { BRAND_FEST_EDITION_2026 } from '@/lib/brand'
 
 export function HeroSection() {
   const parallaxRef = useRef<HTMLDivElement>(null)
@@ -190,8 +192,14 @@ export function HeroSection() {
           <p className="text-xl md:text-2xl lg:text-3xl text-white/90 font-medium graffiti-text">
             Urban Hub onder het Viaduct van Gentbrugge
           </p>
-          <div className="mt-8">
-            <div className="w-16 h-1 bg-white/60 mx-auto rounded-full" />
+          <div className="mt-8 flex flex-col items-center gap-4">
+            <Link
+              href="/corridorfest"
+              className="inline-flex items-center justify-center rounded-full border border-white/50 bg-amber-400/95 px-6 py-3 text-sm font-semibold text-gray-900 shadow-lg backdrop-blur-sm transition-all hover:scale-105 hover:bg-amber-300"
+            >
+              {BRAND_FEST_EDITION_2026}
+            </Link>
+            <div className="w-16 h-1 bg-white/60 rounded-full" />
           </div>
         </div>
 

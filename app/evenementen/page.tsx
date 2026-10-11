@@ -8,8 +8,8 @@ import { EventCard } from '@/components/EventCard'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { PromoGate, hasActivePromoFloatings } from '@/components/PromoGate'
-import { FestProgramPosters } from '@/components/FestProgramPosters'
-import { FEST_PROMO, isFestEvent, isPromoActive } from '@/lib/site-promos'
+import { BRAND_FEST, BRAND_FEST_EDITION_2026 } from '@/lib/brand'
+import { isFestEvent } from '@/lib/site-promos'
 import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
 import { ActivityCard } from '@/components/ActivityCard'
 import Link from 'next/link'
@@ -57,7 +57,6 @@ export default async function EvenementenPage() {
     direction: 'past',
   })
   const showPromoFloatings = hasActivePromoFloatings()
-  const showFestPosters = isPromoActive(FEST_PROMO, now)
 
   return (
     <div className="page-background">
@@ -71,12 +70,21 @@ export default async function EvenementenPage() {
 
           <PromoGate variant="floatings" anchorOverrides={{ summer: '/activiteiten#zomer-activiteiten' }} />
 
-          {showFestPosters && (
-            <div id="corri-dor-fest" className="mb-12 scroll-mt-28 space-y-6">
-              <h2 className="text-3xl font-bold text-gray-800">Corri D&apos;Or Fest</h2>
-              <FestProgramPosters />
-            </div>
-          )}
+          <div className="mb-12 bg-white/50 backdrop-blur-sm rounded-3xl p-8 border border-amber-200/60 text-center card-hover">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">{BRAND_FEST_EDITION_2026}</h2>
+            <p className="text-gray-600 mb-6 max-w-xl mx-auto">
+              Affiches, dagprogramma en foto&apos;s van de editie — plus upload voor bezoekers.
+            </p>
+            <Link
+              href="/corridorfest"
+              className="inline-flex items-center justify-center px-6 py-3 bg-amber-400 hover:bg-amber-500 text-gray-900 rounded-full font-semibold transition-all hover:scale-105 shadow-lg"
+            >
+              Naar {BRAND_FEST}
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
 
           <div className="mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Opkomende evenementen</h2>
@@ -88,9 +96,7 @@ export default async function EvenementenPage() {
               <div className="space-y-6">
                 {festOpkomend.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="text-2xl font-bold text-gray-800">
-                      {showFestPosters ? 'Fest-highlights' : "Corri D'Or Fest"}
-                    </h3>
+                    <h3 className="text-2xl font-bold text-gray-800">{BRAND_FEST}</h3>
                     {festOpkomend.map((event) => (
                       <EventCard key={event.id} event={event} />
                     ))}
@@ -131,7 +137,7 @@ export default async function EvenementenPage() {
               <div className="space-y-6">
                 {festAfgelopen.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="text-2xl font-bold text-gray-800">Corri D&apos;Or Fest</h3>
+                    <h3 className="text-2xl font-bold text-gray-800">{BRAND_FEST}</h3>
                     {festAfgelopen.map((event) => (
                       <EventCard key={event.id} event={event} />
                     ))}

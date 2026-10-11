@@ -6,6 +6,9 @@ import { getEvenementen, getZones, createEvenement, updateEvenement, deleteEvene
 import { EventCard } from '@/components/EventCard'
 import type { Evenement, Zone, EvenementKind } from '@/types'
 import { SPORT_OPTIONS } from '@/lib/sports'
+import { adminFilterButtonClass } from '@/lib/admin-ui'
+import { datetimeLocalToStorageIso, storageIsoToDatetimeLocal } from '@/lib/event-datetime'
+import { SITE_TIME_ZONE } from '@/lib/format-event-time'
 
 export function AdminEvents() {
   const [events, setEvents] = useState<Evenement[]>([])
@@ -46,11 +49,18 @@ export function AdminEvents() {
     setError('')
     
     const formData = new FormData(e.currentTarget)
+    const startLocal = formData.get('start_datetime') as string
+    const endLocal = (formData.get('end_datetime') as string) || ''
+    const startIso = datetimeLocalToStorageIso(startLocal)
+    if (!startIso) {
+      setError('Ongeldige startdatum')
+      return
+    }
     const eventData = {
       title: formData.get('title') as string,
       description: formData.get('description') as string || undefined,
-      start_datetime: formData.get('start_datetime') as string,
-      end_datetime: formData.get('end_datetime') as string || undefined,
+      start_datetime: startIso,
+      end_datetime: datetimeLocalToStorageIso(endLocal),
       zone_id: formData.get('zone_id') as string || undefined,
       for_girls: formData.get('for_girls') === 'on',
       kind: formData.get('kind') as EvenementKind,
@@ -123,11 +133,6 @@ export function AdminEvents() {
     return timeFilter === 'past' ? db - da : da - db
   })
 
-  const filterBtn = (active: boolean) =>
-    `px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-      active ? 'bg-pink-500 text-white' : 'bg-white/70 text-gray-700 hover:bg-white'
-    }`
-
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -141,24 +146,24 @@ export function AdminEvents() {
 
       <div className="mb-6 space-y-3 rounded-3xl bg-white/50 p-4 backdrop-blur-sm">
         <div className="flex flex-wrap gap-2">
-          <button type="button" className={filterBtn(timeFilter === 'upcoming')} onClick={() => setTimeFilter('upcoming')}>
+          <button type="button" className={adminFilterButtonClass(timeFilter === 'upcoming')} onClick={() => setTimeFilter('upcoming')}>
             Toekomst
           </button>
-          <button type="button" className={filterBtn(timeFilter === 'past')} onClick={() => setTimeFilter('past')}>
+          <button type="button" className={adminFilterButtonClass(timeFilter === 'past')} onClick={() => setTimeFilter('past')}>
             Verleden
           </button>
-          <button type="button" className={filterBtn(timeFilter === 'all')} onClick={() => setTimeFilter('all')}>
+          <button type="button" className={adminFilterButtonClass(timeFilter === 'all')} onClick={() => setTimeFilter('all')}>
             Alles
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className={filterBtn(kindFilter === 'all')} onClick={() => setKindFilter('all')}>
+          <button type="button" className={adminFilterButtonClass(kindFilter === 'all')} onClick={() => setKindFilter('all')}>
             Alle types
           </button>
-          <button type="button" className={filterBtn(kindFilter === 'evenement')} onClick={() => setKindFilter('evenement')}>
+          <button type="button" className={adminFilterButtonClass(kindFilter === 'evenement')} onClick={() => setKindFilter('evenement')}>
             Evenementen
           </button>
-          <button type="button" className={filterBtn(kindFilter === 'activiteit')} onClick={() => setKindFilter('activiteit')}>
+          <button type="button" className={adminFilterButtonClass(kindFilter === 'activiteit')} onClick={() => setKindFilter('activiteit')}>
             Activiteiten
           </button>
         </div>
@@ -266,7 +271,7 @@ export function AdminEvents() {
                   <input
                     type="datetime-local"
                     name="start_datetime"
-                    defaultValue={editingEvent?.start_datetime ? new Date(editingEvent.start_datetime).toISOString().slice(0, 16) : ''}
+                    defaultValue={storageIsoToDatetimeLocal(editingEvent?.start_datetime)}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                   />
@@ -276,10 +281,13 @@ export function AdminEvents() {
                   <input
                     type="datetime-local"
                     name="end_datetime"
-                    defaultValue={editingEvent?.end_datetime ? new Date(editingEvent.end_datetime).toISOString().slice(0, 16) : ''}
+                    defaultValue={storageIsoToDatetimeLocal(editingEvent?.end_datetime)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                   />
                 </div>
+                <p className="md:col-span-2 text-xs text-gray-500">
+                  Tijden zijn Belgische tijd ({SITE_TIME_ZONE}). Wat je invult is wat bezoekers op de site zien.
+                </p>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>

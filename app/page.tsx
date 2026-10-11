@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getEvenementen, getZones } from '@/lib/database'
 import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
 import { isFestEvent } from '@/lib/site-promos'
+import { BRAND_CORRI_DOR } from '@/lib/brand'
 import type { Evenement, Zone } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -74,13 +75,13 @@ export default async function HomePage() {
                 Een bruisende plek onder het viaduct
               </h2>
               <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
-                Corri d'Or is de urban spot in Gentbrugge waar de stad écht tot leven komt. Onder het E17-viaduct vind je een plek om te bewegen, te chillen, en samen te komen. Voetballen, basketten, dansen, lopen of gewoon genieten — hier kan het allemaal.
+                {BRAND_CORRI_DOR} is de urban spot in Gentbrugge waar de stad écht tot leven komt. Onder het E17-viaduct vind je een plek om te bewegen, te chillen, en samen te komen. Voetballen, basketten, dansen, lopen of gewoon genieten — hier kan het allemaal.
               </p>
               <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
                 Terwijl dagelijks duizenden auto's over het viaduct razen, ligt er onder diezelfde brug een verborgen parel: een terrein dat lang braakliggend lag met ongekende mogelijkheden. Wij zien hier de kans om van die plek een levendige urban hub te maken waar creativiteit en energie samenkomen.
               </p>
               <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                Vanaf 2025 kan je hier terecht voor een drankje en verschillende events met en voor de buurt. Corri d'Or wordt een bruisende plek waar iedereen welkom is en zich thuis voelt.
+                Vanaf 2025 kan je hier terecht voor een drankje en verschillende events met en voor de buurt. {BRAND_CORRI_DOR} wordt een bruisende plek waar iedereen welkom is en zich thuis voelt.
               </p>
             </div>
             

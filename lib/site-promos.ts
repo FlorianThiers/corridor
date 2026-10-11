@@ -1,3 +1,5 @@
+import { BRAND_CORRI_DOR, BRAND_FEST } from '@/lib/brand'
+
 export interface SitePromo {
   id: string
   imageSrc: string
@@ -24,8 +26,8 @@ export interface SitePromo {
 export const SUMMER_PROMO: SitePromo = {
   id: 'summer',
   imageSrc: '/zomervakantie-corridor-2026.webp',
-  imageAlt: "Affiche zomervakantie Corri D'Or — wekelijks sportaanbod",
-  title: 'Zomervakantie @ Corrid\'Or',
+  imageAlt: `Affiche zomervakantie ${BRAND_CORRI_DOR} — wekelijks sportaanbod`,
+  title: `Zomervakantie @ ${BRAND_CORRI_DOR}`,
   tagline: 'Elke week sport en animatie — de plek blijft ook buiten het aanbod open om te sporten.',
   dates: '28 juni – 30 augustus 2026',
   location: 'Driebeekstraat, Gentbrugge',
@@ -43,12 +45,12 @@ export const SUMMER_PROMO: SitePromo = {
 export const FEST_PROMO: SitePromo = {
   id: 'fest',
   imageSrc: '/corri-dor-fest-2026.webp',
-  imageAlt: "Affiche Corri D'Or Fest — 25 en 26 september in Gentbrugge",
-  title: "Corri D'Or Fest",
+  imageAlt: `Affiche ${BRAND_FEST} — 25 en 26 september in Gentbrugge`,
+  title: BRAND_FEST,
   tagline: 'Een festival voor iedereen onder en rond het viaduct',
   dates: '25 & 26 september 2026',
   location: 'Driebeekstraat, Gentbrugge',
-  ctaHref: '/evenementen#fest-programma',
+  ctaHref: '/corridorfest#fest-programma',
   ctaLabel: 'Bekijk het programma',
   signupHref: 'https://forms.gle/VFoer92h8heLphWA8',
   signupLabel: 'Schrijf je in',
@@ -77,8 +79,11 @@ export function getActivePromos(now = new Date()): SitePromo[] {
   return HOMEPAGE_PROMOS.filter((promo) => isPromoActive(promo, now))
 }
 
+const FEST_TITLE_ALIASES = [BRAND_FEST, "Corri D'Or Fest", "Corridorfest", 'Corri d\'Or Fest']
+
 export function isFestEvent(title: string): boolean {
-  return title.startsWith(FEST_PROMO.title) || title.startsWith("Corri D'Or Fest")
+  const t = title.trim()
+  return FEST_TITLE_ALIASES.some((alias) => t.startsWith(alias))
 }
 
 export function posterHref(promo: SitePromo): string {
