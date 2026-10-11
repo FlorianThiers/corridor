@@ -1,8 +1,12 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getZoneByNumber, getApprovedZonePhotos } from '@/lib/database'
-import type { Zone, ZonePhoto } from '@/types'
+import {
+  getApprovedZonePhotoCount,
+  getApprovedZonePhotosPage,
+  getZoneByNumber,
+} from '@/lib/database'
+import type { Zone } from '@/types'
 import { PageSection } from '@/components/PageSection'
 import { PageContainer } from '@/components/PageContainer'
 import { PageTitle } from '@/components/PageTitle'
@@ -10,7 +14,8 @@ import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { ZonePhotoSubmit } from '@/components/ZonePhotoSubmit'
 import { ZonePhotoHowTo } from '@/components/ZonePhotoHowTo'
-import { ZoomableLightbox } from '@/components/ZoomableLightbox'
+import { ZonePhotoGallery } from '@/components/ZonePhotoGallery'
+import { ZONE_GALLERY_PAGE_SIZE } from '@/lib/zone-gallery'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
@@ -43,16 +48,26 @@ export default async function ZoneDetailPage({ params }: PageProps) {
   if (!Number.isInteger(n) || n < 1) notFound()
 
   let zone: Zone | null = null
-  let photos: ZonePhoto[] = []
+  let initialPhotos: Awaited<ReturnType<typeof getApprovedZonePhotosPage>> = []
+  let totalPhotoCount = 0
 
   try {
     const supabase = await createClient()
     zone = await getZoneByNumber(supabase, n)
     if (zone) {
       try {
-        photos = await getApprovedZonePhotos(supabase, zone.id)
+        const [photos, total] = await Promise.all([
+          getApprovedZonePhotosPage(supabase, zone.id, {
+            offset: 0,
+            limit: ZONE_GALLERY_PAGE_SIZE,
+          }),
+          getApprovedZonePhotoCount(supabase, zone.id),
+        ])
+        initialPhotos = photos
+        totalPhotoCount = total
       } catch {
-        photos = []
+        initialPhotos = []
+        totalPhotoCount = 0
       }
     }
   } catch (error) {
@@ -62,12 +77,6 @@ export default async function ZoneDetailPage({ params }: PageProps) {
   if (!zone) notFound()
 
   const labels = zone.field_labels?.filter(Boolean) ?? []
-  const gallery = [
-    ...(zone.cover_url
-      ? [{ id: 'cover', public_url: zone.cover_url, caption: 'Cover' } as const]
-      : []),
-    ...photos.map((p) => ({ id: p.id, public_url: p.public_url, caption: p.caption })),
-  ]
 
   return (
     <div className="page-background">
@@ -108,30 +117,21 @@ export default async function ZoneDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {gallery.length === 0 ? (
-            <p className="mb-12 text-center text-gray-600">Nog geen foto&apos;s voor deze zone.</p>
-          ) : (
-            <div className="mb-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {gallery.map((item) => (
-                <figure
-                  key={item.id}
-                  className="overflow-hidden rounded-3xl bg-white/50 backdrop-blur-sm"
-                >
-                  <ZoomableLightbox
-                    src={item.public_url}
-                    alt={item.caption || zone.name}
-                    thumbClassName="aspect-[4/3] w-full object-cover"
-                  />
-                  {item.caption && (
-                    <figcaption className="px-4 py-3 text-sm text-gray-700">{item.caption}</figcaption>
-                  )}
-                </figure>
-              ))}
-            </div>
-          )}
+          <ZonePhotoGallery
+            zoneNumber={zone.zone_number}
+            zoneName={zone.name}
+            coverUrl={zone.cover_url}
+            initialPhotos={initialPhotos.map((p) => ({
+              id: p.id,
+              public_url: p.public_url,
+              caption: p.caption,
+            }))}
+            totalPhotoCount={totalPhotoCount}
+          />
         </PageContainer>
       </PageSection>
       <Footer />
     </div>
   )
 }
+

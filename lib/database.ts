@@ -151,6 +151,27 @@ export async function getApprovedZonePhotoCount(
   return count ?? 0
 }
 
+export async function getApprovedZonePhotosPage(
+  supabase: SupabaseClient,
+  zoneId: string,
+  options: { offset: number; limit: number }
+): Promise<ZonePhoto[]> {
+  const offset = Math.max(0, options.offset)
+  const limit = Math.min(Math.max(1, options.limit), 48)
+  const to = offset + limit - 1
+
+  const { data, error } = await supabase
+    .from('zone_photos')
+    .select('*')
+    .eq('zone_id', zoneId)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+    .range(offset, to)
+
+  if (error) throw error
+  return data || []
+}
+
 export async function getApprovedFestZonePhotos(
   supabase: SupabaseClient,
   fromIso: string,
