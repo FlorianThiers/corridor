@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 interface ZoomableLightboxProps {
   src: string
@@ -21,8 +22,13 @@ export function ZoomableLightbox({
   thumbClassName = 'aspect-[4/3] w-full object-cover',
 }: ZoomableLightboxProps) {
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [scale, setScale] = useState(MIN_SCALE)
   const [pan, setPan] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const viewportRef = useRef<HTMLDivElement>(null)
   const scaleRef = useRef(MIN_SCALE)
@@ -133,13 +139,15 @@ export function ZoomableLightbox({
         </span>
       </button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-[100] flex h-[100dvh] w-[100vw] flex-col bg-black"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Foto vergroten"
-        >
+      {open &&
+        mounted &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex h-[100dvh] w-[100vw] flex-col bg-black"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Foto vergroten"
+          >
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3 text-white">
             <p className="truncate text-sm text-white/80">{alt || 'Foto'}</p>
             <div className="flex flex-wrap items-center justify-end gap-2">
@@ -202,8 +210,9 @@ export function ZoomableLightbox({
           <p className="shrink-0 px-4 py-2 text-center text-xs text-white/60">
             Scroll of + / − om te zoomen · sleep ingezoomd om te verplaatsen · Esc sluiten
           </p>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   )
 }
