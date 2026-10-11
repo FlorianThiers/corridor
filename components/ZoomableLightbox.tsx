@@ -148,7 +148,7 @@ export function ZoomableLightbox({
             aria-modal="true"
             aria-label="Foto vergroten"
           >
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3 text-white">
+          <div className="relative z-30 flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-black px-4 py-3 text-white">
             <p className="truncate text-sm text-white/80">{alt || 'Foto'}</p>
             <div className="flex flex-wrap items-center justify-end gap-2">
               <button
@@ -185,13 +185,13 @@ export function ZoomableLightbox({
 
           <div
             ref={viewportRef}
-            className={`relative min-h-0 flex-1 touch-none select-none ${
+            className={`relative z-0 min-h-0 flex-1 overflow-hidden touch-none select-none isolate ${
               scale > MIN_SCALE ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
             }`}
             onPointerDown={onViewportPointerDown}
           >
             <div
-              className="absolute inset-0 will-change-transform"
+              className="absolute inset-0 z-0 will-change-transform"
               style={{
                 transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
                 transformOrigin: 'center center',
@@ -207,7 +207,7 @@ export function ZoomableLightbox({
             </div>
           </div>
 
-          <p className="shrink-0 px-4 py-2 text-center text-xs text-white/60">
+          <p className="relative z-30 shrink-0 bg-black px-4 py-2 text-center text-xs text-white/60">
             Scroll of + / − om te zoomen · sleep ingezoomd om te verplaatsen · Esc sluiten
           </p>
           </div>,
