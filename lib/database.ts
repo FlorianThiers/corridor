@@ -118,13 +118,50 @@ export async function getZoneByNumber(supabase: SupabaseClient, zoneNumber: numb
 
 export async function getApprovedZonePhotos(
   supabase: SupabaseClient,
-  zoneId: string
+  zoneId: string,
+  options?: { limit?: number }
 ): Promise<ZonePhoto[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from('zone_photos')
     .select('*')
     .eq('zone_id', zoneId)
     .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+
+  if (options?.limit != null && options.limit > 0) {
+    query = query.limit(options.limit)
+  }
+
+  const { data, error } = await query
+  if (error) throw error
+  return data || []
+}
+
+export async function getApprovedZonePhotoCount(
+  supabase: SupabaseClient,
+  zoneId: string
+): Promise<number> {
+  const { count, error } = await supabase
+    .from('zone_photos')
+    .select('*', { count: 'exact', head: true })
+    .eq('zone_id', zoneId)
+    .eq('status', 'approved')
+
+  if (error) throw error
+  return count ?? 0
+}
+
+export async function getApprovedFestZonePhotos(
+  supabase: SupabaseClient,
+  fromIso: string,
+  toIso: string
+): Promise<ZonePhoto[]> {
+  const { data, error } = await supabase
+    .from('zone_photos')
+    .select('*, zones(zone_number, name)')
+    .eq('status', 'approved')
+    .gte('created_at', fromIso)
+    .lt('created_at', toIso)
     .order('created_at', { ascending: false })
 
   if (error) throw error

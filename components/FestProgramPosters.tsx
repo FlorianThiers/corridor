@@ -1,17 +1,18 @@
 'use client'
 
+import { BRAND_FEST } from '@/lib/brand'
 import { ZoomableLightbox } from '@/components/ZoomableLightbox'
 
 const POSTERS = [
   {
     day: 'Vrijdag 25 september',
     src: '/corri-dor-fest-programma-vrijdag.webp',
-    alt: "Programma Corri D'Or Fest — vrijdag 25 september",
+    alt: `Programma ${BRAND_FEST} — vrijdag 25 september`,
   },
   {
     day: 'Zaterdag 26 september',
     src: '/corri-dor-fest-programma-zaterdag.webp',
-    alt: "Programma Corri D'Or Fest — zaterdag 26 september",
+    alt: `Programma ${BRAND_FEST} — zaterdag 26 september`,
   },
 ] as const
 

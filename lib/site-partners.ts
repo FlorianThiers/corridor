@@ -106,6 +106,14 @@ export const SITE_PARTNERS: SitePartner[] = [
     logoKeys: ['together we stand'],
   },
   {
+    id: 'stamhoofd',
+    name: 'Stamhoofd',
+    description: 'Track Tracks × Corri d\'Or — silent disco run tijdens het fest.',
+    websiteUrl: 'https://shop.stamhoofd.be/track-tracks-x-corri-d-or',
+    category: 'sport',
+    logoKeys: ['stamhoofd', 'track tracks', 'paard'],
+  },
+  {
     id: 'corrihop',
     name: 'Corrihop',
     description: 'Dans en hop-initiatieven onder het viaduct.',

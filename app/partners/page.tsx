@@ -12,6 +12,7 @@ import { PageTitle } from '@/components/PageTitle'
 import { SitePartnerCard } from '@/components/SitePartnerCard'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
+import { BRAND_CORRI_DOR, SITE_NAME } from '@/lib/brand'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
@@ -36,7 +37,7 @@ export default async function PartnersPage() {
 
           <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-8 text-center card-hover mb-12 max-w-3xl mx-auto">
             <p className="text-gray-700 leading-relaxed">
-              Corri d&apos;Or is een ecosysteem van sportclubs, buurtpartners, onderwijs en
+              {BRAND_CORRI_DOR} is een ecosysteem van sportclubs, buurtpartners, onderwijs en
               overheden. Samen met bewoners, sporters en jongeren maken we onder het viaduct een
               warme, overdekte plek om te bewegen en elkaar te ontmoeten.
             </p>
@@ -54,7 +55,7 @@ export default async function PartnersPage() {
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                   />
                 </svg>
-                Download Corridor-logo
+                Download {SITE_NAME}-logo
               </a>
             </div>
           </div>

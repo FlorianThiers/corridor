@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import Image from 'next/image'
+import { BRAND_FEST } from '@/lib/brand'
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -231,6 +232,16 @@ export function Navigation() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span>Evenementen</span>
+            </Link>
+            <Link
+              href="/corridorfest"
+              onClick={closeSidebar}
+              className={`nav-link sidebar-link ${isActive('/corridorfest') ? 'active' : ''} !bg-amber-100/90 !text-amber-950 font-semibold`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+              <span>{BRAND_FEST}</span>
             </Link>
             <Link href="/geschiedenis" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/geschiedenis') ? 'active' : ''}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
