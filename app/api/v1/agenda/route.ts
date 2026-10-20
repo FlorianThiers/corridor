@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { isAgendaApiAuthorized } from '@/lib/agenda-api-auth'
 import {
   parseAgendaQuery,
   queryAgendaItems,
@@ -9,15 +10,8 @@ import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-function isAuthorized(request: NextRequest): boolean {
-  const expected = process.env.CORRIDOR_AGENDA_API_KEY
-  if (!expected) return false
-  const header = request.headers.get('authorization')
-  return header === `Bearer ${expected}`
-}
-
 export async function GET(request: NextRequest) {
-  if (!isAuthorized(request)) {
+  if (!isAgendaApiAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
