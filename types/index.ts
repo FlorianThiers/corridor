@@ -61,6 +61,8 @@ export interface Evenement {
   kind?: EvenementKind
   sport_slug?: string | null
   is_highlight?: boolean
+  external_source?: string | null
+  external_id?: string | null
   created_by?: string
   created_at?: string
   updated_at?: string
