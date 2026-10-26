@@ -6,6 +6,7 @@
       "path": "/geschiedenis/13-meubilair-onder-brug.png",
       "alt": "De naam Corridor geschilderd op de wand onder het viaduct",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 0
     },
     {
@@ -13,6 +14,7 @@
       "path": "/geschiedenis/10-graffiti-noodles-tovenaar.png",
       "alt": "Heftruck plaatst betonblok met #CORRIDOR 9050 graffiti",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 1
     },
     {
@@ -20,6 +22,7 @@
       "path": "/geschiedenis/15-mulch-aanleg.png",
       "alt": "Betonblokken worden geschikt en gestapeld onder het viaduct",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 2
     },
     {
@@ -27,6 +30,7 @@
       "path": "/geschiedenis/01-corridor-naam-schildering.png",
       "alt": "Vrijwilliger maakt betonblokken schoon onder de brug",
       "credit": null,
+      "has_recognisable_people": true,
       "sort": 3
     },
     {
@@ -34,6 +38,7 @@
       "path": "/geschiedenis/12-graffiti-opkijken.png",
       "alt": "Modulair houten meubilair onder het viaduct",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 4
     },
     {
@@ -41,6 +46,7 @@
       "path": "/geschiedenis/14-corridor-bord-meubilair.png",
       "alt": "Corridor-bord met meubilair en oproep voor vrijwilligers",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 5
     },
     {
@@ -48,6 +54,7 @@
       "path": "/geschiedenis/05-graffiti-pilaar-kleur.png",
       "alt": "Buurtkaart met het Corrid'or-masterplan ingetekend",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 6
     },
     {
@@ -55,6 +62,7 @@
       "path": "/geschiedenis/06-graffiti-clown-sofie-d.png",
       "alt": "Muurschildering van een clown met hond door Sofie D.",
       "credit": "Sofie D.",
+      "has_recognisable_people": false,
       "sort": 7
     },
     {
@@ -62,6 +70,7 @@
       "path": "/geschiedenis/07-graffiti-schedel-nacht.png",
       "alt": "Grote schedel-graffiti bij nacht met ladder",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 8
     },
     {
@@ -69,6 +78,7 @@
       "path": "/geschiedenis/08-graffiti-monster-gouden-uur.png",
       "alt": "Muurschildering in avondlicht onder het viaduct",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 9
     },
     {
@@ -76,6 +86,7 @@
       "path": "/geschiedenis/02-corridor-9050-heftruck.png",
       "alt": "Portretmuurschildering met vogel op paarse achtergrond",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 10
     },
     {
@@ -83,6 +94,7 @@
       "path": "/geschiedenis/03-betonblokken-stapelen.png",
       "alt": "NOODLES graffiti met tovenaar en ketel",
       "credit": "NOODLES",
+      "has_recognisable_people": false,
       "sort": 11
     },
     {
@@ -90,6 +102,7 @@
       "path": "/geschiedenis/04-betonblokken-schoonmaken.png",
       "alt": "Portret van een oudere man door Frakkie",
       "credit": "Frakkie",
+      "has_recognisable_people": false,
       "sort": 12
     },
     {
@@ -97,6 +110,7 @@
       "path": "/geschiedenis/11-graffiti-frakkie.png",
       "alt": "Figuur die omhoog kijkt, geschilderd op een pilaar",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 13
     },
     {
@@ -104,6 +118,7 @@
       "path": "/geschiedenis/09-graffiti-vrouw-vogel.png",
       "alt": "Vroege skateplek onder het viaduct met graffiti en fiets",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 14
     },
     {
@@ -111,6 +126,7 @@
       "path": "/geschiedenis/18-vuurschaal-logbanken.png",
       "alt": "Vuurschaal met logbanken rond een graffiti-pilaar onder het viaduct",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 15
     },
     {
@@ -118,6 +134,7 @@
       "path": "/geschiedenis/16-daf-bus.png",
       "alt": "Houtsnippers en mulch tussen betonblokken onder de brug",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 16
     },
     {
@@ -125,6 +142,7 @@
       "path": "/geschiedenis/17-evolutie.png",
       "alt": "Groene DAF-bus onder het viaduct",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 17
     },
     {
@@ -132,6 +150,7 @@
       "path": "/geschiedenis/19-vuurschaal-kring.png",
       "alt": "Vuurschaal met kring van logbanken onder het viaduct",
       "credit": null,
+      "has_recognisable_people": false,
       "sort": 18
     }
   ]

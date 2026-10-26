@@ -1,4 +1,6 @@
 // Diagnostic page to verify Next.js routing is working
+import Link from 'next/link'
+
 export const dynamic = 'force-dynamic'
 
 export default function DebugPage() {
@@ -21,9 +23,9 @@ export default function DebugPage() {
       <div style={{ marginTop: '2rem' }}>
         <h2>Test Links:</h2>
         <ul>
-          <li><a href="/">Homepage</a></li>
-          <li><a href="/evenementen">Evenementen</a></li>
-          <li><a href="/zones">Zones</a></li>
+          <li><Link href="/">Homepage</Link></li>
+          <li><Link href="/evenementen">Evenementen</Link></li>
+          <li><Link href="/zones">Zones</Link></li>
         </ul>
       </div>
     </div>

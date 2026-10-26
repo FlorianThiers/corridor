@@ -45,6 +45,7 @@ type HistoryManifestEntry = {
   path: string
   alt: string
   credit?: string | null
+  has_recognisable_people?: boolean
   sort: number
 }
 
@@ -158,7 +159,7 @@ function historyItems(
         artist_tag: null,
         source: 'corristories' as const,
         license: null,
-        has_recognisable_people: true,
+        has_recognisable_people: entry.has_recognisable_people ?? true,
         is_cover: false,
         sort: entry.sort,
         updated_at: updatedAt,
