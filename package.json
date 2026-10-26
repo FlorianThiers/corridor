@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "optimize:videos": "powershell -ExecutionPolicy Bypass -File scripts/optimize-videos.ps1",
     "optimize:images": "powershell -ExecutionPolicy Bypass -File scripts/convert-to-webp.ps1",
     "optimize:all": "npm run optimize:videos && npm run optimize:images",
@@ -24,6 +24,7 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.2.0",
     "@types/qrcode": "^1.5.6",
@@ -33,6 +34,8 @@
     "chokidar": "^5.0.0",
     "concurrently": "^9.2.1",
     "dotenv": "^16.3.1",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.3",
     "live-server": "^1.2.2",
     "nodemon": "^3.1.11",
     "postcss": "^8.5.6",
