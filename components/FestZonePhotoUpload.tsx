@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import type { Zone } from '@/types'
 import { ZonePhotoHowTo } from '@/components/ZonePhotoHowTo'
@@ -26,7 +27,7 @@ export function FestZonePhotoUpload({ zones, defaultZoneNumber }: FestZonePhotoU
     return (
       <p className="text-center text-gray-600">
         Zones laden niet — probeer later opnieuw of upload via{' '}
-        <a href="/zones" className="font-medium text-pink-600 hover:underline">/zones</a>.
+        <Link href="/zones" className="font-medium text-pink-600 hover:underline">/zones</Link>.
       </p>
     )
   }
