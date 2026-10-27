@@ -1,7 +1,9 @@
 // Diagnostic page to verify Next.js routing is working
 import Link from 'next/link'
+import { privateRobots } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
+export const metadata = privateRobots
 
 export default function DebugPage() {
 

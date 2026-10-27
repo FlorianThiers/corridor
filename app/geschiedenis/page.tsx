@@ -14,11 +14,14 @@ import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { HistoryPhotoMarquee } from '@/components/HistoryPhotoMarquee'
 import { HistoryPhotoGrid } from '@/components/HistoryPhotoGrid'
+import { publicMetadata } from '@/lib/seo'
 
-export const metadata = {
+export const metadata = publicMetadata({
   title: 'Geschiedenis - Corridor Gentbrugge',
-  description: 'Vijf jaar evolutie onder het viaduct: van braakliggend terrein tot urban hub. Foto\'s uit de Corridor-groep.',
-}
+  description:
+    "Vijf jaar evolutie onder het viaduct: van braakliggend terrein tot urban hub. Foto's uit de Corridor-groep.",
+  path: '/geschiedenis',
+})
 
 export const dynamic = 'force-dynamic'
 

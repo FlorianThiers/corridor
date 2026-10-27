@@ -6,8 +6,10 @@ import { PageContainer } from '@/components/PageContainer'
 import { PageTitle } from '@/components/PageTitle'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
+import { privateRobots } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
+export const metadata = privateRobots
 
 export default async function ProfielPage() {
   const user = await requireAuth()

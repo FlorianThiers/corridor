@@ -14,9 +14,16 @@ import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
 import { WeeklyActivitySchedule } from '@/components/WeeklyActivitySchedule'
 import { isSportSlug } from '@/lib/sports'
 import { isPromoActive, SUMMER_PROMO } from '@/lib/site-promos'
+import { publicMetadata } from '@/lib/seo'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
+
+export const metadata = publicMetadata({
+  title: 'Activiteiten - Corridor',
+  description: 'Wekelijkse sport en activiteiten onder het viaduct in Gentbrugge.',
+  path: '/activiteiten',
+})
 
 interface ActiviteitenPageProps {
   searchParams: Promise<{ sport?: string }>
