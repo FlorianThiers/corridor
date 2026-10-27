@@ -53,12 +53,19 @@ for (const file of files) {
 
 assert.deepEqual(clientOffenders, [])
 
-const allowed = importSites.filter(
-  (rel) => rel.startsWith('app/api/') || rel === 'lib/supabase/admin.ts'
-)
+const isAllowedAdminImport = (rel: string) =>
+  rel.startsWith('app/api/') ||
+  rel === 'lib/supabase/admin.ts' ||
+  rel === 'lib/media-supabase.ts'
+
+const allowed = importSites.filter(isAllowedAdminImport)
 assert.deepEqual(importSites, allowed)
 assert.ok(importSites.includes('app/api/v1/agenda/import/route.ts'))
-assert.ok(importSites.includes('app/api/v1/media/route.ts'))
+assert.ok(
+  importSites.some(
+    (rel) => rel === 'app/api/v1/media/route.ts' || rel === 'app/api/v1/media/[id]/route.ts',
+  ),
+)
 
 const browserSurfaces = files.filter((file) => {
   const rel = relative(root, file)

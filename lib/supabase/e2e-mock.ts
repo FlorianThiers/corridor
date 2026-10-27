@@ -10,6 +10,7 @@ type Row = Record<string, unknown>
 
 type Filter =
   | { op: 'eq'; column: string; value: unknown }
+  | { op: 'neq'; column: string; value: unknown }
   | { op: 'in'; column: string; value: unknown[] }
   | { op: 'gte'; column: string; value: unknown }
   | { op: 'lt'; column: string; value: unknown }
@@ -34,6 +35,7 @@ function compare(a: unknown, b: unknown): number {
 function matches(row: Row, filter: Filter): boolean {
   const cell = row[filter.column]
   if (filter.op === 'eq') return cell === filter.value
+  if (filter.op === 'neq') return cell !== filter.value
   if (filter.op === 'in') return filter.value.includes(cell)
   if (filter.op === 'gte') return compare(cell, filter.value) >= 0
   return compare(cell, filter.value) < 0
@@ -61,6 +63,11 @@ class E2EQuery implements PromiseLike<QueryResult> {
 
   eq(column: string, value: unknown) {
     this.filters.push({ op: 'eq', column, value })
+    return this
+  }
+
+  neq(column: string, value: unknown) {
+    this.filters.push({ op: 'neq', column, value })
     return this
   }
 

@@ -2,8 +2,6 @@ import 'server-only'
 
 import { createClient } from '@supabase/supabase-js'
 
-import { createE2ESupabase } from '@/lib/supabase/e2e-mock'
-
 /**
  * Service-role Supabase client. Bypasses RLS.
  * Server-only: never import this from a Client Component.
@@ -14,6 +12,7 @@ export function createAdminClient() {
     process.env.E2E_MOCK_SUPABASE === '1' ||
     process.env.NEXT_PUBLIC_E2E_MOCK_SUPABASE === '1'
   ) {
+    const { createE2ESupabase } = require('./e2e-mock') as typeof import('./e2e-mock')
     return createE2ESupabase() as unknown as ReturnType<typeof createClient>
   }
 
