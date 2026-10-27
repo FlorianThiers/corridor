@@ -35,6 +35,9 @@ export function LoginModal() {
     if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
       return 'Dit e-mailadres heeft al een account. Log in of gebruik "Wachtwoord vergeten".'
     }
+    if (msg.includes('invalid login') || msg.includes('invalid credentials') || msg.includes('invalid email or password')) {
+      return 'Onjuist e-mailadres of wachtwoord.'
+    }
     return raw || fallback
   }
 
@@ -80,8 +83,9 @@ export function LoginModal() {
     window.addEventListener('openLoginModal', handleOpenModal)
     document.addEventListener('click', handleLoginClick)
 
-    // Close modal if user is logged in (unless showing success/error from email confirmation)
-    if (user && !errorParam && !successParam) {
+    // Sluit alleen als er al een sessie is. Een geslaagde login toont eerst de
+    // bevestiging; die sluit zichzelf via de timeout hieronder.
+    if (user && !errorParam && !successParam && !success) {
       setIsOpen(false)
     }
 
@@ -95,7 +99,7 @@ export function LoginModal() {
       window.removeEventListener('openLoginModal', handleOpenModal)
       document.removeEventListener('click', handleLoginClick)
     }
-  }, [user])
+  }, [user, success])
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -121,7 +125,7 @@ export function LoginModal() {
         router.refresh()
       }, 1500)
     } catch (err: any) {
-      setError(err.message || 'Inloggen mislukt. Probeer opnieuw.')
+      setError(friendlyAuthError(err?.message || '', 'Inloggen mislukt. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }
