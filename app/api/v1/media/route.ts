@@ -7,22 +7,9 @@ import {
   resolvePublicBaseUrl,
   toMediaResponse,
 } from '@/lib/media-api'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
+import { createMediaReadClient } from '@/lib/media-supabase'
 
 export const dynamic = 'force-dynamic'
-
-function createMediaSupabase() {
-  try {
-    return createAdminClient()
-  } catch (adminError) {
-    console.warn(
-      'media-api: service role unavailable, falling back to anon client',
-      adminError instanceof Error ? adminError.message : adminError
-    )
-    return null
-  }
-}
 
 export async function GET(request: NextRequest) {
   if (!isMediaApiAuthorized(request)) {
@@ -32,9 +19,7 @@ export async function GET(request: NextRequest) {
   try {
     const query = parseMediaQuery(request.nextUrl.searchParams)
     const baseUrl = resolvePublicBaseUrl(request.nextUrl.origin)
-    const admin = createMediaSupabase()
-    const supabase = admin ?? await createClient()
-
+    const supabase = await createMediaReadClient()
     const items = await queryMediaItems(supabase, query, { baseUrl })
     return NextResponse.json(toMediaResponse(items))
   } catch (error) {
