@@ -4,12 +4,44 @@ export interface HistoryPhoto {
   src: string
   alt: string
   caption?: string
-  /** Kunstenaar of fotograaf, als die bekend is. */
+  /** Graffiti- of kunstenaarscredit (statische lijst of fallback op src). */
   credit?: string
+  /** Fotograaf, bv. uit de database of UC. */
+  photographer?: string
 }
 
-export function historyPhotoAlt(photo: Pick<HistoryPhoto, 'alt' | 'credit'>): string {
-  return altWithCredits(photo.alt, { artist: photo.credit })
+export function historyPhotosBySrc(): ReadonlyMap<string, HistoryPhoto> {
+  return new Map(historyPhotos.map((photo) => [photo.src, photo]))
+}
+
+/** Map een DB-rij naar een geschiedenisfoto met credits uit static fallback op src. */
+export function historyPhotoFromDbRow(
+  row: {
+    src: string
+    alt: string
+    caption?: string | null
+    credit?: string | null
+  },
+  staticBySrc: ReadonlyMap<string, HistoryPhoto>,
+): HistoryPhoto {
+  const fallback = staticBySrc.get(row.src)
+  const dbCredit = row.credit?.trim()
+  return {
+    src: row.src,
+    alt: row.alt,
+    caption: row.caption || undefined,
+    credit: fallback?.credit,
+    photographer: dbCredit || undefined,
+  }
+}
+
+export function historyPhotoAlt(
+  photo: Pick<HistoryPhoto, 'alt' | 'credit' | 'photographer'>,
+): string {
+  return altWithCredits(photo.alt, {
+    artist: photo.credit,
+    photographer: photo.photographer,
+  })
 }
 
 export interface HistoryMilestone {

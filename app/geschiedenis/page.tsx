@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getHistoryMilestones, getHistoryPhotosDb } from '@/lib/database'
 import {
+  historyPhotoFromDbRow,
   historyPhotos as staticPhotos,
+  historyPhotosBySrc,
   historyMilestones as staticMilestones,
   type HistoryPhoto,
   type HistoryMilestone,
@@ -36,11 +38,8 @@ export default async function GeschiedenisPage() {
       getHistoryMilestones(supabase),
     ])
     if (dbPhotos.length > 0) {
-      photos = dbPhotos.map((p) => ({
-        src: p.src,
-        alt: p.alt,
-        caption: p.caption || undefined,
-      }))
+      const staticBySrc = historyPhotosBySrc()
+      photos = dbPhotos.map((p) => historyPhotoFromDbRow(p, staticBySrc))
     }
     if (dbMilestones.length > 0) {
       milestones = dbMilestones.map((m) => ({

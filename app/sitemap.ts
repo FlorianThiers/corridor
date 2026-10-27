@@ -15,9 +15,12 @@ const PATHS = [
 ] as const
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const lastModified = new Date()
   return PATHS.map((path) => ({
     url: path === '/' ? `${SITE_URL}/` : `${SITE_URL}${path}`,
-    changeFrequency: path === '/' || path === '/agenda' || path === '/activiteiten' ? 'daily' : 'weekly',
+    lastModified,
+    changeFrequency:
+      path === '/' || path === '/agenda' || path === '/activiteiten' ? 'daily' : 'weekly',
     priority: path === '/' ? 1 : 0.7,
   }))
 }

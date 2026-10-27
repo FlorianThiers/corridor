@@ -105,7 +105,7 @@ export function Navigation() {
           type="button"
           id="menu-overlay"
           className="sidebar-overlay active"
-          aria-label="Menu sluiten"
+          aria-label="Klik om het menu te sluiten"
           onClick={closeSidebar}
         />
       )}

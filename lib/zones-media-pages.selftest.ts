@@ -3,7 +3,12 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { zoneGalleryAlt } from './zone-gallery'
-import { historyPhotos, historyPhotoAlt } from './geschiedenis'
+import {
+  historyPhotoAlt,
+  historyPhotoFromDbRow,
+  historyPhotos,
+  historyPhotosBySrc,
+} from './geschiedenis'
 
 const root = process.cwd()
 
@@ -46,6 +51,28 @@ assert.match(named, /Frakkie/)
 const sofie = historyPhotos.find((photo) => photo.credit === 'Sofie D.')
 assert.ok(sofie)
 assert.match(historyPhotoAlt(sofie), /Sofie D\./)
+
+const staticBySrc = historyPhotosBySrc()
+const dbSofie = historyPhotoFromDbRow(
+  {
+    src: sofie!.src,
+    alt: 'DB alt',
+    caption: 'DB caption',
+  },
+  staticBySrc,
+)
+assert.equal(dbSofie.credit, 'Sofie D.')
+assert.match(historyPhotoAlt(dbSofie), /Sofie D\./)
+
+const dbPhotographer = historyPhotoFromDbRow(
+  {
+    src: '/geschiedenis/nieuw.jpg',
+    alt: 'Skate onder het viaduct',
+    credit: 'Sam',
+  },
+  staticBySrc,
+)
+assert.match(historyPhotoAlt(dbPhotographer), /foto: Sam/)
 
 const zonesPage = readFileSync(join(root, 'app/zones/page.tsx'), 'utf8')
 const zoneDetail = readFileSync(join(root, 'app/zones/[zoneNumber]/page.tsx'), 'utf8')

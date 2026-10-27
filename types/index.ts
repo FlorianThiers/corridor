@@ -47,6 +47,8 @@ export interface HistoryPhotoRow {
   src: string
   alt: string
   caption?: string | null
+  /** Fotograaf; kolom kan in productie bestaan zonder migratie in deze PR. */
+  credit?: string | null
   sort_order: number
   is_published: boolean
   created_at?: string

@@ -239,7 +239,7 @@ export function Calendar({ events, sportFilter }: CalendarProps) {
         <div className="mb-6">
           <h3 className="text-2xl font-bold text-gray-800 mb-4">
             Agenda op{' '}
-            {selectedDate.toLocaleDateString('nl-NL', {
+            {selectedDate.toLocaleDateString('nl-BE', {
               weekday: 'long',
               year: 'numeric',
               month: 'long',
