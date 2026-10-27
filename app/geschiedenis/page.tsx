@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getHistoryMilestones, getHistoryPhotosDb } from '@/lib/database'
 import {
+  historyPhotoFromDbRow,
   historyPhotos as staticPhotos,
+  historyPhotosBySrc,
   historyMilestones as staticMilestones,
   type HistoryPhoto,
   type HistoryMilestone,
@@ -14,11 +16,14 @@ import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { HistoryPhotoMarquee } from '@/components/HistoryPhotoMarquee'
 import { HistoryPhotoGrid } from '@/components/HistoryPhotoGrid'
+import { publicMetadata } from '@/lib/seo'
 
-export const metadata = {
+export const metadata = publicMetadata({
   title: 'Geschiedenis - Corridor Gentbrugge',
-  description: 'Vijf jaar evolutie onder het viaduct: van braakliggend terrein tot urban hub. Foto\'s uit de Corridor-groep.',
-}
+  description:
+    "Vijf jaar evolutie onder het viaduct: van braakliggend terrein tot urban hub. Foto's uit de Corridor-groep.",
+  path: '/geschiedenis',
+})
 
 export const dynamic = 'force-dynamic'
 
@@ -33,11 +38,8 @@ export default async function GeschiedenisPage() {
       getHistoryMilestones(supabase),
     ])
     if (dbPhotos.length > 0) {
-      photos = dbPhotos.map((p) => ({
-        src: p.src,
-        alt: p.alt,
-        caption: p.caption || undefined,
-      }))
+      const staticBySrc = historyPhotosBySrc()
+      photos = dbPhotos.map((p) => historyPhotoFromDbRow(p, staticBySrc))
     }
     if (dbMilestones.length > 0) {
       milestones = dbMilestones.map((m) => ({

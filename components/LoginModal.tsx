@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -19,6 +19,8 @@ export function LoginModal() {
   const supabase = createClient()
   const router = useRouter()
   const { user } = useAuth()
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const previouslyFocused = useRef<HTMLElement | null>(null)
 
   const siteOrigin = () => {
     const raw = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
@@ -32,6 +34,9 @@ export function LoginModal() {
     }
     if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
       return 'Dit e-mailadres heeft al een account. Log in of gebruik "Wachtwoord vergeten".'
+    }
+    if (msg.includes('invalid login') || msg.includes('invalid credentials') || msg.includes('invalid email or password')) {
+      return 'Onjuist e-mailadres of wachtwoord.'
     }
     return raw || fallback
   }
@@ -78,8 +83,9 @@ export function LoginModal() {
     window.addEventListener('openLoginModal', handleOpenModal)
     document.addEventListener('click', handleLoginClick)
 
-    // Close modal if user is logged in (unless showing success/error from email confirmation)
-    if (user && !errorParam && !successParam) {
+    // Sluit alleen als er al een sessie is. Een geslaagde login toont eerst de
+    // bevestiging; die sluit zichzelf via de timeout hieronder.
+    if (user && !errorParam && !successParam && !success) {
       setIsOpen(false)
     }
 
@@ -93,7 +99,7 @@ export function LoginModal() {
       window.removeEventListener('openLoginModal', handleOpenModal)
       document.removeEventListener('click', handleLoginClick)
     }
-  }, [user])
+  }, [user, success])
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -119,7 +125,7 @@ export function LoginModal() {
         router.refresh()
       }, 1500)
     } catch (err: any) {
-      setError(err.message || 'Inloggen mislukt. Probeer opnieuw.')
+      setError(friendlyAuthError(err?.message || '', 'Inloggen mislukt. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }
@@ -185,6 +191,40 @@ export function LoginModal() {
     }
   }
 
+  useEffect(() => {
+    if (!isOpen) return
+    previouslyFocused.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const focusTimer = window.setTimeout(() => {
+      dialogRef.current?.querySelector<HTMLElement>('input, button')?.focus()
+    }, 0)
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+        return
+      }
+      if (event.key !== 'Tab' || !dialogRef.current) return
+      const items = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), textarea, select')
+      )
+      if (items.length === 0) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      window.clearTimeout(focusTimer)
+      document.removeEventListener('keydown', onKey)
+      previouslyFocused.current?.focus()
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   return (
@@ -197,18 +237,26 @@ export function LoginModal() {
         }
       }}
     >
-      <div className="modal-content">
+      <div
+        ref={dialogRef}
+        className="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="login-modal-title"
+      >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 id="login-modal-title" className="text-2xl font-bold text-gray-800">
             {activeTab === 'login' && 'Inloggen'}
             {activeTab === 'signup' && 'Registreren'}
             {activeTab === 'forgot-password' && 'Wachtwoord vergeten'}
           </h2>
           <button
+            type="button"
             onClick={() => setIsOpen(false)}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-700 hover:text-gray-900"
+            aria-label="Sluiten"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -219,27 +267,31 @@ export function LoginModal() {
           <div>
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                 <input
+                  id="login-email"
                   type="email"
                   name="email"
+                  autoComplete="email"
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Wachtwoord</label>
+                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-2">Wachtwoord</label>
                 <div className="relative">
                   <input
+                    id="login-password"
                     type={showPassword ? 'text' : 'password'}
                     name="password"
+                    autoComplete="current-password"
                     required
                     className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none z-[10004] flex items-center justify-center w-6 h-6 pointer-events-auto"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700 hover:text-gray-900 z-[10004] flex items-center justify-center w-6 h-6 pointer-events-auto"
                     style={{ position: 'absolute' }}
                     aria-label={showPassword ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'}
                   >
@@ -268,7 +320,7 @@ export function LoginModal() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium disabled:opacity-50"
+                className="w-full bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition-colors font-medium disabled:opacity-50"
               >
                 {loading ? 'Bezig...' : 'Inloggen'}
               </button>
@@ -292,36 +344,42 @@ export function LoginModal() {
           <div>
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Naam</label>
+                <label htmlFor="signup-name" className="block text-sm font-medium text-gray-700 mb-2">Naam</label>
                 <input
+                  id="signup-name"
                   type="text"
                   name="name"
+                  autoComplete="name"
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                 <input
+                  id="signup-email"
                   type="email"
                   name="email"
+                  autoComplete="email"
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Wachtwoord</label>
+                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-2">Wachtwoord</label>
                 <div className="relative">
                   <input
+                    id="signup-password"
                     type={showSignupPassword ? 'text' : 'password'}
                     name="password"
+                    autoComplete="new-password"
                     required
                     className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
                   />
                   <button
                     type="button"
                     onClick={() => setShowSignupPassword(!showSignupPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none z-[10004] flex items-center justify-center w-6 h-6 pointer-events-auto"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700 hover:text-gray-900 z-[10004] flex items-center justify-center w-6 h-6 pointer-events-auto"
                     style={{ position: 'absolute' }}
                     aria-label={showSignupPassword ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'}
                   >
@@ -341,7 +399,7 @@ export function LoginModal() {
               <button
                 type="submit"
                 disabled={loading || signupDone}
-                className="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium disabled:opacity-50"
+                className="w-full bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition-colors font-medium disabled:opacity-50"
               >
                 {loading ? 'Bezig...' : signupDone ? 'Check je email' : 'Registreren'}
               </button>
@@ -368,10 +426,12 @@ export function LoginModal() {
                 Voer je emailadres in en we sturen je een link om je wachtwoord opnieuw in te stellen.
               </p>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                 <input
+                  id="forgot-email"
                   type="email"
                   name="email"
+                  autoComplete="email"
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
                 />
@@ -379,7 +439,7 @@ export function LoginModal() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium disabled:opacity-50"
+                className="w-full bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition-colors font-medium disabled:opacity-50"
               >
                 {loading ? 'Bezig...' : 'Verstuur reset link'}
               </button>

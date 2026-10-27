@@ -377,7 +377,7 @@ export function AdminAnimatie() {
               <button
                 type="submit"
                 disabled={heroUploading}
-                className="flex-1 bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium disabled:opacity-50"
+                className="flex-1 bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition-colors font-medium disabled:opacity-50"
               >
                 {heroUploading ? 'Uploaden...' : 'Uploaden'}
               </button>
@@ -385,7 +385,7 @@ export function AdminAnimatie() {
                 type="button"
                 onClick={deleteHeroVideo}
                 disabled={!currentHeroVideoUrl}
-                className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors font-medium disabled:opacity-50"
+                className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50"
               >
                 Verwijderen
               </button>
@@ -463,7 +463,7 @@ export function AdminAnimatie() {
             <button
               type="submit"
               disabled={uploading}
-              className="flex-1 bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium disabled:opacity-50"
+              className="flex-1 bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition-colors font-medium disabled:opacity-50"
             >
               {uploading ? 'Uploaden...' : 'Uploaden'}
             </button>
@@ -471,7 +471,7 @@ export function AdminAnimatie() {
               type="button"
               onClick={deleteAnimation}
               disabled={!currentAnimationUrl}
-              className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors font-medium disabled:opacity-50"
+              className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50"
             >
               Verwijderen
             </button>

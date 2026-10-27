@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -13,6 +13,9 @@ export function Navigation() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, userProfile, isAdmin, isAuthenticated } = useAuth()
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const sidebarRef = useRef<HTMLElement>(null)
+  const wasOpen = useRef(false)
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen)
@@ -43,6 +46,45 @@ export function Navigation() {
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen])
 
+  useEffect(() => {
+    if (isOpen && !wasOpen.current) {
+      sidebarRef.current?.querySelector<HTMLElement>('a, button')?.focus()
+    }
+    if (!isOpen && wasOpen.current) {
+      menuButtonRef.current?.focus()
+    }
+    wasOpen.current = isOpen
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const onTab = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return
+      const root = sidebarRef.current
+      const button = menuButtonRef.current
+      if (!root || !button) return
+      const overlay = document.getElementById('menu-overlay')
+      const items = [
+        ...(overlay instanceof HTMLElement ? [overlay] : []),
+        button,
+        ...root.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'),
+      ]
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last?.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first?.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onTab)
+    return () => document.removeEventListener('keydown', onTab)
+  }, [isOpen])
+
   const isActive = (path: string) => {
     if (!pathname) return false
     if (path === '/') {
@@ -53,34 +95,50 @@ export function Navigation() {
 
   return (
     <>
+      <a href="#inhoud" className="skip-link">
+        Ga naar de inhoud
+      </a>
+
       {/* Sidebar Overlay */}
       {isOpen && (
-        <div
+        <button
+          type="button"
+          id="menu-overlay"
           className="sidebar-overlay active"
+          aria-label="Klik om het menu te sluiten"
           onClick={closeSidebar}
         />
       )}
 
       {/* Hamburger Button */}
       <button
+        ref={menuButtonRef}
         onClick={toggleSidebar}
         className="hamburger-btn fixed top-6 left-6 z-[10001] w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-800 hover:text-gray-900 hover:bg-white hover:scale-110 shadow-lg transition-all cursor-pointer"
-        aria-label="Menu"
+        aria-label={isOpen ? 'Menu sluiten' : 'Menu openen'}
+        aria-expanded={isOpen}
+        aria-controls="site-navigatie"
         type="button"
       >
         {isOpen ? (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         )}
       </button>
 
       {/* Sidebar */}
-      <nav className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <nav
+        ref={sidebarRef}
+        id="site-navigatie"
+        className={`sidebar ${isOpen ? 'open' : ''}`}
+        aria-label="Hoofdmenu"
+        inert={isOpen ? undefined : true}
+      >
         <div className="sidebar-content">
           {/* Logo */}
           <div className="sidebar-header">
@@ -106,7 +164,7 @@ export function Navigation() {
                   closeSidebar()
                   window.dispatchEvent(new CustomEvent('openLoginModal'))
                 }}
-                className="sidebar-link w-full bg-pink-500 text-white hover:bg-pink-600 mb-2"
+                className="sidebar-link w-full bg-pink-600 text-white hover:bg-pink-700 mb-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -133,13 +191,16 @@ export function Navigation() {
             <div className="mb-4">
               <button
                 onClick={toggleAdminNav}
-                className="sidebar-link w-full text-left text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                className="sidebar-link w-full text-left text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                aria-expanded={adminNavOpen}
+                aria-controls="admin-submenu"
               >
                 <svg
                   className={`w-4 h-4 inline mr-2 transition-transform ${adminNavOpen ? '' : '-rotate-90'}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
@@ -147,7 +208,7 @@ export function Navigation() {
               </button>
 
               {adminNavOpen && (
-                <div className="ml-4 space-y-1">
+                <div id="admin-submenu" className="ml-4 space-y-1">
                   <Link href="/beheer/evenementen" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/beheer/evenementen') ? 'active' : ''}`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -203,31 +264,31 @@ export function Navigation() {
 
           {/* Navigation Links */}
           <div className="sidebar-nav">
-            <Link href="/" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/') ? 'active' : ''}`}>
+            <Link href="/" onClick={closeSidebar} aria-current={isActive('/') ? 'page' : undefined} className={`nav-link sidebar-link ${isActive('/') ? 'active' : ''}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               <span>Home</span>
             </Link>
-            <Link href="/agenda" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/agenda') ? 'active' : ''}`}>
+            <Link href="/agenda" onClick={closeSidebar} aria-current={isActive('/agenda') ? 'page' : undefined} className={`nav-link sidebar-link ${isActive('/agenda') ? 'active' : ''}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
               <span>Agenda</span>
             </Link>
-            <Link href="/zones" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/zones') ? 'active' : ''}`}>
+            <Link href="/zones" onClick={closeSidebar} aria-current={isActive('/zones') ? 'page' : undefined} className={`nav-link sidebar-link ${isActive('/zones') ? 'active' : ''}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
               <span>Zones</span>
             </Link>
-            <Link href="/activiteiten" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/activiteiten') ? 'active' : ''}`}>
+            <Link href="/activiteiten" onClick={closeSidebar} aria-current={isActive('/activiteiten') ? 'page' : undefined} className={`nav-link sidebar-link ${isActive('/activiteiten') ? 'active' : ''}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
               <span>Activiteiten</span>
             </Link>
-            <Link href="/evenementen" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/evenementen') ? 'active' : ''}`}>
+            <Link href="/evenementen" onClick={closeSidebar} aria-current={isActive('/evenementen') ? 'page' : undefined} className={`nav-link sidebar-link ${isActive('/evenementen') ? 'active' : ''}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -236,6 +297,7 @@ export function Navigation() {
             <Link
               href="/corridorfest"
               onClick={closeSidebar}
+              aria-current={isActive('/corridorfest') ? 'page' : undefined}
               className={`nav-link sidebar-link ${isActive('/corridorfest') ? 'active' : ''} !bg-amber-100/90 !text-amber-950 font-semibold`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -243,13 +305,13 @@ export function Navigation() {
               </svg>
               <span>{BRAND_FEST}</span>
             </Link>
-            <Link href="/geschiedenis" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/geschiedenis') ? 'active' : ''}`}>
+            <Link href="/geschiedenis" onClick={closeSidebar} aria-current={isActive('/geschiedenis') ? 'page' : undefined} className={`nav-link sidebar-link ${isActive('/geschiedenis') ? 'active' : ''}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>Geschiedenis</span>
             </Link>
-            <Link href="/partners" onClick={closeSidebar} className={`nav-link sidebar-link ${isActive('/partners') ? 'active' : ''}`}>
+            <Link href="/partners" onClick={closeSidebar} aria-current={isActive('/partners') ? 'page' : undefined} className={`nav-link sidebar-link ${isActive('/partners') ? 'active' : ''}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>

@@ -16,6 +16,7 @@ import { ZonePhotoSubmit } from '@/components/ZonePhotoSubmit'
 import { ZonePhotoHowTo } from '@/components/ZonePhotoHowTo'
 import { ZonePhotoGallery } from '@/components/ZonePhotoGallery'
 import { ZONE_GALLERY_PAGE_SIZE } from '@/lib/zone-gallery'
+import { publicMetadata } from '@/lib/seo'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
@@ -27,16 +28,17 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
   const { zoneNumber } = await params
   const n = Number(zoneNumber)
-  if (!Number.isFinite(n)) return { title: 'Zone - Corridor' }
+  if (!Number.isInteger(n) || n < 1) return { title: 'Zone - Corridor' }
 
   try {
     const supabase = await createClient()
     const zone = await getZoneByNumber(supabase, n)
     if (!zone) return { title: 'Zone - Corridor' }
-    return {
+    return publicMetadata({
       title: `Zone ${zone.zone_number}: ${zone.name} - Corridor`,
-      description: zone.description || `Corridor zone ${zone.zone_number}`,
-    }
+      description: zone.description || `Corridor zone ${zone.zone_number} in Gentbrugge.`,
+      path: `/zones/${zone.zone_number}`,
+    })
   } catch {
     return { title: 'Zone - Corridor' }
   }
@@ -125,6 +127,10 @@ export default async function ZoneDetailPage({ params }: PageProps) {
               id: p.id,
               public_url: p.public_url,
               caption: p.caption,
+              storage_path: p.storage_path,
+              credit: p.credit,
+              artist_tag: p.artist_tag,
+              media_source: p.media_source,
             }))}
             totalPhotoCount={totalPhotoCount}
           />

@@ -33,21 +33,64 @@ De **Service Role Key**:
 - ❌ Moet alleen server-side worden gebruikt
 - ❌ Bypassed RLS policies (heeft volledige toegang)
 
+## Vercel environment variables — actie voor Florian
+
+De admin client (`lib/supabase/admin.ts`) leest **alleen** de server-only variabele `SUPABASE_SERVICE_ROLE_KEY`. Ontbreekt die, dan gooit `createAdminClient()` een error. Er is geen fallback meer.
+
+`NEXT_PUBLIC_`-variabelen worden in de browserbundel gezet. Een service role key met die prefix is een gelekt geheim: ze bypassed RLS.
+
+### Zetten (verplicht)
+
+| Variabele | Environments | Opmerking |
+| --- | --- | --- |
+| `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview, Development | Server-only. Waarde = Supabase **service_role** key (Settings → API). Geen `NEXT_PUBLIC_`-prefix. |
+
+Zonder deze variabele faalt agenda-import (`POST /api/v1/agenda/import`) luid. De media-feed logt een waarschuwing en valt terug op de anon client (RLS), niet op een publieke service role key.
+
+### Verwijderen
+
+| Variabele | Environments |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` | Production, Preview, Development — overal waar ze nog staat |
+
+Verwijder de variabele volledig. Niet hernoemen naar een andere `NEXT_PUBLIC_`-naam. Na het verwijderen een nieuwe deployment laten bouwen, zodat de oude waarde uit de clientbundel verdwijnt. Deze PR zelf niet mergen of deployen tot de server-only key gezet is.
+
+### Laten staan (publiek, geen geheim)
+
+| Variabele | Opmerking |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Publieke project-URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Publieke anon key; toegang loopt via RLS |
+| `NEXT_PUBLIC_SITE_URL` | Optioneel, publieke site-URL voor auth-redirects |
+
+### Andere server-only variabelen (geen `NEXT_PUBLIC_`)
+
+Deze zijn geen Supabase-service-role, maar ook geen browsergeheimen. Niet naar `NEXT_PUBLIC_` verplaatsen.
+
+| Variabele | Opmerking |
+| --- | --- |
+| `CORRIDOR_AGENDA_API_KEY` | Bearer-token voor de agenda-API |
+| `CORRIDOR_MEDIA_API_KEY` | Optioneel; aparte token voor `GET /api/v1/media` |
+| `CORRIDOR_SITE_URL` | Optioneel; absolute URL in de media-feed |
+
 ## 🔒 Best Practices
 
-### ✅ Veilig (Wat We Nu Doen)
+### ✅ Veilig
 
 ```env
-# ✅ Veilig - Anon key is publiek
+# Publiek - anon key is publiek
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc... (anon key)
+
+# Server-only - service role, nooit NEXT_PUBLIC_
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGc... (service role key)
 ```
 
-### ❌ Onveilig (Nooit Doen)
+### ❌ Onveilig (verwijderen als die nog op Vercel staat)
 
 ```env
-# ❌ ONVEILIG - Service role key is geheim
-NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=eyJhbGc... (service role key)
+# ONVEILIG - service role key met NEXT_PUBLIC_ lekt naar de browser
+# NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=eyJhbGc... (service role key)
 ```
 
 ## 📋 Wat Te Doen Met De Waarschuwing?

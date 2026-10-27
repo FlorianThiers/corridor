@@ -34,6 +34,10 @@ export async function GET(
         id: p.id,
         public_url: p.public_url,
         caption: p.caption,
+        storage_path: p.storage_path,
+        credit: p.credit ?? null,
+        artist_tag: p.artist_tag ?? null,
+        media_source: p.media_source ?? null,
       })),
     })
   } catch (error) {

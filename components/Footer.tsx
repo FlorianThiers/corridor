@@ -4,6 +4,7 @@ export function Footer() {
   return (
     <footer
       id="footer"
+      role="contentinfo"
       className="py-12 px-4 relative"
       style={{
         backgroundImage: 'url(/FlyerAchterkant.webp)',
@@ -11,7 +12,7 @@ export function Footer() {
         backgroundPosition: 'center',
       }}
     >
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 bg-black/70" />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <div className="mb-8">
           <div className="w-16 h-16 mx-auto organic-shape shadow-lg mb-4 bg-white/90 backdrop-blur-sm flex items-center justify-center">
@@ -30,7 +31,7 @@ export function Footer() {
         <div className="flex justify-center space-x-6 mb-8">
           <a
             href="https://www.facebook.com/corridor.gentbrugge"
-            className="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all"
+            className="w-8 h-8 text-white hover:text-white hover:scale-110 transition-all"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Facebook"
@@ -41,7 +42,7 @@ export function Footer() {
           </a>
           <a
             href="https://www.instagram.com/corridor9050/"
-            className="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all"
+            className="w-8 h-8 text-white hover:text-white hover:scale-110 transition-all"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
@@ -52,7 +53,7 @@ export function Footer() {
           </a>
           <a
             href="https://www.tiktok.com/@corridor9050"
-            className="w-8 h-8 text-white/80 hover:text-white hover:scale-110 transition-all"
+            className="w-8 h-8 text-white hover:text-white hover:scale-110 transition-all"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="TikTok"
@@ -65,17 +66,17 @@ export function Footer() {
 
         <div className="border-t border-white/30 pt-6">
           <p className="text-white/90 text-sm mb-2">© 2024 Sportaround - Corridor Gentbrugge</p>
-          <p className="text-white/80 text-xs mb-4">
+          <p className="text-white text-xs mb-4">
             Emanuel Hielstraat 106, 9050 Gentbrugge | KBO: 0568.625.876
           </p>
           <div className="border-t border-white/20 pt-4">
-            <p className="text-white/70 text-xs">
+            <p className="text-white text-xs">
               Website ontwerp & ontwikkeling door{' '}
               <a
                 href="https://florian-tau.vercel.app"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white/80 hover:text-white font-medium transition-colors underline decoration-dotted underline-offset-2"
+                className="text-white hover:text-white font-medium transition-colors underline decoration-dotted underline-offset-2"
               >
                 Florian Thiers
               </a>

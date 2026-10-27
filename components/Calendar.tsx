@@ -84,27 +84,35 @@ export function Calendar({ events, sportFilter }: CalendarProps) {
     <div>
       <div className="flex items-center justify-between mb-8">
         <button
+          type="button"
           onClick={prevMonth}
-          className="px-4 py-2 bg-white/60 backdrop-blur-sm rounded-lg hover:bg-white/80 transition-colors font-medium"
+          className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-lg hover:bg-white transition-colors font-medium text-gray-900"
+          aria-label="Vorige maand"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 id="agenda-maand" className="text-2xl font-bold text-gray-800">
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h2>
         <button
+          type="button"
           onClick={nextMonth}
-          className="px-4 py-2 bg-white/60 backdrop-blur-sm rounded-lg hover:bg-white/80 transition-colors font-medium"
+          className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-lg hover:bg-white transition-colors font-medium text-gray-900"
+          aria-label="Volgende maand"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
       </div>
 
-      <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 mb-6">
+      <div
+        className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 mb-6"
+        role="group"
+        aria-labelledby="agenda-maand"
+      >
         <div className="grid grid-cols-7 gap-2 mb-4">
           {weekDays.map((day) => (
             <div key={day} className="text-center font-bold text-gray-600 py-2">
@@ -134,9 +142,9 @@ export function Calendar({ events, sportFilter }: CalendarProps) {
 
             if (!day) return <div key={index} className="h-14" />
 
-            let cellClass = 'bg-white/40 text-gray-800 hover:bg-white/60'
+            let cellClass = 'bg-white/80 text-gray-900 hover:bg-white'
             if (isSelected) {
-              cellClass = 'bg-pink-500 text-white'
+              cellClass = 'bg-pink-600 text-white'
             } else if (isToday) {
               cellClass = 'bg-pink-100 text-gray-800'
             } else if (hasHighlight) {
@@ -149,10 +157,39 @@ export function Calendar({ events, sportFilter }: CalendarProps) {
               cellClass = 'bg-white/75 text-gray-800 hover:bg-white border border-gray-200'
             }
 
+            const sportNames = sportSlugs
+              .map((slug) => getSportDefinition(slug)?.label)
+              .filter(Boolean)
+              .join(', ')
+            const dayLabel = day.toLocaleDateString('nl-BE', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })
+
             return (
               <button
                 key={index}
+                type="button"
                 onClick={() => setSelectedDate(day)}
+                onKeyDown={(event) => {
+                  const delta =
+                    event.key === 'ArrowRight' ? 1
+                    : event.key === 'ArrowLeft' ? -1
+                    : event.key === 'ArrowDown' ? 7
+                    : event.key === 'ArrowUp' ? -7
+                    : 0
+                  if (!delta) return
+                  event.preventDefault()
+                  const buttons = Array.from(
+                    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('button') ?? []
+                  )
+                  const current = buttons.indexOf(event.currentTarget)
+                  buttons[current + delta]?.focus()
+                }}
+                aria-pressed={Boolean(isSelected)}
+                aria-label={`${dayLabel}${hasEvents ? `, ${dayEvents.length} ${dayEvents.length === 1 ? 'item' : 'items'}` : ', geen items'}${sportNames ? `, ${sportNames}` : ''}${hasHighlight ? ', highlight' : ''}`}
                 className={`h-14 rounded-lg transition-colors ${cellClass}`}
               >
                 <div className="flex flex-col items-center justify-center h-full px-1">
@@ -202,7 +239,7 @@ export function Calendar({ events, sportFilter }: CalendarProps) {
         <div className="mb-6">
           <h3 className="text-2xl font-bold text-gray-800 mb-4">
             Agenda op{' '}
-            {selectedDate.toLocaleDateString('nl-NL', {
+            {selectedDate.toLocaleDateString('nl-BE', {
               weekday: 'long',
               year: 'numeric',
               month: 'long',

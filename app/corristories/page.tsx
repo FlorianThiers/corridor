@@ -7,10 +7,17 @@ import { PageTitle } from '@/components/PageTitle'
 import { CorristoryCard } from '@/components/CorristoryCard'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
+import { publicMetadata } from '@/lib/seo'
 
 // Revalidate every 60 seconds to reduce requests while keeping data fresh
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
+
+export const metadata = publicMetadata({
+  title: 'Corristories - Corridor',
+  description: 'Verhalen uit de buurt over Corridor onder het viaduct in Gentbrugge.',
+  path: '/corristories',
+})
 
 export default async function CorristoriesPage() {
   let corristories: Corristory[] = []

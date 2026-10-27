@@ -13,9 +13,16 @@ import { isFestEvent } from '@/lib/site-promos'
 import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
 import { ActivityCard } from '@/components/ActivityCard'
 import Link from 'next/link'
+import { publicMetadata } from '@/lib/seo'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
+
+export const metadata = publicMetadata({
+  title: 'Evenementen - Corridor',
+  description: "Komende evenementen bij Corri d'Or onder het E17-viaduct in Gentbrugge.",
+  path: '/evenementen',
+})
 
 export default async function EvenementenPage() {
   let items: Evenement[] = []
