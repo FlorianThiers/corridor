@@ -96,7 +96,7 @@ export function ZonePhotoHowTo({ variant, zoneName }: ZonePhotoHowToProps) {
             className="flex gap-3 rounded-2xl border border-pink-100 bg-pink-50/70 p-4"
           >
             <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-500 text-sm font-bold text-white"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-600 text-sm font-bold text-white"
               aria-hidden
             >
               {step.n}

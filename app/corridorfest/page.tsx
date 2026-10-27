@@ -27,6 +27,7 @@ import { FestProgramPosters } from '@/components/FestProgramPosters'
 import { FestZonePhotoUpload } from '@/components/FestZonePhotoUpload'
 import { EventCard } from '@/components/EventCard'
 import { ZoomableLightbox } from '@/components/ZoomableLightbox'
+import { zoneGalleryAlt } from '@/lib/zone-gallery'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
@@ -85,7 +86,7 @@ export default async function CorridorfestPage() {
           <PageTitle>{BRAND_FEST_EDITION_2026}</PageTitle>
           <p className="text-center text-gray-700 max-w-2xl mx-auto mb-10 -mt-4">
             <span className="font-medium text-gray-800">{FEST_2026_DATES_LABEL}</span>
-            <span className="mx-2 text-gray-400">·</span>
+            <span className="mx-2 text-gray-600" aria-hidden="true">·</span>
             {FEST_2026_LOCATION}
           </p>
 
@@ -170,7 +171,18 @@ export default async function CorridorfestPage() {
                     >
                       <ZoomableLightbox
                         src={photo.public_url}
-                        alt={photo.caption || BRAND_FEST_EDITION_2026}
+                        alt={zoneGalleryAlt(
+                          {
+                            id: photo.id,
+                            public_url: photo.public_url,
+                            caption: photo.caption,
+                            storage_path: photo.storage_path,
+                            credit: photo.credit,
+                            artist_tag: photo.artist_tag,
+                            media_source: photo.media_source,
+                          },
+                          BRAND_FEST_EDITION_2026
+                        )}
                         thumbClassName="aspect-[4/3] w-full object-cover"
                       />
                       {photo.caption ? (

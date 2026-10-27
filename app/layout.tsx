@@ -26,7 +26,9 @@ export default function RootLayout({
       <body className="overflow-x-hidden">
         <Navigation />
         <LoginModal />
-        {children}
+        <main id="inhoud" tabIndex={-1}>
+          {children}
+        </main>
       </body>
     </html>
   )

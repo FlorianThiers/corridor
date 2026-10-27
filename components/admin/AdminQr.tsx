@@ -93,14 +93,14 @@ export function AdminQr() {
       <div className="mb-8 flex flex-wrap items-center justify-center gap-3 rounded-3xl bg-white/60 p-4 print:hidden">
         <a
           href="/beheer/qr/poster"
-          className="rounded-lg bg-pink-500 px-6 py-3 font-medium text-white hover:bg-pink-600"
+          className="rounded-lg bg-pink-600 px-6 py-3 font-medium text-white hover:bg-pink-700"
         >
           A4 poster · foto&apos;s uploaden (PDF)
         </a>
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded-lg bg-violet-500 px-6 py-3 font-medium text-white hover:bg-violet-600"
+          className="rounded-lg bg-violet-600 px-6 py-3 font-medium text-white hover:bg-violet-700"
         >
           Alle QR&apos;s printen
         </button>
@@ -151,14 +151,14 @@ export function AdminQr() {
               <a
                 href={item.png}
                 download
-                className="rounded-full bg-pink-500 px-3 py-1 text-xs font-medium text-white hover:bg-pink-600"
+                className="rounded-full bg-pink-600 px-3 py-1 text-xs font-medium text-white hover:bg-pink-700"
               >
                 PNG
               </a>
               <a
                 href={item.svg}
                 download
-                className="rounded-full bg-violet-500 px-3 py-1 text-xs font-medium text-white hover:bg-violet-600"
+                className="rounded-full bg-violet-600 px-3 py-1 text-xs font-medium text-white hover:bg-violet-700"
               >
                 SVG
               </a>
