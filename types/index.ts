@@ -18,6 +18,11 @@ export interface ZonePhoto {
   storage_path: string
   public_url: string
   caption?: string | null
+  /** Optioneel tot een credit-kolom bestaat. Ontbreekt die, dan blijft dit leeg. */
+  credit?: string | null
+  artist_tag?: string | null
+  media_source?: string | null
+  alt?: string | null
   status: ZonePhotoStatus
   submitted_by?: string | null
   reviewed_by?: string | null

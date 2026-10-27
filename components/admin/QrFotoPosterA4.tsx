@@ -70,7 +70,7 @@ export function QrFotoPosterA4() {
           type="button"
           onClick={() => void downloadPdf()}
           disabled={busy}
-          className="rounded-full bg-pink-500 px-6 py-3 font-semibold text-white shadow-lg hover:bg-pink-600 disabled:opacity-60"
+          className="rounded-full bg-pink-600 px-6 py-3 font-semibold text-white shadow-lg hover:bg-pink-700 disabled:opacity-60"
         >
           {busy ? 'PDF maken…' : 'Download A4 PDF'}
         </button>
@@ -83,7 +83,7 @@ export function QrFotoPosterA4() {
         </button>
         <a
           href="/beheer/qr"
-          className="rounded-full bg-violet-500/90 px-5 py-3 text-sm font-medium text-white hover:bg-violet-600"
+          className="rounded-full bg-violet-600/90 px-5 py-3 text-sm font-medium text-white hover:bg-violet-700"
         >
           Terug naar QR
         </a>

@@ -30,7 +30,7 @@ export default function NotFound() {
             </p>
             <Link
               href="/"
-              className="inline-flex items-center px-6 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors font-medium"
+              className="inline-flex items-center px-6 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors font-medium"
             >
               Terug naar home
             </Link>

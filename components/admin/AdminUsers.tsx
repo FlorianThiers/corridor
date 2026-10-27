@@ -275,7 +275,7 @@ export function AdminUsers() {
                       {user.full_name || <span className="text-gray-500">Geen naam</span>}
                     </td>
                     <td className="px-4 py-3 text-gray-700">
-                      {user.email || <span className="text-gray-400">—</span>}
+                      {user.email || <span className="text-gray-600">—</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -295,14 +295,14 @@ export function AdminUsers() {
                         <button
                           type="button"
                           onClick={() => openModal(user)}
-                          className="rounded-lg bg-blue-500 px-3 py-1.5 text-xs text-white hover:bg-blue-600"
+                          className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700"
                         >
                           Bewerken
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDelete(user.id)}
-                          className="rounded-lg bg-red-500 px-3 py-1.5 text-xs text-white hover:bg-red-600"
+                          className="rounded-lg bg-red-600 px-3 py-1.5 text-xs text-white hover:bg-red-700"
                         >
                           Verwijderen
                         </button>
@@ -323,7 +323,7 @@ export function AdminUsers() {
                       {user.full_name || 'Geen naam'}
                     </h3>
                     <p className="truncate text-sm text-gray-600">{user.email || 'Geen e-mail'}</p>
-                    <p className="mt-1 font-mono text-xs text-gray-400">{user.id}</p>
+                    <p className="mt-1 font-mono text-xs text-gray-600">{user.id}</p>
                   </div>
                   <span
                     className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${userRoleBadgeClass(user.role)}`}
@@ -345,14 +345,14 @@ export function AdminUsers() {
                   <button
                     type="button"
                     onClick={() => openModal(user)}
-                    className="rounded-lg bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600"
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
                   >
                     Bewerken
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(user.id)}
-                    className="rounded-lg bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600"
+                    className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
                   >
                     Verwijderen
                   </button>
@@ -436,7 +436,7 @@ export function AdminUsers() {
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="flex-1 rounded-lg bg-pink-500 py-2 font-medium text-white transition-colors hover:bg-pink-600"
+                  className="flex-1 rounded-lg bg-pink-600 py-2 font-medium text-white transition-colors hover:bg-pink-700"
                 >
                   Opslaan
                 </button>

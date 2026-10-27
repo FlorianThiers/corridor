@@ -186,7 +186,7 @@ export function AdminGeschiedenis() {
             type="button"
             disabled={seeding}
             onClick={() => void importStaticContent()}
-            className="rounded-lg bg-pink-500 px-5 py-2 font-medium text-white hover:bg-pink-600 disabled:opacity-60"
+            className="rounded-lg bg-pink-600 px-5 py-2 font-medium text-white hover:bg-pink-700 disabled:opacity-60"
           >
             {seeding ? 'Importeren…' : 'Importeer huidige foto’s + mijlpalen'}
           </button>
@@ -225,6 +225,7 @@ export function AdminGeschiedenis() {
           <input
             name="year"
             required
+            aria-label="Jaar"
             placeholder="Jaar *"
             defaultValue={editingMilestone?.year || ''}
             className="rounded-lg border px-3 py-2"
@@ -232,6 +233,7 @@ export function AdminGeschiedenis() {
           <input
             name="sort_order"
             type="number"
+            aria-label="Volgorde"
             defaultValue={editingMilestone?.sort_order ?? milestones.length}
             placeholder="Volgorde"
             className="rounded-lg border px-3 py-2"
@@ -239,6 +241,7 @@ export function AdminGeschiedenis() {
           <input
             name="title"
             required
+            aria-label="Titel"
             placeholder="Titel *"
             defaultValue={editingMilestone?.title || ''}
             className="rounded-lg border px-3 py-2 md:col-span-2"
@@ -247,12 +250,13 @@ export function AdminGeschiedenis() {
             name="description"
             required
             rows={3}
+            aria-label="Beschrijving"
             placeholder="Beschrijving *"
             defaultValue={editingMilestone?.description || ''}
             className="rounded-lg border px-3 py-2 md:col-span-2"
           />
           <div className="flex gap-2 md:col-span-2">
-            <button type="submit" className="rounded-lg bg-pink-500 px-4 py-2 text-white">
+            <button type="submit" className="rounded-lg bg-pink-600 px-4 py-2 text-white">
               {editingMilestone ? 'Mijlpaal bijwerken' : 'Mijlpaal toevoegen'}
             </button>
             {editingMilestone && (
@@ -278,14 +282,14 @@ export function AdminGeschiedenis() {
               <div className="flex shrink-0 gap-2">
                 <button
                   type="button"
-                  className="rounded-lg bg-blue-500 px-3 py-1 text-sm text-white"
+                  className="rounded-lg bg-blue-600 px-3 py-1 text-sm text-white"
                   onClick={() => setEditingMilestone(m)}
                 >
                   Bewerken
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg bg-red-500 px-3 py-1 text-sm text-white"
+                  className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white"
                   onClick={async () => {
                     if (!confirm('Mijlpaal verwijderen?')) return
                     await deleteHistoryMilestone(supabase, m.id)
@@ -303,12 +307,12 @@ export function AdminGeschiedenis() {
       <section>
         <h2 className="mb-4 text-xl font-bold text-gray-800">Geschiedenis-foto&apos;s ({photos.length})</h2>
         <form onSubmit={uploadPhoto} className="mb-6 grid gap-3 rounded-2xl bg-white/60 p-4 md:grid-cols-2">
-          <input type="file" name="file" accept="image/*" className="text-sm md:col-span-2" />
-          <input name="src" type="url" placeholder="Of afbeelding-URL (bv. /geschiedenis/...)" className="rounded-lg border px-3 py-2 md:col-span-2" />
-          <input name="alt" placeholder="Alt-tekst" className="rounded-lg border px-3 py-2" />
-          <input name="sort_order" type="number" defaultValue={photos.length} placeholder="Volgorde" className="rounded-lg border px-3 py-2" />
-          <input name="caption" placeholder="Bijschrift" className="rounded-lg border px-3 py-2 md:col-span-2" />
-          <button type="submit" className="rounded-lg bg-pink-500 px-4 py-2 text-white md:col-span-2">
+          <input type="file" name="file" accept="image/*" aria-label="Fotobestand" className="text-sm md:col-span-2" />
+          <input name="src" type="url" aria-label="Afbeelding-URL" placeholder="Of afbeelding-URL (bv. /geschiedenis/...)" className="rounded-lg border px-3 py-2 md:col-span-2" />
+          <input name="alt" aria-label="Alt-tekst" placeholder="Alt-tekst" className="rounded-lg border px-3 py-2" />
+          <input name="sort_order" type="number" aria-label="Volgorde" defaultValue={photos.length} placeholder="Volgorde" className="rounded-lg border px-3 py-2" />
+          <input name="caption" aria-label="Bijschrift" placeholder="Bijschrift" className="rounded-lg border px-3 py-2 md:col-span-2" />
+          <button type="submit" className="rounded-lg bg-pink-600 px-4 py-2 text-white md:col-span-2">
             Foto toevoegen
           </button>
         </form>
@@ -317,16 +321,16 @@ export function AdminGeschiedenis() {
           <form onSubmit={savePhotoMeta} className="mb-6 grid gap-3 rounded-2xl border border-blue-200 bg-blue-50/50 p-4 md:grid-cols-2">
             <p className="md:col-span-2 text-sm font-semibold text-gray-800">Foto bewerken</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={editingPhoto.src} alt="" className="md:col-span-2 max-h-40 rounded-lg object-cover" />
-            <input name="alt" defaultValue={editingPhoto.alt} placeholder="Alt" className="rounded-lg border px-3 py-2" />
-            <input name="sort_order" type="number" defaultValue={editingPhoto.sort_order} className="rounded-lg border px-3 py-2" />
-            <input name="caption" defaultValue={editingPhoto.caption || ''} placeholder="Bijschrift" className="rounded-lg border px-3 py-2 md:col-span-2" />
+            <img src={editingPhoto.src} alt={editingPhoto.alt} className="md:col-span-2 max-h-40 rounded-lg object-cover" />
+            <input name="alt" aria-label="Alt-tekst" defaultValue={editingPhoto.alt} placeholder="Alt" className="rounded-lg border px-3 py-2" />
+            <input name="sort_order" type="number" aria-label="Volgorde" defaultValue={editingPhoto.sort_order} className="rounded-lg border px-3 py-2" />
+            <input name="caption" aria-label="Bijschrift" defaultValue={editingPhoto.caption || ''} placeholder="Bijschrift" className="rounded-lg border px-3 py-2 md:col-span-2" />
             <label className="flex items-center gap-2 text-sm md:col-span-2">
               <input type="checkbox" name="is_published" defaultChecked={editingPhoto.is_published} />
               Gepubliceerd op de site
             </label>
             <div className="flex gap-2 md:col-span-2">
-              <button type="submit" className="rounded-lg bg-blue-500 px-4 py-2 text-white">Opslaan</button>
+              <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-white">Opslaan</button>
               <button type="button" className="rounded-lg bg-gray-200 px-4 py-2" onClick={() => setEditingPhoto(null)}>Annuleren</button>
             </div>
           </form>
@@ -344,14 +348,14 @@ export function AdminGeschiedenis() {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  className="rounded-lg bg-blue-500 px-3 py-1 text-sm text-white"
+                  className="rounded-lg bg-blue-600 px-3 py-1 text-sm text-white"
                   onClick={() => setEditingPhoto(p)}
                 >
                   Bewerken
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg bg-red-500 px-3 py-1 text-sm text-white"
+                  className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white"
                   onClick={async () => {
                     if (!confirm('Foto verwijderen?')) return
                     await deleteHistoryPhoto(supabase, p.id)

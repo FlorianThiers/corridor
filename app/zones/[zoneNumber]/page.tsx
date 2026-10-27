@@ -127,6 +127,10 @@ export default async function ZoneDetailPage({ params }: PageProps) {
               id: p.id,
               public_url: p.public_url,
               caption: p.caption,
+              storage_path: p.storage_path,
+              credit: p.credit,
+              artist_tag: p.artist_tag,
+              media_source: p.media_source,
             }))}
             totalPhotoCount={totalPhotoCount}
           />

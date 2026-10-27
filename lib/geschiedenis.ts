@@ -1,7 +1,15 @@
+import { altWithCredits } from '@/lib/image-alt'
+
 export interface HistoryPhoto {
   src: string
   alt: string
   caption?: string
+  /** Kunstenaar of fotograaf, als die bekend is. */
+  credit?: string
+}
+
+export function historyPhotoAlt(photo: Pick<HistoryPhoto, 'alt' | 'credit'>): string {
+  return altWithCredits(photo.alt, { artist: photo.credit })
 }
 
 export interface HistoryMilestone {
@@ -54,6 +62,7 @@ export const historyPhotos: HistoryPhoto[] = [
     src: '/geschiedenis/06-graffiti-clown-sofie-d.png',
     alt: 'Muurschildering van een clown met hond door Sofie D.',
     caption: 'Sofie D.',
+    credit: 'Sofie D.',
   },
   {
     src: '/geschiedenis/07-graffiti-schedel-nacht.png',
@@ -74,11 +83,13 @@ export const historyPhotos: HistoryPhoto[] = [
     src: '/geschiedenis/03-betonblokken-stapelen.png',
     alt: 'NOODLES graffiti met tovenaar en ketel',
     caption: 'NOODLES',
+    credit: 'NOODLES',
   },
   {
     src: '/geschiedenis/04-betonblokken-schoonmaken.png',
     alt: 'Portret van een oudere man door Frakkie',
     caption: 'Frakkie',
+    credit: 'Frakkie',
   },
   {
     src: '/geschiedenis/11-graffiti-frakkie.png',
