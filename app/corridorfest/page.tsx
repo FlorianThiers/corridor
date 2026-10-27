@@ -10,6 +10,7 @@ import {
 } from '@/lib/database'
 import { splitByKind } from '@/lib/agenda-helpers'
 import { BRAND_FEST, BRAND_FEST_EDITION_2026, SITE_NAME } from '@/lib/brand'
+import { publicMetadata } from '@/lib/seo'
 import {
   FEST_2026_DATES_LABEL,
   FEST_2026_INTRO,
@@ -31,10 +32,11 @@ import { ZoomableLightbox } from '@/components/ZoomableLightbox'
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
 
-export const metadata = {
+export const metadata = publicMetadata({
   title: `${BRAND_FEST_EDITION_2026} - ${SITE_NAME}`,
   description: `Affiches, programma en foto's van ${BRAND_FEST_EDITION_2026} in Gentbrugge.`,
-}
+  path: '/corridorfest',
+})
 
 export default async function CorridorfestPage() {
   let zones: Awaited<ReturnType<typeof getZones>> = []

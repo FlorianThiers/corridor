@@ -3,6 +3,14 @@ import { PageSection } from '@/components/PageSection'
 import { PageContainer } from '@/components/PageContainer'
 import { Footer } from '@/components/Footer'
 
+import { privateRobots } from '@/lib/seo'
+
+export const metadata = {
+  title: 'Pagina niet gevonden - Corridor',
+  description: 'Deze pagina bestaat niet op Corridor Gentbrugge.',
+  ...privateRobots,
+}
+
 export const dynamic = 'force-dynamic'
 
 export default function NotFound() {
