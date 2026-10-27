@@ -12,11 +12,19 @@ export type StableMediaId =
 export function parseStableMediaId(raw: string): StableMediaId | null {
   const id = raw.trim()
   if (!id || id.length > 200) return null
-  if (UUID_RE.test(id)) return { kind: 'photo', id }
+  if (UUID_RE.test(id)) return { kind: 'photo', id: id.toLowerCase() }
   if (HISTORY_ID_RE.test(id)) return { kind: 'history', id }
   const cover = /^zone-cover-([0-9a-f-]{36})$/i.exec(id)
   if (cover && UUID_RE.test(cover[1])) {
-    return { kind: 'cover', zoneId: cover[1] }
+    return { kind: 'cover', zoneId: cover[1].toLowerCase() }
   }
   return null
+}
+
+/** Same id the feed emits, so a credit override matches the item. */
+export function canonicalMediaId(raw: string): string | null {
+  const parsed = parseStableMediaId(raw)
+  if (!parsed) return null
+  if (parsed.kind === 'cover') return `zone-cover-${parsed.zoneId}`
+  return parsed.id
 }

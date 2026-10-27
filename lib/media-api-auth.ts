@@ -4,13 +4,16 @@ type HeaderSource = {
   headers: { get(name: string): string | null }
 }
 
+function bearerToken(header: string | null): string | null {
+  if (!header) return null
+  const match = /^Bearer\s+(\S+)\s*$/i.exec(header)
+  return match ? match[1] : null
+}
+
 function bearerMatches(request: HeaderSource, expected: string | undefined): boolean {
   if (!expected) return false
-  const header = request.headers.get('authorization')
-  if (!header) return false
-  const prefix = 'Bearer '
-  if (!header.startsWith(prefix)) return false
-  const actual = header.slice(prefix.length)
+  const actual = bearerToken(request.headers.get('authorization'))
+  if (actual == null) return false
   const actualBuf = Buffer.from(actual)
   const expectedBuf = Buffer.from(expected)
   if (actualBuf.length !== expectedBuf.length) return false

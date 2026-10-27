@@ -13,7 +13,7 @@ import {
   fetchCreditOverrides,
   fetchCreditOverridesUpdatedSince,
 } from '@/lib/media-credit-store'
-import { parseStableMediaId } from '@/lib/media-ids'
+import { canonicalMediaId, parseStableMediaId } from '@/lib/media-ids'
 import { resolvePublicBaseUrl, toAbsoluteUrl } from '@/lib/public-url'
 import {
   loadUnapprovedPhotoUrls,
@@ -96,12 +96,27 @@ const MAX_LIMIT = 500
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+export class MediaQueryError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'MediaQueryError'
+  }
+}
+
+function zoneMapKey(id: string): string {
+  return id.toLowerCase()
+}
+
 export function parseMediaQuery(searchParams: URLSearchParams): MediaQuery {
   const kind = searchParams.get('kind')
   const zone = searchParams.get('zone') ?? undefined
   const featuredRaw = searchParams.get('featured')
   const limitRaw = searchParams.get('limit')
-  const updatedSince = searchParams.get('updated_since') ?? undefined
+  const updatedSinceRaw = searchParams.get('updated_since')
+  const updatedSince = updatedSinceRaw?.trim() || undefined
+  if (updatedSince && !Number.isFinite(Date.parse(updatedSince))) {
+    throw new MediaQueryError('updated_since must be an ISO-8601 timestamp')
+  }
 
   let limit: number | undefined
   if (limitRaw != null && limitRaw !== '') {
@@ -171,14 +186,7 @@ function historyEntryToItem(entry: HistoryManifestEntry, baseUrl: string): Media
 
 function historyItems(manifest: HistoryManifest, baseUrl: string, query: MediaQuery): MediaItem[] {
   if (query.zone || query.featured) return []
-
-  const updatedSinceMs = query.updatedSince ? Date.parse(query.updatedSince) : NaN
-  return manifest.items
-    .map((entry) => historyEntryToItem(entry, baseUrl))
-    .filter((item) => {
-      if (!Number.isFinite(updatedSinceMs)) return true
-      return Date.parse(item.updated_at) >= updatedSinceMs
-    })
+  return manifest.items.map((entry) => historyEntryToItem(entry, baseUrl))
 }
 
 async function resolveZoneFilter(
@@ -192,14 +200,14 @@ async function resolveZoneFilter(
 
   if (error) throw error
   const list = (zones || []) as Zone[]
-  const zoneById = new Map(list.map((zone) => [zone.id, zone]))
+  const zoneById = new Map(list.map((zone) => [zoneMapKey(zone.id), zone]))
 
   if (!zoneParam) {
     return { zoneIds: null, zoneById }
   }
 
   if (UUID_RE.test(zoneParam)) {
-    const match = list.find((zone) => zone.id === zoneParam)
+    const match = zoneById.get(zoneMapKey(zoneParam))
     return { zoneIds: match ? [match.id] : [], zoneById }
   }
 
@@ -255,7 +263,7 @@ function zonePhotoToItem(
   const zoneRef = toMediaZoneRef(zone)
 
   return {
-    id: photo.id,
+    id: canonicalMediaId(photo.id) || photo.id.toLowerCase(),
     kind,
     zone_slug: zoneRef?.slug ?? null,
     zone: zoneRef,
@@ -298,7 +306,7 @@ function coverItemFromZone(
   const zoneRef = toMediaZoneRef(zone)
 
   return {
-    id: `zone-cover-${zone.id}`,
+    id: `zone-cover-${zoneMapKey(zone.id)}`,
     kind,
     zone_slug: zoneRef?.slug ?? null,
     zone: zoneRef,
@@ -324,11 +332,15 @@ function isEventPhoto(
   photo: { zone_id: string; created_at?: string | null },
   eventZoneId: string | null
 ): boolean {
-  if (eventZoneId && photo.zone_id === eventZoneId) return true
+  if (eventZoneId) return zoneMapKey(photo.zone_id) === zoneMapKey(eventZoneId)
   const created = photo.created_at ? Date.parse(photo.created_at) : NaN
   const from = Date.parse(FEST_2026_GALLERY_FROM)
   const to = Date.parse(FEST_2026_GALLERY_TO)
   return Number.isFinite(created) && created >= from && created < to
+}
+
+function newestApprovedPhoto(photos: ZonePhotoRow[], zoneId: string): ZonePhotoRow | undefined {
+  return photos.find((photo) => zoneMapKey(photo.zone_id) === zoneMapKey(zoneId))
 }
 
 async function queryZonePhotos(
@@ -361,84 +373,100 @@ async function queryZonePhotos(
     dbQuery = dbQuery
       .gte('created_at', FEST_2026_GALLERY_FROM)
       .lt('created_at', FEST_2026_GALLERY_TO)
-  }
-
-  if (query.updatedSince) {
-    dbQuery = dbQuery.gte('updated_at', query.updatedSince)
+  } else if (kind === 'zone' && options.eventZoneId) {
+    dbQuery = dbQuery.neq('zone_id', options.eventZoneId)
   }
 
   const { data, error } = await dbQuery
   if (error) throw error
 
-  const photos = (data || []) as ZonePhotoRow[]
+  let photos = (data || []) as ZonePhotoRow[]
+  const eventZoneId = options.eventZoneId ?? null
+  if (kind === 'zone') {
+    photos = photos.filter((photo) => !isEventPhoto(photo, eventZoneId))
+  } else if (kind === 'event') {
+    photos = photos.filter((photo) => isEventPhoto(photo, eventZoneId))
+  }
+
   const profiles = await loadSubmitterProfiles(
     supabase,
     photos.map((photo) => photo.submitted_by || '')
   )
+
+  const zonesForCovers = (
+    zoneIds ? zoneIds.map((id) => zoneById.get(zoneMapKey(id))) : [...zoneById.values()]
+  ).filter((zone): zone is Zone => {
+    if (!zone) return false
+    if (kind === 'zone' && eventZoneId && zoneMapKey(zone.id) === zoneMapKey(eventZoneId)) {
+      return false
+    }
+    if (kind === 'event' && eventZoneId && zoneMapKey(zone.id) !== zoneMapKey(eventZoneId)) {
+      return false
+    }
+    if (kind === 'event' && !eventZoneId && !newestApprovedPhoto(photos, zone.id)) {
+      return false
+    }
+    return true
+  })
+
+  const publishableByZone = new Map<string, string | null>()
+  for (const zone of zonesForCovers) {
+    publishableByZone.set(
+      zoneMapKey(zone.id),
+      resolveZoneCoverUrl({
+        coverUrl: zone.cover_url,
+        approvedFallbackUrl: newestApprovedPhoto(photos, zone.id)?.public_url ?? null,
+        unapprovedUrls: options.unapprovedUrls,
+      })
+    )
+  }
 
   const items: MediaItem[] = []
   let sort = 0
 
   if (!query.featured) {
     for (const photo of photos) {
-      const zone = zoneById.get(photo.zone_id)
-      items.push(
-        zonePhotoToItem(
-          photo,
-          zone,
-          kind,
-          photo.submitted_by ? profiles.get(photo.submitted_by) ?? null : null,
-          zone?.cover_url ?? null,
-          sort,
-          options.baseUrl
-        )
+      const zone = zoneById.get(zoneMapKey(photo.zone_id))
+      const item = zonePhotoToItem(
+        photo,
+        zone,
+        kind,
+        photo.submitted_by ? profiles.get(photo.submitted_by) ?? null : null,
+        zone?.cover_url ?? null,
+        sort,
+        options.baseUrl
       )
+      const publishable = zone ? publishableByZone.get(zoneMapKey(zone.id)) : null
+      if (publishable && photo.public_url === publishable) item.is_cover = true
+      items.push(item)
       sort += 1
     }
   }
 
-  const zonesForCovers = (
-    zoneIds ? zoneIds.map((id) => zoneById.get(id)) : [...zoneById.values()]
-  ).filter((zone): zone is Zone => Boolean(zone))
-
   for (const zone of zonesForCovers) {
-    if (kind === 'event' && options.eventZoneId && zone.id !== options.eventZoneId) {
-      continue
-    }
-    if (
-      kind === 'event' &&
-      !options.eventZoneId &&
-      !photos.some((photo) => photo.zone_id === zone.id)
-    ) {
-      continue
-    }
-    const matchedPhoto = photos.find((photo) => photo.public_url === zone.cover_url)
-    const matched = matchedPhoto
-      ? {
-          photo: matchedPhoto,
-          submitter: matchedPhoto.submitted_by
-            ? profiles.get(matchedPhoto.submitted_by) ?? null
-            : null,
-        }
-      : null
-    const cover = coverItemFromZone(
-      zone,
-      kind,
-      sort,
-      options.baseUrl,
-      options.unapprovedUrls,
-      matched
-    )
-    if (!cover) continue
-    if (query.updatedSince) {
-      const since = Date.parse(query.updatedSince)
-      if (Number.isFinite(since) && Date.parse(cover.updated_at) < since) continue
-    }
-    const alreadyListed = photos.some((photo) => photo.public_url === zone.cover_url)
-    if (query.featured || !alreadyListed) {
-      items.push(cover)
+    const publishable = publishableByZone.get(zoneMapKey(zone.id)) ?? null
+    if (!publishable) continue
+    const matchedPhoto = photos.find((photo) => photo.public_url === publishable)
+    if (matchedPhoto) {
+      if (!query.featured) continue
+      const item = zonePhotoToItem(
+        matchedPhoto,
+        zone,
+        kind,
+        matchedPhoto.submitted_by ? profiles.get(matchedPhoto.submitted_by) ?? null : null,
+        zone.cover_url ?? null,
+        sort,
+        options.baseUrl
+      )
+      item.is_cover = true
+      items.push(item)
       sort += 1
+      continue
     }
+    const cover = coverItemFromZone(zone, kind, sort, options.baseUrl, options.unapprovedUrls, null)
+    if (!cover || cover.url !== toAbsoluteUrl(options.baseUrl, publishable)) continue
+    items.push(cover)
+    sort += 1
   }
 
   if (query.featured) {
@@ -499,17 +527,33 @@ async function getPublishedMediaItem(
   if (context.kindHint === 'history') return null
 
   if (parsed.kind === 'cover') {
-    const zone = context.zoneFilter.zoneById.get(parsed.zoneId)
+    const zone = context.zoneFilter.zoneById.get(zoneMapKey(parsed.zoneId))
     if (!zone) return null
-    if (
-      context.kindHint === 'event' &&
-      context.eventZoneId &&
-      zone.id !== context.eventZoneId
-    ) {
-      return null
-    }
-    const coverKind: MediaKind = context.kindHint === 'event' ? 'event' : 'zone'
-    return coverItemFromZone(zone, coverKind, 0, baseUrl, context.unapprovedUrls, null)
+    const onEventZone = Boolean(
+      context.eventZoneId && zoneMapKey(zone.id) === zoneMapKey(context.eventZoneId)
+    )
+    if (context.kindHint === 'event' && context.eventZoneId && !onEventZone) return null
+    if (context.kindHint === 'zone' && onEventZone) return null
+    const approved = await loadApprovedZonePhotos(supabase, zone.id)
+    const publishable = resolveZoneCoverUrl({
+      coverUrl: zone.cover_url,
+      approvedFallbackUrl: approved[0]?.public_url ?? null,
+      unapprovedUrls: context.unapprovedUrls,
+    })
+    if (!publishable) return null
+    // The feed uses the photo uuid when the cover is itself an approved photo.
+    if (approved.some((photo) => photo.public_url === publishable)) return null
+    const coverKind: MediaKind = onEventZone ? 'event' : 'zone'
+    const cover = coverItemFromZone(
+      zone,
+      coverKind,
+      0,
+      baseUrl,
+      context.unapprovedUrls,
+      null
+    )
+    if (!cover || cover.url !== toAbsoluteUrl(baseUrl, publishable)) return null
+    return cover
   }
 
   const { data, error } = await supabase
@@ -523,13 +567,21 @@ async function getPublishedMediaItem(
   if (!data) return null
 
   const photo = data as ZonePhotoRow
-  if (context.kindHint === 'event' && !isEventPhoto(photo, context.eventZoneId)) {
-    return null
-  }
-  const zone = context.zoneFilter.zoneById.get(photo.zone_id)
+  const event = isEventPhoto(photo, context.eventZoneId)
+  if (context.kindHint === 'event' && !event) return null
+  if (context.kindHint === 'zone' && event) return null
+  const zone = context.zoneFilter.zoneById.get(zoneMapKey(photo.zone_id))
+  const approved = zone ? await loadApprovedZonePhotos(supabase, zone.id) : []
+  const publishable = zone
+    ? resolveZoneCoverUrl({
+        coverUrl: zone.cover_url,
+        approvedFallbackUrl: approved[0]?.public_url ?? null,
+        unapprovedUrls: context.unapprovedUrls,
+      })
+    : null
   const profiles = await loadSubmitterProfiles(supabase, [photo.submitted_by || ''])
-  const kind: MediaKind = context.kindHint === 'event' ? 'event' : 'zone'
-  return zonePhotoToItem(
+  const kind: MediaKind = event ? 'event' : 'zone'
+  const item = zonePhotoToItem(
     photo,
     zone,
     kind,
@@ -538,16 +590,33 @@ async function getPublishedMediaItem(
     0,
     baseUrl
   )
+  if (publishable && photo.public_url === publishable) item.is_cover = true
+  return item
+}
+
+async function loadApprovedZonePhotos(
+  supabase: SupabaseClient,
+  zoneId: string
+): Promise<ZonePhotoRow[]> {
+  const { data, error } = await supabase
+    .from('zone_photos')
+    .select('*')
+    .eq('zone_id', zoneId)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data || []) as ZonePhotoRow[]
 }
 
 export async function readPublishedMediaItem(
   supabase: SupabaseClient,
   id: string,
-  baseUrl: string
+  baseUrl: string,
+  options?: { canModerate?: boolean }
 ): Promise<MediaItem | null> {
   const [zoneFilter, unapprovedUrls, eventZone] = await Promise.all([
     resolveZoneFilter(supabase),
-    loadUnapprovedPhotoUrls(supabase),
+    loadUnapprovedPhotoUrls(supabase, options),
     supabase
       .from('zones')
       .select('id')
@@ -568,15 +637,17 @@ export async function readPublishedMediaItem(
 export async function queryMediaItems(
   supabase: SupabaseClient,
   query: MediaQuery,
-  options?: { baseUrl?: string; eventArchiveZoneId?: string | null }
+  options?: { baseUrl?: string; eventArchiveZoneId?: string | null; canModerate?: boolean }
 ): Promise<MediaItem[]> {
   const baseUrl = options?.baseUrl ?? ''
   const kinds: MediaKind[] = query.kind ? [query.kind] : ['zone', 'history', 'event']
   const zoneFilter = await resolveZoneFilter(supabase, query.zone)
-  const unapprovedUrls = await loadUnapprovedPhotoUrls(supabase)
+  const unapprovedUrls = await loadUnapprovedPhotoUrls(supabase, {
+    canModerate: options?.canModerate,
+  })
 
   let eventZoneId = options?.eventArchiveZoneId ?? null
-  if (kinds.includes('event') && !eventZoneId) {
+  if (!eventZoneId) {
     const { data } = await supabase
       .from('zones')
       .select('id')
@@ -611,7 +682,7 @@ export async function queryMediaItems(
     for (const id of missing) {
       const parsed = parseStableMediaId(id)
       if (!parsed) continue
-      if (query.featured && parsed.kind !== 'cover') continue
+      if (query.featured && parsed.kind === 'history') continue
 
       const extra = await getPublishedMediaItem(supabase, id, baseUrl, {
         unapprovedUrls,

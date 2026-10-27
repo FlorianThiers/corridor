@@ -80,7 +80,8 @@ export function toZoneSpot(row: ZoneSpotRow, baseUrl: string, coverUrl: string |
 
 export async function queryZoneSpots(
   supabase: SupabaseClient,
-  baseUrl: string
+  baseUrl: string,
+  options?: { canModerate?: boolean }
 ): Promise<ZoneSpot[]> {
   const { data, error } = await supabase
     .from('zones')
@@ -90,7 +91,7 @@ export async function queryZoneSpots(
   if (error) throw error
   const rows = (data ?? []) as ZoneSpotRow[]
   const [unapprovedUrls, fallbacks] = await Promise.all([
-    loadUnapprovedPhotoUrls(supabase),
+    loadUnapprovedPhotoUrls(supabase, options),
     loadApprovedCoverFallbacks(
       supabase,
       rows.map((row) => row.id)

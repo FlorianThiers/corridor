@@ -32,8 +32,13 @@ export function resolveZoneCoverUrl(input: {
 }
 
 export async function loadUnapprovedPhotoUrls(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
+  options?: { canModerate?: boolean }
 ): Promise<Set<string> | null> {
+  // The anon role cannot see pending or rejected rows. An empty result would
+  // look like "nothing is blocked" and publish a pending cover URL.
+  if (options?.canModerate === false) return null
+
   const { data, error } = await supabase
     .from('zone_photos')
     .select('public_url')

@@ -23,8 +23,10 @@ try {
   process.env.CORRIDOR_MEDIA_WRITE_API_KEY = 'write-key'
 
   assert.equal(isMediaApiAuthorized(request('Bearer read-key')), true)
+  assert.equal(isMediaApiAuthorized(request('bearer read-key')), true)
   assert.equal(isMediaApiAuthorized(request('Bearer agenda-key')), true)
   assert.equal(isMediaApiAuthorized(request('Bearer write-key')), false)
+  assert.equal(isMediaApiAuthorized(request('Bearer read-key extra')), false)
   assert.equal(isMediaApiAuthorized(request(null)), false)
 
   assert.equal(isMediaWriteAuthorized(request('Bearer write-key')), true)
