@@ -1,15 +1,24 @@
+import 'server-only'
+
 import { createClient } from '@supabase/supabase-js'
 
-/** Service-role client for agenda import API — never use in client components. */
+/**
+ * Service-role Supabase client. Bypasses RLS.
+ * Server-only: never import this from a Client Component.
+ * Reads only SUPABASE_SERVICE_ROLE_KEY — never a NEXT_PUBLIC_ variable.
+ */
 export function createAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
 
   if (!url || !key) {
+    const missing: string[] = []
+    if (!url) missing.push('NEXT_PUBLIC_SUPABASE_URL')
+    if (!key) missing.push('SUPABASE_SERVICE_ROLE_KEY')
     throw new Error(
-      'Missing SUPABASE_SERVICE_ROLE_KEY (or NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY) for agenda import.',
+      `Missing ${missing.join(' and ')} for the Supabase admin client. ` +
+        'SUPABASE_SERVICE_ROLE_KEY is server-only: set it in Vercel for Production, Preview, and Development. ' +
+        'Never put the service role key in a NEXT_PUBLIC_ variable; that exposes it to the browser and bypasses row level security.',
     )
   }
 
