@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { friendlyAuthError, normalizeAuthEmail } from '@/lib/auth-client'
+import { ensureUserProfileRow } from '@/lib/ensure-user-profile'
 
 type Tab = 'login' | 'signup' | 'forgot-password'
 
@@ -23,17 +25,6 @@ export function LoginModal() {
   const siteOrigin = () => {
     const raw = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
     return raw.replace(/\/+$/, '')
-  }
-
-  const friendlyAuthError = (raw: string, fallback: string) => {
-    const msg = raw.toLowerCase()
-    if (msg.includes('rate limit') || msg.includes('over_email') || msg.includes('only request this after')) {
-      return 'Even geduld: te veel verificatiemails. Wacht even, of log in als je account al bestaat.'
-    }
-    if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
-      return 'Dit e-mailadres heeft al een account. Log in of gebruik "Wachtwoord vergeten".'
-    }
-    return raw || fallback
   }
 
   useEffect(() => {
@@ -78,8 +69,8 @@ export function LoginModal() {
     window.addEventListener('openLoginModal', handleOpenModal)
     document.addEventListener('click', handleLoginClick)
 
-    // Close modal if user is logged in (unless showing success/error from email confirmation)
-    if (user && !errorParam && !successParam) {
+    // Sluit alleen bij bestaande sessie. Na login tonen we eerst de bevestiging (zie handleLogin).
+    if (user && !errorParam && !successParam && !success) {
       setIsOpen(false)
     }
 
@@ -93,7 +84,7 @@ export function LoginModal() {
       window.removeEventListener('openLoginModal', handleOpenModal)
       document.removeEventListener('click', handleLoginClick)
     }
-  }, [user])
+  }, [user, success])
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -102,24 +93,29 @@ export function LoginModal() {
     setSuccess('')
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
+    const email = normalizeAuthEmail(formData.get('email') as string)
+    const password = (formData.get('password') as string) ?? ''
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (signInError) throw signInError
 
+      if (signInData.user) {
+        await ensureUserProfileRow(supabase, signInData.user)
+      }
+
       setSuccess('Succesvol ingelogd!')
       setTimeout(() => {
         setIsOpen(false)
         router.refresh()
       }, 1500)
-    } catch (err: any) {
-      setError(err.message || 'Inloggen mislukt. Probeer opnieuw.')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : ''
+      setError(friendlyAuthError(message, 'Inloggen mislukt. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }
@@ -132,9 +128,9 @@ export function LoginModal() {
     setSuccess('')
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    const fullName = formData.get('name') as string
+    const email = normalizeAuthEmail(formData.get('email') as string)
+    const password = (formData.get('password') as string) ?? ''
+    const fullName = (formData.get('name') as string) ?? ''
 
     try {
       const redirectUrl = `${siteOrigin()}/auth/callback`
@@ -168,7 +164,7 @@ export function LoginModal() {
     setSuccess('')
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
+    const email = normalizeAuthEmail(formData.get('email') as string)
 
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
