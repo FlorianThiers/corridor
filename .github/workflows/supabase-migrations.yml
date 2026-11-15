@@ -26,15 +26,10 @@ jobs:
         run: git fetch origin "${{ github.base_ref }}"
 
       - name: Migraties vergelijken
-        id: check
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
           SUPABASE_DB_URL_READONLY: ${{ secrets.SUPABASE_DB_URL_READONLY }}
-        run: |
-          node scripts/ci/supabase-migration-check.mjs | tee migration-report.md
-          echo "report<<EOF" >> "$GITHUB_OUTPUT"
-          cat migration-report.md >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+        run: node scripts/ci/supabase-migration-check.mjs | tee migration-report.md
 
       - name: Sticky PR-comment
         uses: marocchino/sticky-pull-request-comment@v2
