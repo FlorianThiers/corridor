@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:e2e:smoke": "playwright test --grep @smoke",
     "optimize:videos": "powershell -ExecutionPolicy Bypass -File scripts/optimize-videos.ps1",
     "optimize:images": "powershell -ExecutionPolicy Bypass -File scripts/convert-to-webp.ps1",
     "optimize:all": "npm run optimize:videos && npm run optimize:images",
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.2.0",
     "@types/qrcode": "^1.5.6",
