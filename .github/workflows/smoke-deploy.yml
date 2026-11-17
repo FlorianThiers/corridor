@@ -1,0 +1,77 @@
+name: smoke-deploy
+
+on:
+  deployment_status:
+
+concurrency:
+  group: smoke-deploy-${{ github.event.deployment_status.deployment_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: read
+
+jobs:
+  playwright-smoke:
+    name: Playwright smoke (post-deploy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment_status.creator.login == 'vercel[bot]'
+    steps:
+      - name: Preview zonder bypass-secret overslaan
+        id: gate
+        env:
+          DEPLOYMENT_ENV: ${{ github.event.deployment.environment }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          target="${{ github.event.deployment_status.target_url }}"
+          {
+            echo "target_url=$target"
+          } >> "$GITHUB_OUTPUT"
+          preview=0
+          env_name="${DEPLOYMENT_ENV,,}"
+          if [[ "$env_name" != "production" ]]; then
+            preview=1
+          fi
+          if [[ "$preview" -eq 1 && -z "$BYPASS" ]]; then
+            {
+              echo "## Smoke-test overgeslagen"
+              echo ""
+              echo "Preview-deploy (\`$target\`) staat achter Vercel-beveiliging en \`VERCEL_AUTOMATION_BYPASS_SECRET\` is niet gezet."
+              echo "Zet die secret in de repository om smoke tegen preview-URL's te draaien."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "run_smoke=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_smoke=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.run_smoke == 'true'
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        if: steps.gate.outputs.run_smoke == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.gate.outputs.run_smoke == 'true'
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Install Chromium
+        if: steps.gate.outputs.run_smoke == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke (@smoke)
+        if: steps.gate.outputs.run_smoke == 'true'
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.gate.outputs.target_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          CI: 'true'
+        run: npm run test:e2e:smoke
