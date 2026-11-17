@@ -14,7 +14,7 @@ Deze repo draait op GitHub Actions. Basisbranch voor PRs: **`develop`** (indien 
 
 - Tests staan in [`e2e/smoke.spec.ts`](../../e2e/smoke.spec.ts) met tag `@smoke`.
 - Alleen GET-paden (`/`, `/agenda`) en openen van de login-dialoog (geen inloggen, geen formulieren).
-- Alleen Chromium; concurrency per deployment; job-timeout 2 min.
+- Alleen Chromium; concurrency per deployment; job-timeout 5 min (tests doel &lt; 2 min).
 - Config: [`playwright.config.ts`](../../playwright.config.ts) — `PLAYWRIGHT_BASE_URL` op deploy-URL.
 
 Op **`master`** bestaat daarnaast een uitgebreidere [e2e-workflow](../../.github/workflows/) met lokale mock-Supabase; die wordt op `develop` niet gedupliceerd.
@@ -52,6 +52,4 @@ Migratiecheck (vereist `git fetch origin develop`):
 GITHUB_BASE_REF=develop node scripts/ci/supabase-migration-check.mjs
 ```
 
-## Branch `ci/cd-controles`
-
-Feature-branch met bovenstaande workflows en minimale Playwright-smoke (PR naar `develop`, niet mergen via deze docs).
+Deze workflows worden via PR naar `develop` geleverd; secrets blijven optioneel in GitHub repository settings.

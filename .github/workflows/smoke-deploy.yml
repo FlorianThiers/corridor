@@ -15,7 +15,7 @@ jobs:
   playwright-smoke:
     name: Playwright smoke (post-deploy)
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
     if: >-
       github.event.deployment_status.state == 'success' &&
       github.event.deployment_status.creator.login == 'vercel[bot]'

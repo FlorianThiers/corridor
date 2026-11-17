@@ -29,7 +29,12 @@ jobs:
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
           SUPABASE_DB_URL_READONLY: ${{ secrets.SUPABASE_DB_URL_READONLY }}
-        run: node scripts/ci/supabase-migration-check.mjs | tee migration-report.md
+        run: |
+          if [ -n "$SUPABASE_DB_URL_READONLY" ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          node scripts/ci/supabase-migration-check.mjs | tee migration-report.md
 
       - name: Sticky PR-comment
         uses: marocchino/sticky-pull-request-comment@v2
