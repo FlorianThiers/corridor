@@ -1,5 +1,4 @@
 import { requireAuth, getUserProfile } from '@/lib/auth'
-import { redirect } from 'next/navigation'
 import { SignOutButton } from '@/components/SignOutButton'
 import { PageSection } from '@/components/PageSection'
 import { PageContainer } from '@/components/PageContainer'
@@ -13,9 +12,7 @@ export default async function ProfielPage() {
   const user = await requireAuth()
   const userProfile = await getUserProfile()
 
-  if (!userProfile) {
-    redirect('/')
-  }
+  const missingPublicProfile = !userProfile
 
   return (
     <div className="page-background">
@@ -32,9 +29,19 @@ export default async function ProfielPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">{userProfile.full_name || user.email}</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {userProfile?.full_name || user.email}
+                </h2>
               </div>
               
+              {missingPublicProfile && (
+                <p className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  Je bent ingelogd bij Supabase Auth, maar er is (nog) geen rij in de gebruikerstabel.
+                  Een beheerder kan het backfill-script in deze PR draaien als het na opnieuw inloggen
+                  blijft hangen.
+                </p>
+              )}
+
               <div className="space-y-4">
                 <div className="border-b border-gray-200 pb-4">
                   <p className="text-sm text-gray-600 mb-1">Email</p>
@@ -43,12 +50,16 @@ export default async function ProfielPage() {
                 
                 <div className="border-b border-gray-200 pb-4">
                   <p className="text-sm text-gray-600 mb-1">Naam</p>
-                  <p className="text-lg text-gray-800 font-medium">{userProfile.full_name || 'Niet ingevuld'}</p>
+                  <p className="text-lg text-gray-800 font-medium">
+                    {userProfile?.full_name || 'Niet ingevuld'}
+                  </p>
                 </div>
                 
                 <div className="border-b border-gray-200 pb-4">
                   <p className="text-sm text-gray-600 mb-1">Rol</p>
-                  <p className="text-lg text-gray-800 font-medium capitalize">{userProfile.role || 'user'}</p>
+                  <p className="text-lg text-gray-800 font-medium capitalize">
+                    {userProfile?.role || 'user'}
+                  </p>
                 </div>
               </div>
               

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import type { User as UserProfile } from '@/types'
+import { ensureUserProfileRow } from '@/lib/ensure-user-profile'
 
 const supabase = createClient()
 
@@ -23,16 +24,29 @@ export function useAuth() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  async function loadUserProfile(userId: string) {
+  async function loadUserProfile(userId: string, authUser?: User | null) {
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
+
+      if (error?.code === 'PGRST116' || (!data && !error)) {
+        if (authUser) {
+          await ensureUserProfileRow(supabase, authUser)
+          const retry = await supabase.from('users').select('*').eq('id', userId).maybeSingle()
+          data = retry.data
+          error = retry.error
+        }
+      }
 
       if (error) {
         console.warn('User profile not found:', error.message)
+        setUserProfile(null)
+        return
+      }
+      if (!data) {
         setUserProfile(null)
         return
       }
@@ -68,7 +82,7 @@ export function useAuth() {
 
         setUser(user)
         if (user) {
-          void loadUserProfile(user.id)
+          void loadUserProfile(user.id, user)
         } else {
           setLoading(false)
         }
@@ -88,7 +102,7 @@ export function useAuth() {
       if (!mounted) return
       setUser(session?.user ?? null)
       if (session?.user) {
-        await loadUserProfile(session.user.id)
+        await loadUserProfile(session.user.id, session.user)
       } else {
         setUserProfile(null)
         setLoading(false)
@@ -100,7 +114,7 @@ export function useAuth() {
       supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
         if (currentUser && mounted) {
           if (!customEvent.detail?.userId || customEvent.detail.userId === currentUser.id) {
-            void loadUserProfile(currentUser.id)
+            void loadUserProfile(currentUser.id, currentUser)
           }
         }
       })
@@ -120,7 +134,7 @@ export function useAuth() {
       data: { user: currentUser },
     } = await supabase.auth.getUser()
     if (currentUser) {
-      await loadUserProfile(currentUser.id)
+      await loadUserProfile(currentUser.id, currentUser)
     }
   }
 
