@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import type { User as UserProfile } from '@/types'
 import { ensureUserProfileRow } from '@/lib/ensure-user-profile'
+import { fetchUserProfileById } from '@/lib/user-profile-select'
 
 const supabase = createClient()
 
@@ -26,19 +27,13 @@ export function useAuth() {
 
   async function loadUserProfile(userId: string, authUser?: User | null) {
     try {
-      let { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle()
+      let { data, error } = await fetchUserProfileById(supabase, userId, '*')
 
-      if (error?.code === 'PGRST116' || (!data && !error)) {
-        if (authUser) {
-          await ensureUserProfileRow(supabase, authUser)
-          const retry = await supabase.from('users').select('*').eq('id', userId).maybeSingle()
-          data = retry.data
-          error = retry.error
-        }
+      if (!data && !error && authUser) {
+        await ensureUserProfileRow(supabase, authUser)
+        const retry = await fetchUserProfileById(supabase, userId, '*')
+        data = retry.data as UserProfile | null
+        error = retry.error
       }
 
       if (error) {
@@ -46,11 +41,11 @@ export function useAuth() {
         setUserProfile(null)
         return
       }
-      if (!data) {
+      if (!data || !('email' in data)) {
         setUserProfile(null)
         return
       }
-      setUserProfile(data)
+      setUserProfile(data as UserProfile)
     } catch (error) {
       console.error('Error loading user profile:', error)
       setUserProfile(null)

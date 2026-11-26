@@ -610,11 +610,7 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
   const { data: { user: currentUser } } = await supabase.auth.getUser()
   if (!currentUser) throw new Error('Not authenticated')
   
-  const { data: currentUserData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', currentUser.id)
-    .maybeSingle()
+  const { data: currentUserData } = await fetchUserProfileById(supabase, currentUser.id, 'role')
   
   if (!currentUserData || currentUserData.role !== 'admin') {
     throw new Error('Only admins can update users')
@@ -663,11 +659,11 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
     // Try to fetch the user separately to verify
     await new Promise(resolve => setTimeout(resolve, 200))
     
-    const { data: fetchedUser, error: fetchError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle()
+    const { data: fetchedUser, error: fetchError } = await fetchUserProfileById(
+      supabase,
+      userId,
+      '*'
+    )
     
     if (fetchedUser && !fetchError) {
       console.log('Successfully fetched user after UPDATE:', fetchedUser)
@@ -723,11 +719,7 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
   console.log('UPDATE did not return data, fetching separately...')
   await new Promise(resolve => setTimeout(resolve, 100))
   
-  const { data: updatedUser, error: fetchError } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', userId)
-    .maybeSingle()
+  const { data: updatedUser, error: fetchError } = await fetchUserProfileById(supabase, userId, '*')
   
   if (updatedUser && !fetchError) {
     console.log('Successfully fetched updated user from database:', updatedUser)
