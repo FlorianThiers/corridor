@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -21,6 +21,7 @@ export function LoginModal() {
   const supabase = createClient()
   const router = useRouter()
   const { user } = useAuth()
+  const blockAutoCloseRef = useRef(false)
 
   const siteOrigin = () => {
     const raw = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
@@ -49,6 +50,7 @@ export function LoginModal() {
 
     // Listen for modal open events
     const handleOpenModal = () => {
+      blockAutoCloseRef.current = false
       setIsOpen(true)
       setActiveTab('login')
       setError('')
@@ -69,8 +71,8 @@ export function LoginModal() {
     window.addEventListener('openLoginModal', handleOpenModal)
     document.addEventListener('click', handleLoginClick)
 
-    // Sluit alleen bij bestaande sessie. Na login tonen we eerst de bevestiging (zie handleLogin).
-    if (user && !errorParam && !successParam && !success) {
+  // Sluit alleen bij bestaande sessie. Na login tonen we eerst de bevestiging (zie handleLogin).
+    if (user && !errorParam && !successParam && !success && !blockAutoCloseRef.current) {
       setIsOpen(false)
     }
 
@@ -108,8 +110,10 @@ export function LoginModal() {
         await ensureUserProfileRow(supabase, signInData.user)
       }
 
+      blockAutoCloseRef.current = true
       setSuccess('Succesvol ingelogd!')
       setTimeout(() => {
+        blockAutoCloseRef.current = false
         setIsOpen(false)
         router.refresh()
       }, 1500)
