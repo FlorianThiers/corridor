@@ -42,11 +42,11 @@ export function useAuth() {
         setUserProfile(null)
         return
       }
-      if (!data || !('email' in data)) {
+      if (!data) {
         setUserProfile(null)
         return
       }
-      setUserProfile(data as UserProfile)
+      setUserProfile(data)
     } catch (error) {
       console.error('Error loading user profile:', error)
       setUserProfile(null)

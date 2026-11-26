@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { User as UserProfile } from '@/types'
 
-type UserProfileRow = Pick<UserProfile, 'id'> | UserProfile
+type ProfileQueryError = { code?: string; message: string }
 
 /**
  * Haalt maximaal één users-rij op zonder maybeSingle/single (PGRST116 bij 0 of >1 rij).
@@ -10,7 +10,7 @@ export async function fetchUserProfileById(
   supabase: SupabaseClient,
   userId: string,
   columns: string = '*'
-): Promise<{ data: UserProfileRow | null; error: { code?: string; message: string } | null }> {
+): Promise<{ data: UserProfile | null; error: ProfileQueryError | null }> {
   const { data: rows, error } = await supabase.from('users').select(columns).eq('id', userId).limit(2)
 
   if (error) {
@@ -27,5 +27,10 @@ export async function fetchUserProfileById(
     )
   }
 
-  return { data: rows[0] as UserProfileRow, error: null }
+  const row = rows[0]
+  if (!row || typeof row !== 'object' || !('id' in row)) {
+    return { data: null, error: null }
+  }
+
+  return { data: row as UserProfile, error: null }
 }

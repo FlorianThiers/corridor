@@ -82,7 +82,7 @@ export function ResetPasswordForm() {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [searchParams, supabase])
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

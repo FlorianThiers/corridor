@@ -30,7 +30,7 @@ export async function getUserProfile() {
 
   const supabase = await createClient()
   const { data, error } = await fetchUserProfileById(supabase, user.id, '*')
-  if (error || !data || !('email' in data)) return null
+  if (error || !data) return null
   return data
 }
 
@@ -47,7 +47,7 @@ export async function requireAdmin() {
   const supabase = await createClient()
   
   const { data, error } = await fetchUserProfileById(supabase, user.id, 'role')
-  const role = data && 'role' in data ? data.role : null
+  const role = data?.role ?? null
 
   if (error || !hasDbAdminRole(role)) {
     redirect('/')

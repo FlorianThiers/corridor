@@ -614,8 +614,7 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
   
   const { data: currentUserData } = await fetchUserProfileById(supabase, currentUser.id, 'role')
   
-  const actorRole =
-    currentUserData && 'role' in currentUserData ? currentUserData.role : null
+  const actorRole = currentUserData?.role ?? null
   if (!hasDbAdminRole(actorRole)) {
     throw new Error('Only admins can update users')
   }
