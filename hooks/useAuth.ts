@@ -6,6 +6,7 @@ import type { User } from '@supabase/supabase-js'
 import type { User as UserProfile } from '@/types'
 import { ensureUserProfileRow } from '@/lib/ensure-user-profile'
 import { fetchUserProfileById } from '@/lib/user-profile-select'
+import { hasDbAdminRole } from '@/lib/roles'
 
 const supabase = createClient()
 
@@ -133,9 +134,7 @@ export function useAuth() {
     }
   }
 
-  const isAdmin = () => {
-    return userProfile?.role === 'admin' || userProfile?.role === 'programmer'
-  }
+  const isAdmin = () => hasDbAdminRole(userProfile?.role)
 
   const hasRole = (role: string) => {
     return userProfile?.role === role

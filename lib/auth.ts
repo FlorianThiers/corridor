@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { fetchUserProfileById } from '@/lib/user-profile-select'
+import { hasDbAdminRole } from '@/lib/roles'
 
 export async function getUser() {
   try {
@@ -48,7 +49,7 @@ export async function requireAdmin() {
   const { data, error } = await fetchUserProfileById(supabase, user.id, 'role')
   const role = data && 'role' in data ? data.role : null
 
-  if (error || !role || (role !== 'admin' && role !== 'programmer')) {
+  if (error || !hasDbAdminRole(role)) {
     redirect('/')
   }
 

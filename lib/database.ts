@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { fetchUserProfileById } from '@/lib/user-profile-select'
+import { hasDbAdminRole } from '@/lib/roles'
 import type {
   Zone,
   ZonePhoto,
@@ -612,7 +614,9 @@ export async function updateUser(supabase: SupabaseClient, userId: string, updat
   
   const { data: currentUserData } = await fetchUserProfileById(supabase, currentUser.id, 'role')
   
-  if (!currentUserData || currentUserData.role !== 'admin') {
+  const actorRole =
+    currentUserData && 'role' in currentUserData ? currentUserData.role : null
+  if (!hasDbAdminRole(actorRole)) {
     throw new Error('Only admins can update users')
   }
   
