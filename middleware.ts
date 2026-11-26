@@ -29,18 +29,23 @@ export async function middleware(request: NextRequest) {
       getAll() {
         return request.cookies.getAll()
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet, headers) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
         response = NextResponse.next({ request })
         cookiesToSet.forEach(({ name, value, options }) =>
           response.cookies.set(name, value, options)
         )
+        Object.entries(headers).forEach(([key, value]) => response.headers.set(key, value))
       },
     },
   })
 
   // Zorgt dat auth-cookies naar SSR-routes (zoals /profiel) mee komen na client-login.
-  await supabase.auth.getUser()
+  try {
+    await supabase.auth.getUser()
+  } catch (error) {
+    console.warn('middleware: supabase.auth.getUser() mislukt', error)
+  }
 
   return response
 }

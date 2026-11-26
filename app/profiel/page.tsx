@@ -36,9 +36,8 @@ export default async function ProfielPage() {
               
               {missingPublicProfile && (
                 <p className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                  Je bent ingelogd bij Supabase Auth, maar er is (nog) geen rij in de gebruikerstabel.
-                  Een beheerder kan het backfill-script in deze PR draaien als het na opnieuw inloggen
-                  blijft hangen.
+                  Je bent ingelogd, maar je profiel ontbreekt nog in Corrid&apos;Or. Log eenmaal uit en
+                  opnieuw in. Blijft dit zichtbaar? Neem dan contact op met het team.
                 </p>
               )}
 
