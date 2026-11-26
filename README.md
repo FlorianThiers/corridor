@@ -60,11 +60,13 @@ Corridor/
    npm install
    ```
 
-3. **Maak `.env` bestand** (kopieer van `.env.example`)
+3. **Maak `.env.local`** (kopieer van `.env.example`)
    ```env
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_ANON_KEY=your_supabase_anon_key
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
    ```
+   `SUPABASE_SERVICE_ROLE_KEY` is alleen voor server-side routes (media/agenda API); nooit `NEXT_PUBLIC_` gebruiken.
 
 4. **Build config**
    ```bash
@@ -104,12 +106,13 @@ Gebruik de `nginx.conf` configuratie als template voor je server setup.
 1. **Push naar GitHub/GitLab**
 2. **Verbind met Vercel** en deploy automatisch
 3. **Environment Variables instellen:**
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (Production/Preview, server-only)
 4. **Deploy** - het `vercel.json` bestand regelt automatisch het routing
 
 **⚠️ Belangrijk voor Vercel:**
-- Zorg dat `SUPABASE_URL` en `SUPABASE_ANON_KEY` zijn ingesteld in Vercel dashboard (Project Settings > Environment Variables)
+- Zorg dat `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` en `SUPABASE_SERVICE_ROLE_KEY` zijn ingesteld in Vercel dashboard (Project Settings > Environment Variables)
 - De build stap genereert automatisch `js/supabase-config.js`
 - Als deployment faalt:
   1. Check de build logs in Vercel dashboard
@@ -121,8 +124,9 @@ Gebruik de `nginx.conf` configuratie als template voor je server setup.
 1. **Push naar Git repository**
 2. **Import project** in Netlify dashboard
 3. **Environment Variables instellen:**
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (server-only)
 4. **Deploy** - het `_redirects` bestand regelt automatisch het routing
 
 #### **Firebase Hosting**
