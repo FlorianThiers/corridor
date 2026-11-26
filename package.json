@@ -13,7 +13,9 @@
     "optimize:images": "powershell -ExecutionPolicy Bypass -File scripts/convert-to-webp.ps1",
     "optimize:all": "npm run optimize:videos && npm run optimize:images",
     "generate:qr": "node scripts/generate-zone-qrs.mjs",
-    "test:auth": "npx --yes tsx lib/auth-client.selftest.ts"
+    "test:auth": "npx --yes tsx lib/auth-client.selftest.ts",
+    "test:jwt-role": "npx --yes tsx lib/postgrest-jwt-role.selftest.ts",
+    "test:unit": "npm run test:auth && npm run test:jwt-role && npx --yes tsx lib/media-credit.selftest.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",

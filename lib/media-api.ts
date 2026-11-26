@@ -212,28 +212,28 @@ async function resolveZoneFilter(
 async function loadSubmitterProfiles(
   supabase: SupabaseClient,
   submitterIds: string[]
-): Promise<Map<string, Pick<User, 'id' | 'full_name' | 'email'>>> {
+): Promise<Map<string, Pick<User, 'id' | 'full_name'>>> {
   const unique = [...new Set(submitterIds.filter(Boolean))]
   if (unique.length === 0) return new Map()
 
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, full_name, email')
-    .in('id', unique)
+  const { data, error } = await supabase.rpc('get_user_public_profiles', {
+    user_ids: unique,
+  })
 
   if (error) {
     console.warn('media-api: could not load uploader profiles', error.message)
     return new Map()
   }
 
-  return new Map((data || []).map((row) => [row.id, row]))
+  const rows = (data || []) as Pick<User, 'id' | 'full_name'>[]
+  return new Map(rows.map((row) => [row.id, row]))
 }
 
 function zonePhotoToItem(
   photo: ZonePhotoRow,
   zone: Zone | undefined,
   kind: MediaKind,
-  submitter: Pick<User, 'full_name' | 'email'> | null,
+  submitter: Pick<User, 'full_name'> | null,
   coverUrl: string | null,
   sortIndex: number
 ): MediaItem {

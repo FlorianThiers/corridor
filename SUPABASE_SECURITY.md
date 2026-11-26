@@ -47,7 +47,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc... (anon key)
 
 ```env
 # ❌ ONVEILIG - Service role key is geheim
-NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=eyJhbGc... (service role key)
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGc... (service role key, nooit NEXT_PUBLIC_)
 ```
 
 ## 📋 Wat Te Doen Met De Waarschuwing?

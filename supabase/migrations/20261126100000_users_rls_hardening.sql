@@ -1,6 +1,6 @@
 -- users RLS hardening (Corrid'Or)
 -- Sluit privilege-escalatie via self-UPDATE (role) en willekeurige INSERT.
--- Idempotent; run in Supabase SQL Editor / migration pipeline (not yet on production as of 2026-11-26).
+-- Idempotent; op productie Corrid'Or toegepast op 2026-11-26.
 
 -- ---------------------------------------------------------------------------
 -- Helpers (SECURITY DEFINER → geen recursie in users-RLS)
