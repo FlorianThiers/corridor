@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { fetchUserProfileById } from '@/lib/user-profile-select'
+import { hasDbAdminRole } from '@/lib/roles'
 
 export async function getUser() {
   try {
@@ -27,12 +29,8 @@ export async function getUserProfile() {
   if (!user) return null
 
   const supabase = await createClient()
-  const { data } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
+  const { data, error } = await fetchUserProfileById(supabase, user.id, '*')
+  if (error || !data) return null
   return data
 }
 
@@ -48,13 +46,10 @@ export async function requireAdmin() {
   const user = await requireAuth()
   const supabase = await createClient()
   
-  const { data } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const { data, error } = await fetchUserProfileById(supabase, user.id, 'role')
+  const role = data?.role ?? null
 
-  if (!data || (data.role !== 'admin' && data.role !== 'programmer')) {
+  if (error || !hasDbAdminRole(role)) {
     redirect('/')
   }
 

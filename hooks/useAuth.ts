@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import type { User as UserProfile } from '@/types'
 import { ensureUserProfileRow } from '@/lib/ensure-user-profile'
+import { fetchUserProfileById } from '@/lib/user-profile-select'
+import { hasDbAdminRole } from '@/lib/roles'
 
 const supabase = createClient()
 
@@ -26,19 +28,13 @@ export function useAuth() {
 
   async function loadUserProfile(userId: string, authUser?: User | null) {
     try {
-      let { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle()
+      let { data, error } = await fetchUserProfileById(supabase, userId, '*')
 
-      if (error?.code === 'PGRST116' || (!data && !error)) {
-        if (authUser) {
-          await ensureUserProfileRow(supabase, authUser)
-          const retry = await supabase.from('users').select('*').eq('id', userId).maybeSingle()
-          data = retry.data
-          error = retry.error
-        }
+      if (!data && !error && authUser) {
+        await ensureUserProfileRow(supabase, authUser)
+        const retry = await fetchUserProfileById(supabase, userId, '*')
+        data = retry.data as UserProfile | null
+        error = retry.error
       }
 
       if (error) {
@@ -138,9 +134,7 @@ export function useAuth() {
     }
   }
 
-  const isAdmin = () => {
-    return userProfile?.role === 'admin' || userProfile?.role === 'programmer'
-  }
+  const isAdmin = () => hasDbAdminRole(userProfile?.role)
 
   const hasRole = (role: string) => {
     return userProfile?.role === role

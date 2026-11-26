@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { EmailOtpType } from '@supabase/supabase-js'
+import { fetchUserProfileById } from '@/lib/user-profile-select'
 
 export const dynamic = 'force-dynamic'
 
@@ -90,11 +91,11 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (user) {
-    const { data: existingProfile, error: profileError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('id', user.id)
-      .maybeSingle()
+    const { data: existingProfile, error: profileError } = await fetchUserProfileById(
+      supabase,
+      user.id,
+      'id'
+    )
 
     if (profileError) {
       console.error('Error checking user profile in callback:', profileError)

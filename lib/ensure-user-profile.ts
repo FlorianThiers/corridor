@@ -1,4 +1,5 @@
 import type { SupabaseClient, User as AuthUser } from '@supabase/supabase-js'
+import { fetchUserProfileById } from '@/lib/user-profile-select'
 
 function displayNameFromAuthUser(user: AuthUser): string {
   const metadata = user.user_metadata as Record<string, unknown> | undefined
@@ -18,13 +19,9 @@ export async function ensureUserProfileRow(
   supabase: SupabaseClient,
   user: AuthUser
 ): Promise<boolean> {
-  const { data: existing, error: selectError } = await supabase
-    .from('users')
-    .select('id')
-    .eq('id', user.id)
-    .maybeSingle()
+  const { data: existing, error: selectError } = await fetchUserProfileById(supabase, user.id, 'id')
 
-  if (selectError && selectError.code !== 'PGRST116') {
+  if (selectError) {
     console.warn('ensureUserProfileRow: kon profiel niet controleren:', selectError.message)
     return false
   }
