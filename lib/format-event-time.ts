@@ -2,11 +2,11 @@
 export const SITE_TIME_ZONE = 'Europe/Brussels'
 
 export function formatEventDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('nl-NL', { timeZone: SITE_TIME_ZONE })
+  return new Date(iso).toLocaleDateString('nl-BE', { timeZone: SITE_TIME_ZONE })
 }
 
 export function formatEventTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('nl-NL', {
+  return new Date(iso).toLocaleTimeString('nl-BE', {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: SITE_TIME_ZONE,

@@ -7,10 +7,17 @@ import { ZoneCard } from '@/components/ZoneCard'
 import { ZonePhotoHowTo } from '@/components/ZonePhotoHowTo'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
+import { publicMetadata } from '@/lib/seo'
 
 // Revalidate every 60 seconds to reduce requests while keeping data fresh
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
+
+export const metadata = publicMetadata({
+  title: 'Zones - Corridor',
+  description: "De sport- en chillezones van Corridor in Gentbrugge, met foto's uit de buurt.",
+  path: '/zones',
+})
 
 export default async function ZonesPage() {
   let zones: Zone[] = []

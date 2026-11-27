@@ -85,7 +85,7 @@ function DayColumn({
       </p>
 
       {isEmptyDay ? (
-        <p className="text-xs text-gray-400 flex-1 flex items-center justify-center text-center">—</p>
+        <p className="text-xs text-gray-600 flex-1 flex items-center justify-center text-center">—</p>
       ) : (
         <ul className="space-y-1.5 flex-1 min-w-0">
           {visibleSlots.map((slot) => {

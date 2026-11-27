@@ -29,7 +29,7 @@ test('@smoke login-dialoog laadt (geen formulieractie)', async ({ page }) => {
   const response = await page.goto('/', { waitUntil: 'domcontentloaded' })
   expect(response?.status()).toBe(200)
 
-  await page.getByRole('button', { name: 'Menu' }).click()
+  await page.getByRole('button', { name: 'Menu openen' }).click()
   await page.getByRole('button', { name: 'Inloggen' }).click()
 
   await expect(page.locator('#login-modal.active')).toBeVisible()
