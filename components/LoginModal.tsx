@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { authErrorMessage, friendlyAuthError, normalizeAuthEmail } from '@/lib/auth-client'
+import { ensureUserProfileRow } from '@/lib/ensure-user-profile'
 
 type Tab = 'login' | 'signup' | 'forgot-password'
 
@@ -19,26 +21,13 @@ export function LoginModal() {
   const supabase = createClient()
   const router = useRouter()
   const { user } = useAuth()
+  const blockAutoCloseRef = useRef(false)
   const dialogRef = useRef<HTMLDivElement>(null)
   const previouslyFocused = useRef<HTMLElement | null>(null)
 
   const siteOrigin = () => {
     const raw = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
     return raw.replace(/\/+$/, '')
-  }
-
-  const friendlyAuthError = (raw: string, fallback: string) => {
-    const msg = raw.toLowerCase()
-    if (msg.includes('rate limit') || msg.includes('over_email') || msg.includes('only request this after')) {
-      return 'Even geduld: te veel verificatiemails. Wacht even, of log in als je account al bestaat.'
-    }
-    if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
-      return 'Dit e-mailadres heeft al een account. Log in of gebruik "Wachtwoord vergeten".'
-    }
-    if (msg.includes('invalid login') || msg.includes('invalid credentials') || msg.includes('invalid email or password')) {
-      return 'Onjuist e-mailadres of wachtwoord.'
-    }
-    return raw || fallback
   }
 
   useEffect(() => {
@@ -63,6 +52,7 @@ export function LoginModal() {
 
     // Listen for modal open events
     const handleOpenModal = () => {
+      blockAutoCloseRef.current = false
       setIsOpen(true)
       setActiveTab('login')
       setError('')
@@ -83,9 +73,8 @@ export function LoginModal() {
     window.addEventListener('openLoginModal', handleOpenModal)
     document.addEventListener('click', handleLoginClick)
 
-    // Sluit alleen als er al een sessie is. Een geslaagde login toont eerst de
-    // bevestiging; die sluit zichzelf via de timeout hieronder.
-    if (user && !errorParam && !successParam && !success) {
+    // Sluit alleen bij bestaande sessie. Na login tonen we eerst de bevestiging (zie handleLogin).
+    if (user && !errorParam && !successParam && !success && !blockAutoCloseRef.current) {
       setIsOpen(false)
     }
 
@@ -108,24 +97,30 @@ export function LoginModal() {
     setSuccess('')
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
+    const email = normalizeAuthEmail(formData.get('email') as string)
+    const password = (formData.get('password') as string) ?? ''
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (signInError) throw signInError
 
+      if (signInData.user) {
+        await ensureUserProfileRow(supabase, signInData.user)
+      }
+
+      blockAutoCloseRef.current = true
       setSuccess('Succesvol ingelogd!')
       setTimeout(() => {
+        blockAutoCloseRef.current = false
         setIsOpen(false)
         router.refresh()
       }, 1500)
-    } catch (err: any) {
-      setError(friendlyAuthError(err?.message || '', 'Inloggen mislukt. Probeer opnieuw.'))
+    } catch (err: unknown) {
+      setError(friendlyAuthError(authErrorMessage(err), 'Inloggen mislukt. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }
@@ -138,9 +133,9 @@ export function LoginModal() {
     setSuccess('')
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    const fullName = formData.get('name') as string
+    const email = normalizeAuthEmail(formData.get('email') as string)
+    const password = (formData.get('password') as string) ?? ''
+    const fullName = (formData.get('name') as string) ?? ''
 
     try {
       const redirectUrl = `${siteOrigin()}/auth/callback`
@@ -160,8 +155,8 @@ export function LoginModal() {
 
       setSignupDone(true)
       setSuccess('Account aangemaakt! Check je email voor verificatie (ook spam). Daarna kun je inloggen.')
-    } catch (err: any) {
-      setError(friendlyAuthError(err?.message || '', 'Registratie mislukt. Probeer opnieuw.'))
+    } catch (err: unknown) {
+      setError(friendlyAuthError(authErrorMessage(err), 'Registratie mislukt. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }
@@ -174,7 +169,7 @@ export function LoginModal() {
     setSuccess('')
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
+    const email = normalizeAuthEmail(formData.get('email') as string)
 
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
@@ -184,8 +179,8 @@ export function LoginModal() {
       if (resetError) throw resetError
 
       setSuccess('Reset link is verzonden naar je emailadres. Check je inbox (en spam folder).')
-    } catch (err: any) {
-      setError(friendlyAuthError(err?.message || '', 'Fout bij verzenden van reset link. Probeer opnieuw.'))
+    } catch (err: unknown) {
+      setError(friendlyAuthError(authErrorMessage(err), 'Fout bij verzenden van reset link. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }

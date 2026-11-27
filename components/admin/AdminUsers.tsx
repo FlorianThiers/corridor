@@ -14,6 +14,7 @@ import {
   userRoleBadgeClass,
   type UserSortKey,
 } from '@/lib/admin-ui'
+import { hasDbAdminRole } from '@/lib/roles'
 
 const ROLE_OPTIONS: User['role'][] = ['user', 'admin', 'programmer', 'bestuurder']
 
@@ -94,7 +95,7 @@ export function AdminUsers() {
 
       if (currentUser && editingUser.id === currentUser.id) {
         await refreshUserProfile()
-        if (userData.role === 'admin' || userData.role === 'programmer') {
+        if (hasDbAdminRole(userData.role)) {
           setTimeout(() => {
             alert(
               'Je rol is bijgewerkt. De beheer-navigatie zou nu zichtbaar moeten zijn. Zie je die niet, ververs de pagina.'

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 3000
-const baseURL = `http://127.0.0.1:${PORT}`
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${PORT}`
 
 /** Dummy waarden. De app praat in deze run niet met Supabase. */
 const e2eEnv: Record<string, string> = {
@@ -16,6 +16,12 @@ const e2eEnv: Record<string, string> = {
 
 for (const [key, value] of Object.entries(e2eEnv)) {
   if (!process.env[key]) process.env[key] = value
+}
+
+const extraHTTPHeaders: Record<string, string> = {}
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+if (bypassSecret) {
+  extraHTTPHeaders['x-vercel-protection-bypass'] = bypassSecret
 }
 
 export default defineConfig({
@@ -33,6 +39,7 @@ export default defineConfig({
     locale: 'nl-BE',
     timezoneId: 'Europe/Brussels',
     trace: 'on-first-retry',
+    ...(Object.keys(extraHTTPHeaders).length > 0 ? { extraHTTPHeaders } : {}),
   },
   webServer: {
     command: `npm run dev -- --port ${PORT}`,

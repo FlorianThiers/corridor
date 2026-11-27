@@ -38,7 +38,9 @@ function isAdminGalleryPath(storagePath: string): boolean {
   return storagePath.includes('/approved/') || storagePath.includes('/cover-')
 }
 
-function isFlorianProfile(profile: Pick<User, 'full_name' | 'email'> | null | undefined): boolean {
+export type SubmitterProfile = Pick<User, 'full_name'> & Partial<Pick<User, 'email'>>
+
+function isFlorianProfile(profile: SubmitterProfile | null | undefined): boolean {
   if (!profile) return false
   const name = (profile.full_name || '').trim().toLowerCase()
   if (name === 'florian thiers') return true
@@ -53,9 +55,7 @@ function parseMediaSource(value: string | null | undefined): MediaSource | null 
   return null
 }
 
-function uploaderName(
-  submitter: Pick<User, 'full_name' | 'email'> | null | undefined
-): string | null {
+function uploaderName(submitter: SubmitterProfile | null | undefined): string | null {
   return submitter?.full_name?.trim() || null
 }
 
@@ -80,7 +80,7 @@ export function fallbackCredit(
 
 export function resolveZonePhotoCredit(
   photo: ZonePhotoCreditInput,
-  submitter: Pick<User, 'full_name' | 'email'> | null | undefined
+  submitter: SubmitterProfile | null | undefined
 ): ResolvedMediaCredit {
   const explicitSource = parseMediaSource(photo.media_source)
   const explicitArtist = photo.artist_tag ?? null
