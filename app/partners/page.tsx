@@ -13,9 +13,16 @@ import { SitePartnerCard } from '@/components/SitePartnerCard'
 import { Footer } from '@/components/Footer'
 import { BackgroundImage } from '@/components/BackgroundImage'
 import { BRAND_CORRI_DOR, SITE_NAME } from '@/lib/brand'
+import { publicMetadata } from '@/lib/seo'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
+
+export const metadata = publicMetadata({
+  title: 'Partners - Corridor',
+  description: 'Sportclubs, buurtpartners, onderwijs en overheden die Corridor in Gentbrugge mee maken.',
+  path: '/partners',
+})
 
 export default async function PartnersPage() {
   let logoMap = new Map<string, string>()

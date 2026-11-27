@@ -22,8 +22,9 @@
 ### 4. Credentials Management ✅
 - **Environment Variables**: All secrets stored in environment variables
 - **No Hardcoded Keys**: Supabase keys loaded from `.env` file
+- **Service role**: Only `SUPABASE_SERVICE_ROLE_KEY` (server-only, `import 'server-only'` in `lib/supabase/admin.ts`). No `NEXT_PUBLIC_` secret, including no `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY`
 - **Build-Time Injection**: Config generated at build time, not runtime
-- **Vercel Secrets**: Production secrets stored in Vercel environment variables
+- **Vercel Secrets**: Production secrets stored in Vercel environment variables. Checklist: `SUPABASE_SECURITY.md`
 
 ### 5. CORS Configuration ✅
 - **Supabase CORS**: Configured in Supabase Dashboard

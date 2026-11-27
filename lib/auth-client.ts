@@ -7,6 +7,16 @@ export function normalizeAuthEmail(raw: string): string {
   return raw.trim().toLowerCase()
 }
 
+/** Supabase auth errors are not always `instanceof Error` (e.g. e2e mock). */
+export function authErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (typeof err === 'object' && err !== null && 'message' in err) {
+    const msg = (err as { message: unknown }).message
+    if (typeof msg === 'string') return msg
+  }
+  return ''
+}
+
 export function friendlyAuthError(raw: string, fallback: string): string {
   const msg = raw.toLowerCase()
   if (msg.includes('rate limit') || msg.includes('over_email') || msg.includes('only request this after')) {

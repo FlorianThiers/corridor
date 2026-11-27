@@ -138,7 +138,7 @@ export function AdminEvents() {
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <button
           onClick={() => openModal()}
-          className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium"
+          className="bg-pink-600 text-white px-6 py-3 rounded-lg hover:bg-pink-700 transition-colors font-medium"
         >
           + Nieuw item
         </button>
@@ -172,6 +172,7 @@ export function AdminEvents() {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            aria-label="Zoek op titel"
             placeholder="Zoek op titel…"
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
           />
@@ -210,13 +211,13 @@ export function AdminEvents() {
               <div className="mt-2 flex gap-2">
                 <button
                   onClick={() => openModal(event)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                 >
                   Bewerken
                 </button>
                 <button
                   onClick={() => handleDelete(event.id)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
                 >
                   Verwijderen
                 </button>
@@ -358,7 +359,7 @@ export function AdminEvents() {
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium"
+                  className="flex-1 bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition-colors font-medium"
                 >
                   Opslaan
                 </button>

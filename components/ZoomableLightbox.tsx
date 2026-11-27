@@ -31,6 +31,9 @@ export function ZoomableLightbox({
   }, [])
 
   const viewportRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const scaleRef = useRef(MIN_SCALE)
   const draggingRef = useRef(false)
   const lastPointerRef = useRef({ x: 0, y: 0 })
@@ -62,15 +65,37 @@ export function ZoomableLightbox({
 
   useEffect(() => {
     if (!open) return
+    const trigger = triggerRef.current
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
       if (e.key === '+' || e.key === '=') zoomBy(ZOOM_STEP)
       if (e.key === '-') zoomBy(-ZOOM_STEP)
+      if (scaleRef.current > MIN_SCALE) {
+        if (e.key === 'ArrowLeft') setPan((p) => ({ ...p, x: p.x + 40 }))
+        if (e.key === 'ArrowRight') setPan((p) => ({ ...p, x: p.x - 40 }))
+        if (e.key === 'ArrowUp') setPan((p) => ({ ...p, y: p.y + 40 }))
+        if (e.key === 'ArrowDown') setPan((p) => ({ ...p, y: p.y - 40 }))
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return
+      const items = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled])')
+      )
+      if (items.length === 0) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
 
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
+    const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 0)
 
     const viewport = viewportRef.current
     const onWheel = (e: WheelEvent) => {
@@ -101,8 +126,10 @@ export function ZoomableLightbox({
     window.addEventListener('pointercancel', endDrag)
 
     return () => {
+      window.clearTimeout(focusTimer)
       document.body.style.overflow = ''
       window.removeEventListener('keydown', onKey)
+      trigger?.focus()
       viewport?.removeEventListener('wheel', onWheel)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerup', endDrag)
@@ -121,10 +148,11 @@ export function ZoomableLightbox({
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
-        className={`group relative block w-full overflow-hidden rounded-3xl bg-white/50 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 ${className}`}
-        aria-label="Vergroot foto"
+        className={`group relative block w-full overflow-hidden rounded-3xl bg-white/50 text-left ${className}`}
+        aria-label={alt ? `Vergroot foto: ${alt}` : 'Vergroot foto'}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -143,39 +171,44 @@ export function ZoomableLightbox({
         mounted &&
         createPortal(
           <div
+            ref={dialogRef}
             className="fixed inset-0 z-[9999] flex h-[100dvh] w-[100vw] flex-col bg-black"
             role="dialog"
             aria-modal="true"
-            aria-label="Foto vergroten"
+            aria-labelledby="lightbox-caption"
           >
           <div className="relative z-30 flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-black px-4 py-3 text-white">
-            <p className="truncate text-sm text-white/80">{alt || 'Foto'}</p>
+            <p id="lightbox-caption" className="truncate text-sm text-white">{alt || 'Foto'}</p>
             <div className="flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
-                className="rounded-lg bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25"
+                className="rounded-lg bg-white/20 px-3 py-1.5 text-sm hover:bg-white/30"
                 onClick={() => zoomBy(-ZOOM_STEP)}
+                aria-label="Zoom uit"
               >
                 −
               </button>
               <span className="min-w-[3rem] text-center text-sm">{Math.round(scale * 100)}%</span>
               <button
                 type="button"
-                className="rounded-lg bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25"
+                className="rounded-lg bg-white/20 px-3 py-1.5 text-sm hover:bg-white/30"
                 onClick={() => zoomBy(ZOOM_STEP)}
+                aria-label="Zoom in"
               >
                 +
               </button>
               <button
                 type="button"
-                className="rounded-lg bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25"
+                className="rounded-lg bg-white/20 px-3 py-1.5 text-sm hover:bg-white/30"
                 onClick={resetView}
+                aria-label="Weergave resetten"
               >
                 Reset
               </button>
               <button
+                ref={closeRef}
                 type="button"
-                className="rounded-lg bg-pink-500 px-3 py-1.5 text-sm font-medium hover:bg-pink-600"
+                className="rounded-lg bg-pink-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-pink-700"
                 onClick={close}
               >
                 Sluiten
@@ -207,7 +240,7 @@ export function ZoomableLightbox({
             </div>
           </div>
 
-          <p className="relative z-30 shrink-0 bg-black px-4 py-2 text-center text-xs text-white/60">
+          <p className="relative z-30 shrink-0 bg-black px-4 py-2 text-center text-xs text-white">
             Scroll of + / − om te zoomen · sleep ingezoomd om te verplaatsen · Esc sluiten
           </p>
           </div>,

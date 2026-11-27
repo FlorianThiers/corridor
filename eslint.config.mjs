@@ -9,6 +9,9 @@ export default defineConfig([
     'build/**',
     'node_modules/**',
     'next-env.d.ts',
+    'playwright-report/**',
+    'test-results/**',
+    'blob-report/**',
   ]),
   {
     rules: {

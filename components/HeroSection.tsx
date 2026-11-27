@@ -131,13 +131,13 @@ export function HeroSection() {
         )}
 
         {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/40 z-10" />
+        <div className="absolute inset-0 bg-black/60 z-10" />
 
         {/* Social Media Icons */}
         <div className="social-icons-fixed z-[10000] flex flex-col space-y-3" style={{ top: '5rem' }}>
           <a
             href="https://www.facebook.com/corridor.gentbrugge"
-            className="w-10 h-10 text-white/80 hover:text-white hover:scale-110 transition-all backdrop-blur-sm bg-gray-600/80 rounded-full flex items-center justify-center shadow-lg"
+            className="w-10 h-10 text-white hover:text-white hover:scale-110 transition-all backdrop-blur-sm bg-gray-700/90 rounded-full flex items-center justify-center shadow-lg"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Facebook"
@@ -148,7 +148,7 @@ export function HeroSection() {
           </a>
           <a
             href="https://www.instagram.com/corridor9050/"
-            className="w-10 h-10 text-white/80 hover:text-white hover:scale-110 transition-all backdrop-blur-sm bg-gray-600/80 rounded-full flex items-center justify-center shadow-lg"
+            className="w-10 h-10 text-white hover:text-white hover:scale-110 transition-all backdrop-blur-sm bg-gray-700/90 rounded-full flex items-center justify-center shadow-lg"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
@@ -159,7 +159,7 @@ export function HeroSection() {
           </a>
           <a
             href="https://www.tiktok.com/@corridor9050"
-            className="w-10 h-10 text-white/80 hover:text-white hover:scale-110 transition-all backdrop-blur-sm bg-gray-600/80 rounded-full flex items-center justify-center shadow-lg"
+            className="w-10 h-10 text-white hover:text-white hover:scale-110 transition-all backdrop-blur-sm bg-gray-700/90 rounded-full flex items-center justify-center shadow-lg"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="TikTok"
@@ -189,7 +189,7 @@ export function HeroSection() {
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold text-white graffiti-text mb-4 animate-pulse">
             CORRIDOR
           </h1>
-          <p className="text-xl md:text-2xl lg:text-3xl text-white/90 font-medium graffiti-text">
+          <p className="text-xl md:text-2xl lg:text-3xl text-white font-medium graffiti-text">
             Urban Hub onder het Viaduct van Gentbrugge
           </p>
           <div className="mt-8 flex flex-col items-center gap-4">
@@ -219,7 +219,7 @@ export function HeroSection() {
               }
               window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' })
             }}
-            className="hero-scroll-hint flex flex-col items-center gap-1 rounded-full border border-white/30 bg-black/25 px-3 py-2 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/40 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+            className="hero-scroll-hint flex flex-col items-center gap-1 rounded-full border border-white/40 bg-black/70 px-3 py-2 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
             aria-label="Scroll naar beneden"
           >
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em]">Meer</span>

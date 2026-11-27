@@ -175,7 +175,7 @@ export function AdminZones() {
       <div className="mb-6">
         <button
           onClick={() => openModal()}
-          className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium"
+          className="bg-pink-600 text-white px-6 py-3 rounded-lg hover:bg-pink-700 transition-colors font-medium"
         >
           + Nieuwe Zone
         </button>
@@ -197,7 +197,7 @@ export function AdminZones() {
             {pendingPhotos.map((photo) => (
               <div key={photo.id} className="rounded-2xl bg-white p-3 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo.public_url} alt="" className="mb-2 aspect-video w-full rounded-lg object-cover" />
+                <img src={photo.public_url} alt={photo.caption || `Zonefoto zone ${photo.zones?.zone_number ?? ''}`} className="mb-2 aspect-video w-full rounded-lg object-cover" />
                 <p className="text-sm text-gray-700 mb-1">
                   Zone {photo.zones?.zone_number}: {photo.zones?.name}
                 </p>
@@ -220,7 +220,7 @@ export function AdminZones() {
                   </button>
                   <button
                     type="button"
-                    className="flex-1 rounded-lg bg-red-500 px-2 py-1 text-sm text-white"
+                    className="flex-1 rounded-lg bg-red-600 px-2 py-1 text-sm text-white"
                     onClick={async () => {
                       await reviewZonePhoto(supabase, photo.id, 'rejected')
                       await loadData()
@@ -259,7 +259,7 @@ export function AdminZones() {
               <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={() => openModal(zone)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                 >
                   Bewerken
                 </button>
@@ -270,7 +270,7 @@ export function AdminZones() {
                 >
                   Foto&apos;s ({count})
                 </button>
-                <label className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-sm cursor-pointer">
+                <label className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm cursor-pointer">
                   Omslag
                   <input
                     type="file"
@@ -298,7 +298,7 @@ export function AdminZones() {
                     }}
                   />
                 </label>
-                <label className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors text-sm cursor-pointer">
+                <label className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-sm cursor-pointer">
                   + Foto
                   <input
                     type="file"
@@ -313,7 +313,7 @@ export function AdminZones() {
                 </label>
                 <button
                   onClick={() => handleDelete(zone.id)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
                 >
                   Verwijderen
                 </button>
@@ -340,7 +340,7 @@ export function AdminZones() {
                 Sluiten
               </button>
             </div>
-            <label className="mb-4 inline-flex cursor-pointer rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white hover:bg-pink-600">
+            <label className="mb-4 inline-flex cursor-pointer rounded-lg bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700">
               + Foto toevoegen
               <input
                 type="file"
@@ -360,7 +360,7 @@ export function AdminZones() {
                 {photosForOpenZone.map((photo) => (
                   <div key={photo.id} className="rounded-2xl border bg-white p-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.public_url} alt="" className="mb-2 aspect-video w-full rounded-lg object-cover" />
+                    <img src={photo.public_url} alt={photo.caption || 'Zonefoto'} className="mb-2 aspect-video w-full rounded-lg object-cover" />
                     <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">
                       {photo.status}
                       {photosZone.cover_url === photo.public_url ? ' · omslag' : ''}
@@ -384,7 +384,7 @@ export function AdminZones() {
                           className="flex-1 rounded border px-2 py-1 text-sm"
                           placeholder="Bijschrift"
                         />
-                        <button type="submit" className="rounded bg-blue-500 px-2 py-1 text-xs text-white">OK</button>
+                        <button type="submit" className="rounded bg-blue-600 px-2 py-1 text-xs text-white">OK</button>
                       </form>
                     ) : (
                       <p className="mb-2 text-sm text-gray-700">{photo.caption || 'Geen bijschrift'}</p>
@@ -392,14 +392,14 @@ export function AdminZones() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        className="rounded bg-blue-500 px-2 py-1 text-xs text-white"
+                        className="rounded bg-blue-600 px-2 py-1 text-xs text-white"
                         onClick={() => setEditingCaptionId(photo.id)}
                       >
                         Bijschrift
                       </button>
                       <button
                         type="button"
-                        className="rounded bg-violet-500 px-2 py-1 text-xs text-white"
+                        className="rounded bg-violet-600 px-2 py-1 text-xs text-white"
                         onClick={async () => {
                           await updateZone(supabase, photosZone.id, { cover_url: photo.public_url })
                           setPhotoMsg(`Omslag gezet voor zone ${photosZone.zone_number}`)
@@ -434,7 +434,7 @@ export function AdminZones() {
                       )}
                       <button
                         type="button"
-                        className="rounded bg-red-500 px-2 py-1 text-xs text-white"
+                        className="rounded bg-red-600 px-2 py-1 text-xs text-white"
                         onClick={async () => {
                           if (!confirm('Foto wissen?')) return
                           await deleteZonePhoto(supabase, photo.id)
@@ -553,7 +553,7 @@ export function AdminZones() {
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors font-medium"
+                  className="flex-1 bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition-colors font-medium"
                 >
                   Opslaan
                 </button>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
-import type { HistoryPhoto } from '@/lib/geschiedenis'
+import { historyPhotoAlt, type HistoryPhoto } from '@/lib/geschiedenis'
 
 interface HistoryPhotoCardProps {
   photo: HistoryPhoto
@@ -36,7 +36,7 @@ export function HistoryPhotoCard({
       tabIndex={0}
       role="button"
       aria-expanded={showFull}
-      aria-label={showFull ? `${photo.caption ?? photo.alt} — volledig beeld` : `${photo.caption ?? photo.alt} — toon volledig beeld`}
+      aria-label={showFull ? `${historyPhotoAlt(photo)} — volledig beeld` : `${historyPhotoAlt(photo)} — toon volledig beeld`}
     >
       <div
         className={`relative overflow-hidden bg-stone-200/90 transition-all duration-300 ease-out ${
@@ -45,7 +45,7 @@ export function HistoryPhotoCard({
       >
         <Image
           src={photo.src}
-          alt={photo.alt}
+          alt={historyPhotoAlt(photo)}
           fill
           className={`transition-all duration-300 ${
             showFull ? 'object-contain p-2' : 'object-cover'

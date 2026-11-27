@@ -46,7 +46,7 @@ export function PromoBanner({ promo }: PromoBannerProps) {
                 <span className="font-medium text-gray-800">{promo.dates}</span>
                 {promo.location && (
                   <>
-                    <span className="mx-2 text-gray-400">·</span>
+                    <span className="mx-2 text-gray-600" aria-hidden="true">·</span>
                     {promo.location}
                   </>
                 )}

@@ -204,7 +204,7 @@ export function ZonePhotoSubmit({ zoneId, zoneNumber }: ZonePhotoSubmitProps) {
         <button
           type="button"
           onClick={openLogin}
-          className="w-full rounded-lg bg-pink-500 px-4 py-3 font-medium text-white hover:bg-pink-600"
+          className="w-full rounded-lg bg-pink-600 px-4 py-3 font-medium text-white hover:bg-pink-700"
         >
           Inloggen / registreren
         </button>
@@ -226,18 +226,20 @@ export function ZonePhotoSubmit({ zoneId, zoneNumber }: ZonePhotoSubmitProps) {
 
       <div>
         <p className="mb-2 text-sm font-medium text-gray-800">1. Kies foto’s (meerdere mogelijk)</p>
-        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-pink-400 bg-pink-50/80 px-4 py-8 text-center transition hover:border-pink-500 hover:bg-pink-100/80">
-          <span className="rounded-full bg-pink-500 px-5 py-2 text-sm font-semibold text-white">
+        <label htmlFor="zone-photo-files" className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-pink-400 bg-pink-50/80 px-4 py-8 text-center transition hover:border-pink-500 hover:bg-pink-100/80">
+          <span className="rounded-full bg-pink-600 px-5 py-2 text-sm font-semibold text-white">
             Bestanden openen…
           </span>
           <span className="text-xs text-gray-600">
             JPG, PNG of WebP · max 8 MB per foto · tot {MAX_FILES} tegelijk
           </span>
           <input
+            id="zone-photo-files"
             type="file"
             accept="image/*"
             multiple
             className="sr-only"
+            aria-label="Kies foto's"
             onChange={(e) => {
               addFiles(e.target.files)
               e.target.value = ''
@@ -269,8 +271,9 @@ export function ZonePhotoSubmit({ zoneId, zoneNumber }: ZonePhotoSubmitProps) {
       )}
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">2. Bijschrift (optioneel, voor alle)</label>
+        <label htmlFor="zone-photo-caption" className="mb-1 block text-sm font-medium text-gray-700">2. Bijschrift (optioneel, voor alle)</label>
         <input
+          id="zone-photo-caption"
           type="text"
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
@@ -287,7 +290,7 @@ export function ZonePhotoSubmit({ zoneId, zoneNumber }: ZonePhotoSubmitProps) {
       <button
         type="submit"
         disabled={uploading || items.length === 0}
-        className="w-full rounded-lg bg-pink-500 px-4 py-3 font-semibold text-white hover:bg-pink-600 disabled:opacity-60"
+        className="w-full rounded-lg bg-pink-600 px-4 py-3 font-semibold text-white hover:bg-pink-700 disabled:opacity-60"
       >
         {uploading
           ? progress || 'Uploaden…'

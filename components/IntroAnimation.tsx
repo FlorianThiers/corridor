@@ -6,10 +6,34 @@ import { createClient } from '@/lib/supabase/client'
 export function IntroAnimation() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [showContainer, setShowContainer] = useState(false)
+  const [shouldLoad, setShouldLoad] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
+    const node = containerRef.current
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setShouldLoad(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoad(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '240px' }
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!shouldLoad) return
+
     const loadAnimation = async () => {
       try {
         const isDev = process.env.NODE_ENV === 'development'
@@ -85,7 +109,7 @@ export function IntroAnimation() {
 
     loadAnimation()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [shouldLoad])
 
   useEffect(() => {
     const video = videoRef.current
@@ -117,7 +141,7 @@ export function IntroAnimation() {
   // Always show container, even if video is not loaded yet
   // This ensures the layout doesn't shift when video loads
   return (
-    <div className="flex justify-center">
+    <div ref={containerRef} className="flex justify-center">
       <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 card-hover">
         {videoUrl ? (
           <video
@@ -128,7 +152,7 @@ export function IntroAnimation() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
           >
             Je browser ondersteunt geen video.
           </video>

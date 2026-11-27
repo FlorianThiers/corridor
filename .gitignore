@@ -52,6 +52,12 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # Temporary folders
 tmp/
 temp/

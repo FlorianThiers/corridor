@@ -66,7 +66,7 @@ Corridor/
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
    ```
-   `SUPABASE_SERVICE_ROLE_KEY` is alleen voor server-side routes (media/agenda API); nooit `NEXT_PUBLIC_` gebruiken.
+   `SUPABASE_SERVICE_ROLE_KEY` is alleen voor server-side routes (media/agenda API). Zet nooit `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY`.
 
 4. **Build config**
    ```bash
@@ -105,14 +105,14 @@ Gebruik de `nginx.conf` configuratie als template voor je server setup.
 #### **Vercel (Aanbevolen)**
 1. **Push naar GitHub/GitLab**
 2. **Verbind met Vercel** en deploy automatisch
-3. **Environment Variables instellen:**
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` (Production/Preview, server-only)
+3. **Environment Variables instellen** (Project Settings → Environment Variables). Volledige checklist: `SUPABASE_SECURITY.md`.
+   - **Zetten:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server-only, Production + Preview + Development)
+   - **Verwijderen:** `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` (lekte de service role naar de browser)
 4. **Deploy** - het `vercel.json` bestand regelt automatisch het routing
 
 **⚠️ Belangrijk voor Vercel:**
-- Zorg dat `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` en `SUPABASE_SERVICE_ROLE_KEY` zijn ingesteld in Vercel dashboard (Project Settings > Environment Variables)
+- Zet `SUPABASE_SERVICE_ROLE_KEY` zonder `NEXT_PUBLIC_`-prefix. De admin client faalt luid als die ontbreekt; de media-API heeft geen anon-fallback.
+- `NEXT_PUBLIC_SUPABASE_URL` en `NEXT_PUBLIC_SUPABASE_ANON_KEY` blijven publiek (anon key + RLS).
 - De build stap genereert automatisch `js/supabase-config.js`
 - Als deployment faalt:
   1. Check de build logs in Vercel dashboard
@@ -126,7 +126,7 @@ Gebruik de `nginx.conf` configuratie als template voor je server setup.
 3. **Environment Variables instellen:**
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` (server-only)
+   - `SUPABASE_SERVICE_ROLE_KEY` (server-only; nooit `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY`)
 4. **Deploy** - het `_redirects` bestand regelt automatisch het routing
 
 #### **Firebase Hosting**
