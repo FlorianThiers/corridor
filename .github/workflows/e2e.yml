@@ -1,0 +1,45 @@
+name: e2e
+
+on:
+  pull_request:
+  push:
+    branches:
+      - cursor/a11y-wcag-aa-9ba2
+      - cursor/playwright-e2e-nl-be-0c9c
+
+permissions:
+  contents: read
+
+jobs:
+  playwright:
+    name: Playwright (nl-BE, mock Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      E2E_MOCK_SUPABASE: "1"
+      NEXT_PUBLIC_E2E_MOCK_SUPABASE: "1"
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: e2e-anon-key-not-a-secret
+      CORRIDOR_MEDIA_API_KEY: e2e-media-key
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      TZ: Europe/Brussels
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright
+        run: npm run test:e2e

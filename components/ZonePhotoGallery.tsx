@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ZoomableLightbox } from '@/components/ZoomableLightbox'
-import { ZONE_GALLERY_PAGE_SIZE, type ZoneGalleryItem } from '@/lib/zone-gallery'
+import { ZONE_GALLERY_PAGE_SIZE, zoneGalleryAlt, type ZoneGalleryItem } from '@/lib/zone-gallery'
 
 interface ZonePhotoGalleryProps {
   zoneNumber: number
@@ -71,7 +71,7 @@ export function ZonePhotoGallery({
           <figure key={item.id} className="overflow-hidden rounded-3xl bg-white/50 backdrop-blur-sm">
             <ZoomableLightbox
               src={item.public_url}
-              alt={item.caption || zoneName}
+              alt={zoneGalleryAlt(item, zoneName)}
               thumbClassName="aspect-[4/3] w-full object-cover"
             />
             {item.caption && item.id !== 'cover' && (
@@ -86,7 +86,7 @@ export function ZonePhotoGallery({
             type="button"
             onClick={() => void loadMore()}
             disabled={loading}
-            className="rounded-full bg-pink-500 px-8 py-3 font-medium text-white transition hover:bg-pink-600 disabled:cursor-wait disabled:opacity-70"
+            className="rounded-full bg-pink-600 px-8 py-3 font-medium text-white transition hover:bg-pink-700 disabled:cursor-wait disabled:opacity-70"
           >
             {loading ? 'Laden…' : `Meer foto’s (${totalPhotoCount - loadedPhotoCount} resterend)`}
           </button>

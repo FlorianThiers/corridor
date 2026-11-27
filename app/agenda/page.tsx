@@ -12,9 +12,16 @@ import { PromoGate, hasActivePromoFloatings } from '@/components/PromoGate'
 import { isSportSlug } from '@/lib/sports'
 
 import type { Evenement } from '@/types'
+import { publicMetadata } from '@/lib/seo'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
+
+export const metadata = publicMetadata({
+  title: 'Agenda - Corridor',
+  description: 'Kalender van evenementen en activiteiten bij Corridor in Gentbrugge.',
+  path: '/agenda',
+})
 
 interface AgendaPageProps {
   searchParams: Promise<{ sport?: string }>

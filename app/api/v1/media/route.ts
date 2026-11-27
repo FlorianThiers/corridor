@@ -1,24 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { isMediaApiAuthorized } from '@/lib/media-api-auth'
-import {
-  parseMediaQuery,
-  queryMediaItems,
-  resolvePublicBaseUrl,
-  toMediaResponse,
-} from '@/lib/media-api'
+import { getMediaFeed } from '@/lib/media-http'
+import type { MediaReadContext } from '@/lib/media-supabase'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
-  if (!isMediaApiAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+async function openMediaAdminClient(): Promise<MediaReadContext> {
+  return { supabase: createAdminClient(), canModerate: true }
+}
 
-  let supabase
+export async function GET(request: NextRequest) {
   try {
-    supabase = createAdminClient()
+    createAdminClient()
   } catch (adminError) {
     const message =
       adminError instanceof Error
@@ -31,13 +25,11 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  try {
-    const query = parseMediaQuery(request.nextUrl.searchParams)
-    const baseUrl = resolvePublicBaseUrl(request.nextUrl.origin)
-    const items = await queryMediaItems(supabase, query, { baseUrl })
-    return NextResponse.json(toMediaResponse(items))
-  } catch (error) {
-    console.error('GET /api/v1/media failed:', error)
-    return NextResponse.json({ error: 'Failed to load media' }, { status: 500 })
-  }
+  const result = await getMediaFeed({
+    authorization: request.headers.get('authorization'),
+    origin: request.nextUrl.origin,
+    search: request.nextUrl.search,
+    openClient: openMediaAdminClient,
+  })
+  return NextResponse.json(result.body, { status: result.status })
 }

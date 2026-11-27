@@ -14,10 +14,20 @@ function setGlobalClient(client: BrowserClient) {
   ;(globalThis as typeof globalThis & { [GLOBAL_KEY]?: BrowserClient })[GLOBAL_KEY] = client
 }
 
+const e2eMockEnabled = process.env.NEXT_PUBLIC_E2E_MOCK_SUPABASE === '1'
+
 export function createClient(): BrowserClient {
   const existing = getGlobalClient()
   if (existing) {
     return existing
+  }
+
+  if (e2eMockEnabled) {
+    // Alleen gebundeld wanneer de publieke e2e-vlag op '1' staat.
+    const { createE2ESupabase } = require('./e2e-mock') as typeof import('./e2e-mock')
+    const mock = createE2ESupabase() as unknown as BrowserClient
+    setGlobalClient(mock)
+    return mock
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
