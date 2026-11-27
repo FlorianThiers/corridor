@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { friendlyAuthError, normalizeAuthEmail } from '@/lib/auth-client'
+import { authErrorMessage, friendlyAuthError, normalizeAuthEmail } from '@/lib/auth-client'
 import { ensureUserProfileRow } from '@/lib/ensure-user-profile'
 
 type Tab = 'login' | 'signup' | 'forgot-password'
@@ -120,8 +120,7 @@ export function LoginModal() {
         router.refresh()
       }, 1500)
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : ''
-      setError(friendlyAuthError(message, 'Inloggen mislukt. Probeer opnieuw.'))
+      setError(friendlyAuthError(authErrorMessage(err), 'Inloggen mislukt. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }
@@ -156,8 +155,8 @@ export function LoginModal() {
 
       setSignupDone(true)
       setSuccess('Account aangemaakt! Check je email voor verificatie (ook spam). Daarna kun je inloggen.')
-    } catch (err: any) {
-      setError(friendlyAuthError(err?.message || '', 'Registratie mislukt. Probeer opnieuw.'))
+    } catch (err: unknown) {
+      setError(friendlyAuthError(authErrorMessage(err), 'Registratie mislukt. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }
@@ -180,8 +179,8 @@ export function LoginModal() {
       if (resetError) throw resetError
 
       setSuccess('Reset link is verzonden naar je emailadres. Check je inbox (en spam folder).')
-    } catch (err: any) {
-      setError(friendlyAuthError(err?.message || '', 'Fout bij verzenden van reset link. Probeer opnieuw.'))
+    } catch (err: unknown) {
+      setError(friendlyAuthError(authErrorMessage(err), 'Fout bij verzenden van reset link. Probeer opnieuw.'))
     } finally {
       setLoading(false)
     }

@@ -246,11 +246,35 @@ function createAuth() {
   }
 }
 
+function createStorage() {
+  const base =
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, '') || 'http://127.0.0.1:54321'
+
+  return {
+    from(bucket: string) {
+      return {
+        getPublicUrl(path: string) {
+          return {
+            data: { publicUrl: `${base}/storage/v1/object/public/${encodeURIComponent(bucket)}/${path}` },
+          }
+        },
+        async list(
+          _path?: string,
+          _options?: { limit?: number; sortBy?: { column: string; order: string } },
+        ) {
+          return { data: [] as { name: string }[], error: null }
+        },
+      }
+    },
+  }
+}
+
 /** Eén in-memory client. Auth-status blijft op dit object (browser-singleton). */
 export function createE2ESupabase() {
   const auth = createAuth()
   return {
     auth,
+    storage: createStorage(),
     from(table: string) {
       return new E2EQuery(table)
     },
