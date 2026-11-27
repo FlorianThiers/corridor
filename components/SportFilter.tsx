@@ -23,13 +23,14 @@ export function SportFilter({ activeSport, basePath = '/activiteiten' }: SportFi
   }
 
   return (
-    <div className="flex flex-wrap justify-center gap-2 mb-8">
+    <nav className="flex flex-wrap justify-center gap-2 mb-8" aria-label="Filter op sport">
       <Link
         href={buildHref()}
+        aria-current={!activeSport ? 'true' : undefined}
         className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
           !activeSport
             ? 'bg-gray-900 text-white shadow-md'
-            : 'bg-white/70 text-gray-700 hover:bg-white'
+            : 'bg-white/80 text-gray-800 hover:bg-white'
         }`}
       >
         Alle sporten
@@ -38,15 +39,16 @@ export function SportFilter({ activeSport, basePath = '/activiteiten' }: SportFi
         <Link
           key={sport.slug}
           href={buildHref(sport.slug)}
+          aria-current={activeSport === sport.slug ? 'true' : undefined}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-all border-2 ${
             activeSport === sport.slug
               ? `${sport.badgeClass} ${sport.borderClass}`
-              : 'bg-white/70 text-gray-700 border-transparent hover:bg-white'
+              : 'bg-white/80 text-gray-800 border-transparent hover:bg-white'
           }`}
         >
           {sport.label}
         </Link>
       ))}
-    </div>
+    </nav>
   )
 }

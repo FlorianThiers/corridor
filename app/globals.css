@@ -13,6 +13,38 @@ html {
   background: transparent;
 }
 
+/* Skiplink: onzichtbaar tot toetsenbordfocus. Rustende layout blijft gelijk. */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 0;
+  z-index: 10002;
+  transform: translateY(-120%);
+  background: #111827;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 0 0 0.75rem 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Toetsenbordfocus op lichte én donkere vlakken, zonder de rustende vorm te wijzigen. */
+:focus-visible {
+  outline: 2px solid #111827;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px #fff;
+}
+
+#inhoud:focus,
+#inhoud:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 body {
   font-family: 'Fredoka', cursive;
   background: transparent;
@@ -287,6 +319,8 @@ section[class*="section-gradient"] + section[class*="section-gradient"] {
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     cursor: pointer;
+    border: 0;
+    padding: 0;
 }
 
 .sidebar-overlay.active {
@@ -511,7 +545,8 @@ section[class*="section-gradient"] + section[class*="section-gradient"] {
     z-index: 20;
 }
 
-.history-marquee:hover .history-marquee-track {
+.history-marquee:hover .history-marquee-track,
+.history-marquee:focus-within .history-marquee-track {
     animation-play-state: paused;
 }
 

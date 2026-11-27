@@ -12,6 +12,7 @@ import { getEvenementen, getZones } from '@/lib/database'
 import { groupActiviteiten, splitByKind } from '@/lib/agenda-helpers'
 import { isFestEvent } from '@/lib/site-promos'
 import { BRAND_CORRI_DOR } from '@/lib/brand'
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, placeJsonLd, publicMetadata } from '@/lib/seo'
 import type { Evenement, Zone } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -19,6 +20,12 @@ import Link from 'next/link'
 // Revalidate every 60 seconds to reduce requests while keeping data fresh
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
+
+export const metadata = publicMetadata({
+  title: DEFAULT_TITLE,
+  description: DEFAULT_DESCRIPTION,
+  path: '/',
+})
 
 export default async function HomePage() {
   // Server-side data fetching with parallel requests
@@ -60,8 +67,11 @@ export default async function HomePage() {
   ).slice(0, 6)
   const toonAgendaOverzicht = highlightEvenementen.length > 0 || highlightActiviteiten.length > 0
 
+  const jsonLd = JSON.stringify(placeJsonLd()).replace(/</g, '\\u003c')
+
   return (
     <div className="page-background">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       <HeroSection />
 
       <PromoGate variant="banners" />

@@ -1,6 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+function isE2EMockEnabled(): boolean {
+  return (
+    process.env.E2E_MOCK_SUPABASE === '1' ||
+    process.env.NEXT_PUBLIC_E2E_MOCK_SUPABASE === '1'
+  )
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
@@ -13,6 +20,10 @@ export async function middleware(request: NextRequest) {
       newUrl.searchParams.set(key, value)
     })
     return NextResponse.redirect(newUrl)
+  }
+
+  if (isE2EMockEnabled()) {
+    return NextResponse.next()
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
